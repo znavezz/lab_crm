@@ -1,0 +1,20 @@
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime  // event date/time (could also have start/end if needed)
+  location    String?
+  attendees   Member[]
+  projects    Project[]
+  tasks       NoteTask[]
+  expenses    Expense[]
+
+  // --- PLANNING (Items "needed" for this event) ---
+  equipments Equipment[]
+
+  // --- SCHEDULING (Reservations for this event) ---
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
