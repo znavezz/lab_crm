@@ -1,0 +1,31 @@
+enum EquipmentStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+}
+
+model Equipment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  serialNumber String?  @unique
+  status       EquipmentStatus @default(AVAILABLE)
+
+  // --- ALLOCATION (Ownership) ---
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  memberId String?
+  member   Member? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  // --- SCHEDULING (Reservations) ---
+  bookings Booking[]
+
+  // --- PLANNING (Event Needs) ---
+  events Event[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([memberId])
+}
