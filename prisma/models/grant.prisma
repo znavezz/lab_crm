@@ -1,0 +1,15 @@
+model Grant {
+  id         String   @id @default(cuid())
+  name       String
+  budget     Float    // total budget amount
+  deadline   DateTime // e.g. grant end date or deadline
+
+  // A grant can fund multiple projects, and projects can have multiple grants (M:N)
+  projects   Project[]
+  // Expenses charged to this grant
+  expenses   Expense[]
+
+  createdAt DateTime @default(now())
+
+  // No direct onDelete needed on M:N; deleting a Grant will remove link entries but not projects.
+}
