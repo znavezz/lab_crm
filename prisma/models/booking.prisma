@@ -26,4 +26,5 @@ model Booking {
   @@index([memberId])
   @@index([projectId])
   @@index([eventId])
+  @@index([equipmentId, startTime, endTime])
 }
