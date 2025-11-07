@@ -1,0 +1,60 @@
+enum MemberRank {
+    PROFESSOR
+    DOCTOR
+    POSTDOC
+    MSc
+    BSc
+    Mr
+    Mrs
+}
+
+enum MemberStatus {
+    ACTIVE
+    ALUMNI
+    INACTIVE
+}
+
+enum MemberRole {
+    PI
+    STUDENT
+    LAB_MANAGER
+    RESEARCHER
+    ADVISOR
+    INTERN
+    CONTRACTOR
+    GUEST
+    ALUMNI
+    OTHER
+}
+
+model Member {
+  id       String @id @default(cuid())
+  name     String
+  rank     MemberRank?    // e.g. academic rank or title
+  status   MemberStatus?    // e.g. active, alumni, etc.
+  role     MemberRole?    // e.g. PI, Student, Lab Manager
+  scholarship Int?
+  academicInfo AcademicInfo[] // A member can have multiple records
+
+  // --- ALLOCATION (Items I "own") ---
+  equipments Equipment[]
+
+  // --- SCHEDULING (My reservations) ---
+  bookings Booking[]
+
+  // A Member can participate in many projects (M:N with Project)
+  projects     Project[]        @relation("ProjectMembers")
+  // Member can author many publications (M:N with Publication)
+  publications Publication[]
+  // Member can be associated with many events (M:N with Event)
+  events Event[]
+  // Optional documents associated with this member (e.g. CVs)
+  documents    Document[]
+  // One-to-one link to authentication User account
+  user         User?            @relation(name: "MemberUser")
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
