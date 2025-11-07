@@ -26,6 +26,7 @@ model Equipment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([projectId])
-  @@index([memberId])
+  @@index([projectId]) // For searching by project
+  @@index([memberId]) // For searching by member
+  @@index([name]) // For searching by equipment name
 }
