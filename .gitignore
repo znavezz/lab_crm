@@ -464,3 +464,5 @@ yarn-error.log*
 next-env.d.ts
 
 prisma/src/generated/
+
+prisma/schema/ERD.svg
