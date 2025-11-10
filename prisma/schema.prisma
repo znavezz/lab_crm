@@ -3,12 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
-}
-
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./ERD.svg" // Output path (optional, default is ./ERD.svg)
+  output   = "./generated/"
 }
 
 datasource db {
