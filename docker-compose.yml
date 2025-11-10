@@ -1,0 +1,42 @@
+services:
+  # 1. The PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    restart: always
+    env_file:
+      - .env.local
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  # 2. The Next.js App Service (for Development)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile # Uses the new dev Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db # Waits for the 'db' service to start first
+    
+    # This is the fix for your environment variables
+    env_file:
+      - .env.local # Tells Compose to load variables from your .env.local file
+    
+    # This is the fix for hot-reloading
+    volumes:
+      # Mounts your entire project folder into /app in the container
+      # except for node_modules, which we want to keep inside the container
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    
+    # Command to run migrations and start the dev server
+    command: ["/bin/sh", "-c", "npx prisma migrate dev && npm run dev"]
+
+# Defines the persistent volume for the database
+volumes:
+  postgres_data:
