@@ -74,3 +74,7 @@ The `NoteTask` model is a "polymorphic" entity, meaning it can attach to almost 
 
 * **How it works:** It contains many optional foreign keys (e.g., `memberId`, `projectId`, `grantId`, `equipmentId`).
 * **Rule:** The application logic (your API) must enforce that **only one** of these foreign keys is set when a `NoteTask` is created. For example, a note can be for a `Project` *or* a `Member`, but not both.
+
+
+## ERD:
+<img src="prisma/ERD.svg" alt="ERD" />
