@@ -463,4 +463,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-src/generated/
+src/generated/*
+!src/generated/graphql/
+src/generated/graphql/*
+!src/generated/graphql/resolvers-types.ts
