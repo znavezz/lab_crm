@@ -136,3 +136,36 @@ docker compose down
 ```
 This will stop the application and database containers.
 
+---
+
+## 🧪 Testing
+
+The project includes a comprehensive test suite with **83 tests** covering database models, relationships, factory methods, and GraphQL resolvers.
+
+### Quick Start
+
+```bash
+# Run tests (Docker - recommended)
+npm run test:docker
+
+# Run tests (local)
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Test Coverage
+
+- **Database Tests** (37 tests): Models, relationships, constraints
+- **Factory Tests** (24 tests): Data generation methods
+- **GraphQL Tests** (22 tests): Query resolvers, mutations, computed fields
+
+For detailed testing documentation, see:
+- [tests/README.md](./tests/README.md) - Quick reference
+- [tests/TESTING_GUIDE.md](./tests/TESTING_GUIDE.md) - Comprehensive guide
+- [tests/DOCKER_TESTING.md](./tests/DOCKER_TESTING.md) - Docker-specific instructions
+
