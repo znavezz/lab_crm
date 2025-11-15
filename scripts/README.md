@@ -155,6 +155,11 @@ const budgetTest = await fixtures.createProjectWithExpenses();
 ## Testing
 
 See `tests/` directory for test infrastructure:
-- `tests/setup.ts` - Test database setup
-- `tests/helpers.ts` - Test utilities
+- `tests/setup.ts` - Test database setup and teardown
+- `tests/helpers.ts` - Test utilities and helper functions
+- `tests/database.test.ts` - Database integration tests
+- `tests/factories.test.ts` - Factory method tests
+- `tests/graphql.test.ts` - GraphQL resolver tests
+
+The factories and fixtures in this directory are used by the test suite. See [tests/README.md](../tests/README.md) for testing documentation.
 

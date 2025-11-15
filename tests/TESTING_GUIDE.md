@@ -72,10 +72,18 @@ If you're using Docker, the test database will be created automatically based on
 
 ### Test Files
 
-- **`tests/database.test.ts`** - Integration tests for database models and relationships
-- **`tests/factories.test.ts`** - Tests for factory methods
+- **`tests/database.test.ts`** - Integration tests for database models and relationships (37 tests)
+- **`tests/factories.test.ts`** - Tests for factory methods (24 tests)
+- **`tests/graphql.test.ts`** - GraphQL resolver tests for queries, mutations, and computed fields (22 tests)
 - **`tests/setup.ts`** - Test database setup and teardown utilities
 - **`tests/helpers.ts`** - Test helper functions and utilities
+
+**Total Test Coverage: 83 tests** covering:
+- Database models and relationships
+- Factory methods
+- GraphQL queries and mutations
+- Computed fields (budget calculations, investment totals)
+- Database constraints and validations
 
 ### Writing Tests
 
@@ -332,11 +340,63 @@ DATABASE_URL="..." npx prisma migrate deploy
 6. **Keep tests fast** by using minimal data when possible
 7. **Test edge cases** like null values, empty strings, etc.
 
+## GraphQL Testing
+
+The test suite includes comprehensive GraphQL resolver tests:
+
+### Query Resolvers
+
+```typescript
+// Test querying all members
+const result = await queries.members(undefined, undefined, context);
+
+// Test querying by ID
+const member = await queries.member(undefined, { id: memberId }, context);
+```
+
+### Mutation Resolvers
+
+```typescript
+// Test creating a member
+const result = await mutations.createMember(
+  undefined,
+  { input: { name: 'New Member', rank: 'MSc' } },
+  context
+);
+
+// Test updating a member
+const updated = await mutations.updateMember(
+  undefined,
+  { id: memberId, input: { name: 'Updated Name' } },
+  context
+);
+```
+
+### Computed Fields
+
+```typescript
+// Test Project.totalInvestment
+const investment = await types.Project.totalInvestment(
+  { id: projectId },
+  undefined,
+  context
+);
+
+// Test Grant.totalSpent and remainingBudget
+const totalSpent = await types.Grant.totalSpent(
+  { id: grantId },
+  undefined,
+  context
+);
+```
+
+See `tests/graphql.test.ts` for complete examples.
+
 ## Next Steps
 
-- Add GraphQL resolver tests
-- Add API endpoint tests
-- Add integration tests for full workflows
+- Add API endpoint tests (REST/GraphQL HTTP layer)
+- Add integration tests for full user workflows
 - Set up test coverage reporting
 - Add performance tests for database queries
+- Add E2E tests with Playwright or Cypress
 

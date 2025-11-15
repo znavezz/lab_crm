@@ -65,10 +65,13 @@ npm run test:docker
 
 ## Test Files
 
-- `database.test.ts` - Database model and relationship tests
-- `factories.test.ts` - Factory method tests
+- `database.test.ts` - Database model and relationship tests (37 tests)
+- `factories.test.ts` - Factory method tests (24 tests)
+- `graphql.test.ts` - GraphQL resolver tests (22 tests)
 - `setup.ts` - Test database utilities
 - `helpers.ts` - Test helper functions
+
+**Total: 83 tests** (75 passing, 8 failing - mostly transaction timing edge cases)
 
 ## Example Test
 
