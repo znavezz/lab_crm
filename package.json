@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
+    "@apollo/server": "^5.1.0",
     "@prisma/client": "^6.19.0",
     "@shadcn/ui": "^0.0.4",
     "apollo-server-express": "^3.13.0",
