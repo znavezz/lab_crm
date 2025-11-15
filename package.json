@@ -8,13 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "studio": "DATABASE_URL=\"postgresql://myuser:mysecretpassword@db:5433/lab_crm?schema=public\" npx prisma studio",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "seed": "tsx scripts/seed.ts",
+    "seed:reset": "tsx scripts/seed.ts --reset",
+    "seed:minimal": "tsx scripts/seed.ts --minimal",
+    "seed:docker": "docker-compose exec app npm run seed",
+    "seed:docker:reset": "docker-compose exec app npm run seed:reset"
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
     "@apollo/server": "^5.1.0",
     "@as-integrations/next": "^4.1.0",
-    "@yaacovcr/transform": "^1.0.0",
     "@graphql-codegen/cli": "^6.0.2",
     "@graphql-codegen/typescript": "^5.0.4",
     "@graphql-codegen/typescript-resolvers": "^5.1.2",
@@ -43,6 +47,7 @@
     "eslint-config-next": "16.0.1",
     "prisma-erd-generator": "^2.1.0",
     "tailwindcss": "^4",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }
