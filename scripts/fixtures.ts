@@ -22,56 +22,96 @@ export class TestFixtures {
    * - Some expenses and bookings
    */
   async createCompleteLabSetup() {
-    // Create members
-    const professor = await this.factory.createProfessor({
-      name: 'Dr. Sarah Cohen',
+    // Create members and academic info in one transaction to ensure visibility
+    const { professor, postdoc, student1, student2, labManager } = await this.prisma.$transaction(async (tx) => {
+      const prof = await tx.member.create({
+        data: {
+          name: 'Dr. Sarah Cohen',
+          rank: 'PROFESSOR',
+          status: 'ACTIVE',
+          role: 'PI',
+        },
+      });
+
+      const post = await tx.member.create({
+        data: {
+          name: 'Dr. Michael Levy',
+          rank: 'POSTDOC',
+          status: 'ACTIVE',
+          role: 'RESEARCHER',
+          scholarship: 50000,
+        },
+      });
+
+      const stud1 = await tx.member.create({
+        data: {
+          name: 'David Ben-Ami',
+          rank: 'MSc',
+          status: 'ACTIVE',
+          role: 'STUDENT',
+          scholarship: 30000,
+        },
+      });
+
+      const stud2 = await tx.member.create({
+        data: {
+          name: 'Rachel Mizrahi',
+          rank: 'MSc',
+          status: 'ACTIVE',
+          role: 'STUDENT',
+          scholarship: 30000,
+        },
+      });
+
+      const labMgr = await tx.member.create({
+        data: {
+          name: 'Yael Avraham',
+          rank: 'MSc',
+          status: 'ACTIVE',
+          role: 'LAB_MANAGER',
+        },
+      });
+
+      // Create academic info within the same transaction
+      await tx.academicInfo.create({
+        data: {
+          memberId: prof.id,
+          degree: 'PhD',
+          field: 'Bioinformatics',
+          institution: 'MIT',
+          graduationYear: 2010,
+        },
+      });
+
+      await tx.academicInfo.create({
+        data: {
+          memberId: post.id,
+          degree: 'PhD',
+          field: 'Molecular Biology',
+          institution: 'Weizmann Institute',
+          graduationYear: 2020,
+        },
+      });
+
+      return { professor: prof, postdoc: post, student1: stud1, student2: stud2, labManager: labMgr };
     });
 
-    const postdoc = await this.factory.createPostdoc({
-      name: 'Dr. Michael Levy',
+    // Create projects using direct Prisma calls to ensure same connection
+    const project1 = await this.prisma.project.create({
+      data: {
+        title: 'Genome Sequencing Analysis',
+        description: 'Advanced analysis of genomic data using machine learning',
+        startDate: new Date('2024-01-01'),
+        endDate: new Date('2025-12-31'),
+      },
     });
 
-    const student1 = await this.factory.createStudent({
-      name: 'David Ben-Ami',
-    });
-
-    const student2 = await this.factory.createStudent({
-      name: 'Rachel Mizrahi',
-    });
-
-    const labManager = await this.factory.createLabManager({
-      name: 'Yael Avraham',
-    });
-
-    // Add academic info
-    await this.factory.createAcademicInfo({
-      memberId: professor.id,
-      degree: 'PhD',
-      field: 'Bioinformatics',
-      institution: 'MIT',
-      graduationYear: 2010,
-    });
-
-    await this.factory.createAcademicInfo({
-      memberId: postdoc.id,
-      degree: 'PhD',
-      field: 'Molecular Biology',
-      institution: 'Weizmann Institute',
-      graduationYear: 2020,
-    });
-
-    // Create projects
-    const project1 = await this.factory.createProject({
-      title: 'Genome Sequencing Analysis',
-      description: 'Advanced analysis of genomic data using machine learning',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2025-12-31'),
-    });
-
-    const project2 = await this.factory.createProject({
-      title: 'Protein Structure Prediction',
-      description: 'Using AI to predict protein folding patterns',
-      startDate: new Date('2024-06-01'),
+    const project2 = await this.prisma.project.create({
+      data: {
+        title: 'Protein Structure Prediction',
+        description: 'Using AI to predict protein folding patterns',
+        startDate: new Date('2024-06-01'),
+      },
     });
 
     // Link members to projects
@@ -93,17 +133,21 @@ export class TestFixtures {
       },
     });
 
-    // Create grants
-    const grant1 = await this.factory.createGrant({
-      name: 'ISF Research Grant 2024',
-      budget: 500000,
-      deadline: new Date('2026-12-31'),
+    // Create grants using direct Prisma calls
+    const grant1 = await this.prisma.grant.create({
+      data: {
+        name: 'ISF Research Grant 2024',
+        budget: 500000,
+        deadline: new Date('2026-12-31'),
+      },
     });
 
-    const grant2 = await this.factory.createGrant({
-      name: 'ERC Starting Grant',
-      budget: 1000000,
-      deadline: new Date('2027-06-30'),
+    const grant2 = await this.prisma.grant.create({
+      data: {
+        name: 'ERC Starting Grant',
+        budget: 1000000,
+        deadline: new Date('2027-06-30'),
+      },
     });
 
     // Link grants to projects

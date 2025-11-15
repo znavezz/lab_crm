@@ -13,7 +13,8 @@ const getTestDatabaseUrl = () => {
   // Replace database name with test database
   // e.g., postgresql://user:pass@host:5432/dbname -> postgresql://user:pass@host:5432/test_dbname
   const url = new URL(baseUrl);
-  url.pathname = `/test_${url.pathname.split('/').pop() || 'lab_crm'}`;
+  const dbName = url.pathname.split('/').pop() || 'lab_crm';
+  url.pathname = `/test_${dbName}`;
   return url.toString();
 };
 
@@ -32,16 +33,20 @@ export const testPrisma = new PrismaClient({
 export async function setupTestDatabase() {
   console.log('🔧 Setting up test database...');
   
-  // Note: In a real setup, you would:
-  // 1. Create the test database if it doesn't exist
-  // 2. Run migrations: npx prisma migrate deploy
-  // 3. Generate Prisma client: npx prisma generate
-  
-  // For now, we'll assume the test database exists and is migrated
-  // In CI/CD, you'd run these commands before tests
-  
-  await testPrisma.$connect();
-  console.log('✅ Test database connected');
+  try {
+    await testPrisma.$connect();
+    console.log('✅ Test database connected');
+    
+    // Verify connection by running a simple query
+    await testPrisma.$queryRaw`SELECT 1`;
+  } catch (error) {
+    console.error('❌ Failed to connect to test database');
+    console.error('   Make sure:');
+    console.error('   1. TEST_DATABASE_URL is set in your .env file');
+    console.error('   2. Test database exists');
+    console.error('   3. Migrations have been run: DATABASE_URL="..." npx prisma migrate deploy');
+    throw error;
+  }
 }
 
 /**
@@ -66,15 +71,35 @@ export async function cleanTestDatabase() {
   await testPrisma.publication.deleteMany();
   await testPrisma.academicInfo.deleteMany();
   
-  // Disconnect many-to-many relations
-  await testPrisma.$executeRaw`DELETE FROM "_EventToEquipment"`;
-  await testPrisma.$executeRaw`DELETE FROM "_EventToMember"`;
-  await testPrisma.$executeRaw`DELETE FROM "_EventToProject"`;
-  await testPrisma.$executeRaw`DELETE FROM "_ProjectMembers"`;
-  await testPrisma.$executeRaw`DELETE FROM "_ProjectToGrant"`;
-  await testPrisma.$executeRaw`DELETE FROM "_ProjectToPublication"`;
-  await testPrisma.$executeRaw`DELETE FROM "_ProjectToCollaborator"`;
-  await testPrisma.$executeRaw`DELETE FROM "_MemberToPublication"`;
+  // Disconnect many-to-many relations (ignore errors if tables don't exist)
+  const junctionTables = [
+    '_EventToEquipment',
+    '_EventToMember',
+    '_EventToProject',
+    '_ProjectMembers',
+    '_ProjectToGrant',
+    '_ProjectToPublication',
+    '_ProjectToCollaborator',
+    '_MemberToPublication',
+  ];
+  
+  for (const table of junctionTables) {
+    try {
+      await testPrisma.$executeRawUnsafe(`DELETE FROM "${table}"`);
+    } catch (error: any) {
+      // Ignore errors if table doesn't exist (e.g., no data has been created yet)
+      // Check both error code and message for "does not exist"
+      const isTableNotFound = 
+        error?.code === '42P01' || 
+        error?.code === 'P2025' ||
+        (typeof error?.message === 'string' && error.message.includes('does not exist'));
+      
+      if (!isTableNotFound) {
+        // Re-throw if it's not a "relation does not exist" error
+        throw error;
+      }
+    }
+  }
   
   await testPrisma.event.deleteMany();
   await testPrisma.equipment.deleteMany();

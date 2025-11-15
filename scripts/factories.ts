@@ -90,7 +90,7 @@ export class DataFactory {
   async createPostdoc(overrides: MemberCreateInput = {}) {
     return this.createMember({
       name: `Dr. ${overrides.name || `Test Postdoc ${Math.random().toString(36).substring(7)}`}`,
-      rank: 'DOCTOR',
+      rank: 'POSTDOC',
       status: 'ACTIVE',
       role: 'RESEARCHER',
       scholarship: 50000,
@@ -277,6 +277,11 @@ export class DataFactory {
     projectId?: string;
     grantId?: string;
     eventId?: string;
+    publicationId?: string;
+    documentId?: string;
+    equipmentId?: string;
+    collaboratorId?: string;
+    expenseId?: string;
   } = {}) {
     const defaults = {
       title: `Test Task ${Math.random().toString(36).substring(7)}`,
