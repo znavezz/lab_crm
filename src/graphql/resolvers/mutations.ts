@@ -1,4 +1,5 @@
 import type { GraphQLContext } from '../context';
+import type { Prisma } from '@/generated/prisma';
 import type {
   MutationCreateMemberArgs,
   MutationUpdateMemberArgs,
@@ -169,16 +170,34 @@ export const mutations = {
     args: MutationUpdateEquipmentArgs,
     context: GraphQLContext
   ) => {
+    const updateData: Prisma.EquipmentUpdateInput = {
+      ...(args.input.name && { name: args.input.name }),
+      ...(args.input.description !== undefined && { description: args.input.description }),
+      ...(args.input.serialNumber !== undefined && { serialNumber: args.input.serialNumber }),
+      ...(args.input.status !== undefined && args.input.status !== null && { status: args.input.status }),
+    };
+
+    // Handle projectId using relation syntax
+    if (args.input.projectId !== undefined) {
+      if (args.input.projectId === null) {
+        updateData.project = { disconnect: true };
+      } else {
+        updateData.project = { connect: { id: args.input.projectId } };
+      }
+    }
+
+    // Handle memberId using relation syntax
+    if (args.input.memberId !== undefined) {
+      if (args.input.memberId === null) {
+        updateData.member = { disconnect: true };
+      } else {
+        updateData.member = { connect: { id: args.input.memberId } };
+      }
+    }
+
     return await context.prisma.equipment.update({
       where: { id: args.id },
-      data: {
-        ...(args.input.name && { name: args.input.name }),
-        ...(args.input.description !== undefined && { description: args.input.description }),
-        ...(args.input.serialNumber !== undefined && { serialNumber: args.input.serialNumber }),
-        ...(args.input.status !== undefined && { status: args.input.status }),
-        ...(args.input.projectId !== undefined && { projectId: args.input.projectId }),
-        ...(args.input.memberId !== undefined && { memberId: args.input.memberId }),
-      },
+      data: updateData,
     });
   },
   
@@ -533,7 +552,7 @@ export const mutations = {
       data: {
         ...(args.input.title !== undefined && { title: args.input.title }),
         ...(args.input.content && { content: args.input.content }),
-        ...(args.input.completed !== undefined && { completed: args.input.completed }),
+        ...(args.input.completed !== undefined && args.input.completed !== null && { completed: args.input.completed }),
         ...(args.input.dueDate !== undefined && { dueDate: args.input.dueDate }),
       },
     });
