@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "studio": "DATABASE_URL=\"postgresql://myuser:mysecretpassword@localhost:5433/lab_crm?schema=public\" npx prisma studio"
+    "studio": "DATABASE_URL=\"postgresql://myuser:mysecretpassword@db:5433/lab_crm?schema=public\" npx prisma studio"
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
