@@ -35,7 +35,6 @@ services:
       - /app/.next
     
     # Command to run migrations and start the dev server
-    command: ["/bin/sh", "-c", "npx prisma migrate dev && npm run dev"]
 
 # Defines the persistent volume for the database
 volumes:
