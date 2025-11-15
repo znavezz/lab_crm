@@ -13,7 +13,14 @@
     "seed:reset": "tsx scripts/seed.ts --reset",
     "seed:minimal": "tsx scripts/seed.ts --minimal",
     "seed:docker": "docker-compose exec app npm run seed",
-    "seed:docker:reset": "docker-compose exec app npm run seed:reset"
+    "seed:docker:reset": "docker-compose exec app npm run seed:reset",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:docker": "docker-compose exec app npm run test:run",
+    "test:docker:ui": "docker-compose exec app npm run test:ui",
+    "test:docker:setup": "docker-compose exec db psql -U myuser -d postgres -c 'CREATE DATABASE test_lab_crm;' || true"
   },
   "dependencies": {
     "@apollo/client": "^4.0.9",
@@ -43,11 +50,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^4.0.9",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "prisma-erd-generator": "^2.1.0",
     "tailwindcss": "^4",
     "tsx": "^4.7.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.9"
   }
 }
