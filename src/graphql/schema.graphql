@@ -239,8 +239,8 @@ type User {
   email: String!
   emailVerified: DateTime
   image: String
-  memberId: String!
-  member: Member!
+  memberId: String
+  member: Member
   createdAt: DateTime!
   updatedAt: DateTime!
 }
