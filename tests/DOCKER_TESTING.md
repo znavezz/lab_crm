@@ -247,10 +247,28 @@ For CI/CD pipelines, you can use:
   run: docker-compose exec -T app npm run test:run
 ```
 
+## Running Different Test Layers
+
+All test layers (Unit, Integration, E2E) work in Docker:
+
+```bash
+# Run all tests
+npm run test:docker
+
+# Run specific test layer
+docker-compose exec app npm run test:run tests/auth.test.ts              # Unit tests
+docker-compose exec app npm run test:run tests/auth.integration.test.ts  # Integration tests
+docker-compose exec app npm run test:run tests/auth.e2e.test.ts          # E2E tests
+
+# Run all auth tests
+docker-compose exec app npm run test:run tests/auth
+```
+
 ## Summary
 
 - **Inside Docker**: Use `db:5432` as hostname, run with `npm run test:docker`
 - **On Host**: Use `localhost:5433` as hostname, run with `npm test`
 - **Test Database**: Always use `test_lab_crm` database for tests
 - **Migrations**: Run migrations on test database before running tests
+- **Test Layers**: All layers (Unit, Integration, E2E) work in Docker
 
