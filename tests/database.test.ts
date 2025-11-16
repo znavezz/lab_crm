@@ -40,6 +40,17 @@ describe('Database Tests', () => {
       expect(data.events).toHaveLength(1);
       expect(data.publication).toBeDefined();
     });
+
+    it('should create project with expenses', async () => {
+      const data = await testFixtures.createProjectWithExpenses();
+      
+      expect(data.project).toBeDefined();
+      expect(data.grant).toBeDefined();
+      expect(data.expenses).toHaveLength(3);
+      expect(data.expenses[0]?.amount).toBe(10000);
+      expect(data.expenses[1]?.amount).toBe(5000);
+      expect(data.expenses[2]?.amount).toBe(3000);
+    });
   });
 
   describe('Member Model', () => {
@@ -257,11 +268,11 @@ describe('Database Tests', () => {
         });
         const p = await tx.project.create({ data: { title: 'Test Project' } });
         const pub = await tx.publication.create({
-          data: {
+        data: {
             title: 'Test Publication',
             members: { connect: [{ id: m1.id }, { id: m2.id }] },
             projects: { connect: [{ id: p.id }] },
-          },
+        },
         });
         return { publication: pub };
       });
