@@ -1,7 +1,7 @@
 // tests/auth.test.ts
 // Authentication layer tests
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { testPrisma, setupTestDatabase, teardownTestDatabase, cleanTestDatabase } from './setup';
 import {
   createUser,
@@ -11,10 +11,20 @@ import {
   createUnauthenticatedContext,
   testFactory,
 } from './helpers';
-import { authOptions } from '../src/lib/auth';
 import { queries } from '../src/graphql/resolvers/queries';
 import type { Session } from 'next-auth';
 import type { AdapterUser } from 'next-auth/adapters';
+
+// Mock prisma to use testPrisma so the actual authOptions callback uses test database
+vi.mock('../src/lib/prisma', async () => {
+  const { testPrisma } = await import('./setup');
+  return {
+    prisma: testPrisma,
+  };
+});
+
+// Import authOptions after mocking prisma
+import { authOptions } from '../src/lib/auth';
 
 describe('Authentication Tests', () => {
   beforeAll(async () => {
@@ -159,6 +169,193 @@ describe('Authentication Tests', () => {
   });
 
   describe('Session Callbacks', () => {
+    it('should call actual authOptions session callback with user without member', async () => {
+      const user = await createUser({ email: 'test@example.com' });
+      
+      type ExtendedSessionUser = Session['user'] & {
+        id: string;
+        memberId?: string | null;
+      };
+      
+      type ExtendedSession = Omit<Session, 'user'> & {
+        user: ExtendedSessionUser;
+      };
+      
+      const mockSession = {
+        user: {
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+        },
+        expires: new Date().toISOString(),
+      } as Session;
+      
+      const mockUser: AdapterUser = {
+        id: user.id,
+        email: user.email ?? '',
+        emailVerified: null,
+        name: user.name ?? null,
+        image: null,
+      };
+
+      // Call the actual authOptions callback (now using testPrisma via mock)
+      // Database strategy doesn't use token, but TypeScript requires it
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (authOptions.callbacks?.session as any)?.({
+        session: mockSession,
+        user: mockUser,
+      }) as ExtendedSession | undefined;
+
+      expect(result?.user).toBeDefined();
+      expect(result?.user?.id).toBe(user.id);
+      expect(result?.user?.memberId).toBeNull();
+    });
+
+    it('should call actual authOptions session callback with user linked to member', async () => {
+      const { user, member } = await createUserWithMember();
+      
+      type ExtendedSessionUser = Session['user'] & {
+        id: string;
+        memberId?: string | null;
+      };
+      
+      type ExtendedSession = Omit<Session, 'user'> & {
+        user: ExtendedSessionUser;
+      };
+      
+      const mockSession = {
+        user: {
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+        },
+        expires: new Date().toISOString(),
+      } as Session;
+      
+      const mockUser: AdapterUser = {
+        id: user.id,
+        email: user.email ?? '',
+        emailVerified: null,
+        name: user.name ?? null,
+        image: null,
+      };
+
+      // Call the actual authOptions callback (now using testPrisma via mock)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (authOptions.callbacks?.session as any)?.({
+        session: mockSession,
+        user: mockUser,
+      }) as ExtendedSession | undefined;
+
+      expect(result?.user).toBeDefined();
+      expect(result?.user?.id).toBe(user.id);
+      expect(result?.user?.memberId).toBe(member.id);
+    });
+
+    it('should handle session callback when userRecord is null', async () => {
+      const user = await createUser({ email: 'test@example.com' });
+      
+      // Delete the user to simulate userRecord being null
+      await testPrisma.user.delete({ where: { id: user.id } });
+      
+      type ExtendedSessionUser = Session['user'] & {
+        id: string;
+        memberId?: string | null;
+      };
+      
+      type ExtendedSession = Omit<Session, 'user'> & {
+        user: ExtendedSessionUser;
+      };
+      
+      const mockSession = {
+        user: {
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+        },
+        expires: new Date().toISOString(),
+      } as Session;
+      
+      const mockUser: AdapterUser = {
+        id: user.id,
+        email: user.email ?? '',
+        emailVerified: null,
+        name: user.name ?? null,
+        image: null,
+      };
+
+      // Call the actual authOptions callback
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (authOptions.callbacks?.session as any)?.({
+        session: mockSession,
+        user: mockUser,
+      }) as ExtendedSession | undefined;
+
+      expect(result?.user).toBeDefined();
+      expect(result?.user?.id).toBe(user.id);
+      // When userRecord is null, memberId should not be set
+      expect(result?.user?.memberId).toBeUndefined();
+    });
+
+    it('should handle session callback when extendedSession.user is null', async () => {
+      type ExtendedSession = Omit<Session, 'user'> & {
+        user: Session['user'] | null;
+      };
+      
+      const mockSession = {
+        user: null,
+        expires: new Date().toISOString(),
+      } as unknown as Session;
+      
+      const mockUser: AdapterUser = {
+        id: 'test-id',
+        email: 'test@example.com',
+        emailVerified: null,
+        name: 'Test User',
+        image: null,
+      };
+
+      // Call the actual authOptions callback - should return session without modifying user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (authOptions.callbacks?.session as any)?.({
+        session: mockSession,
+        user: mockUser,
+      }) as ExtendedSession | undefined;
+
+      expect(result).toBeDefined();
+      // When extendedSession.user is null, the callback should return early
+      expect(result?.user).toBeNull();
+    });
+
+    it('should handle session callback when user parameter is null', async () => {
+      type ExtendedSessionUser = Session['user'] & {
+        id: string;
+        memberId?: string | null;
+      };
+      
+      type ExtendedSession = Omit<Session, 'user'> & {
+        user: ExtendedSessionUser;
+      };
+      
+      const mockSession = {
+        user: {
+          email: 'test@example.com',
+          name: 'Test User',
+        },
+        expires: new Date().toISOString(),
+      } as Session;
+
+      // Call the actual authOptions callback with null user
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (authOptions.callbacks?.session as any)?.({
+        session: mockSession,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        user: null as any,
+      }) as ExtendedSession | undefined;
+
+      expect(result).toBeDefined();
+      // When user is null, the callback should return session without modifying user
+      expect(result?.user).toBeDefined();
+      expect(result?.user?.id).toBeUndefined();
+    });
+
     it('should add user ID to session', async () => {
       const user = await createUser({ email: 'test@example.com' });
       
