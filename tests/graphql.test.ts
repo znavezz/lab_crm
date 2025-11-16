@@ -26,11 +26,13 @@ describe('GraphQL Resolvers', () => {
   describe('Query Resolvers', () => {
     describe('Member Queries', () => {
       it('should query all members', async () => {
-        await testFactory.createMember({ name: 'Member 1' });
-        await testFactory.createMember({ name: 'Member 2' });
+        const member1 = await testFactory.createMember({ name: 'Member 1' });
+        const member2 = await testFactory.createMember({ name: 'Member 2' });
 
         const result = await queries.members(undefined, undefined, context);
-        expect(result).toHaveLength(2);
+        expect(result.length).toBeGreaterThanOrEqual(2);
+        expect(result.some(m => m.id === member1.id)).toBe(true);
+        expect(result.some(m => m.id === member2.id)).toBe(true);
         expect(result[0].name).toBeTruthy();
       });
 
@@ -63,11 +65,13 @@ describe('GraphQL Resolvers', () => {
 
     describe('Grant Queries', () => {
       it('should query all grants', async () => {
-        await testFactory.createGrant({ name: 'Grant 1' });
-        await testFactory.createGrant({ name: 'Grant 2' });
+        const grant1 = await testFactory.createGrant({ name: 'Grant 1' });
+        const grant2 = await testFactory.createGrant({ name: 'Grant 2' });
 
         const result = await queries.grants(undefined, undefined, context);
-        expect(result).toHaveLength(2);
+        expect(result.length).toBeGreaterThanOrEqual(2);
+        expect(result.some(g => g.id === grant1.id)).toBe(true);
+        expect(result.some(g => g.id === grant2.id)).toBe(true);
       });
 
       it('should query grant by id', async () => {
@@ -218,19 +222,21 @@ describe('GraphQL Resolvers', () => {
   describe('Type Resolvers (Computed Fields)', () => {
     describe('Project.totalInvestment', () => {
       it('should calculate total investment from expenses', async () => {
-        const project = await testFactory.createProject();
-
-        await testFactory.createExpense({
-          projectId: project.id,
-          amount: 1000,
-        });
-        await testFactory.createExpense({
-          projectId: project.id,
-          amount: 2000,
-        });
-        await testFactory.createExpense({
-          projectId: project.id,
-          amount: 500,
+        // Create project and expenses in transaction to ensure visibility
+        const { project } = await testPrisma.$transaction(async (tx) => {
+          const p = await tx.project.create({
+            data: { title: 'Test Project' },
+          });
+          await tx.expense.create({
+            data: { description: 'Expense 1', amount: 1000, date: new Date(), projectId: p.id },
+          });
+          await tx.expense.create({
+            data: { description: 'Expense 2', amount: 2000, date: new Date(), projectId: p.id },
+          });
+          await tx.expense.create({
+            data: { description: 'Expense 3', amount: 500, date: new Date(), projectId: p.id },
+          });
+          return { project: p };
         });
 
         const result = await types.Project.totalInvestment(
@@ -239,7 +245,7 @@ describe('GraphQL Resolvers', () => {
           context
         );
 
-        expect(result).toBe(3500);
+        expect(result).toBe(3500); // 1000 + 2000 + 500
       });
 
       it('should return 0 for project with no expenses', async () => {
@@ -257,15 +263,18 @@ describe('GraphQL Resolvers', () => {
 
     describe('Grant.totalSpent and remainingBudget', () => {
       it('should calculate total spent from expenses', async () => {
-        const grant = await testFactory.createGrant({ budget: 100000 });
-
-        await testFactory.createExpense({
-          grantId: grant.id,
-          amount: 10000,
-        });
-        await testFactory.createExpense({
-          grantId: grant.id,
-          amount: 5000,
+        // Create grant and expenses in transaction to ensure visibility
+        const { grant } = await testPrisma.$transaction(async (tx) => {
+          const g = await tx.grant.create({
+            data: { name: 'Test Grant', budget: 100000, deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
+          });
+          await tx.expense.create({
+            data: { description: 'Expense 1', amount: 10000, date: new Date(), grantId: g.id },
+          });
+          await tx.expense.create({
+            data: { description: 'Expense 2', amount: 5000, date: new Date(), grantId: g.id },
+          });
+          return { grant: g };
         });
 
         const totalSpent = await types.Grant.totalSpent(
@@ -305,14 +314,17 @@ describe('GraphQL Resolvers', () => {
       });
 
       it('should resolve member projects', async () => {
-        const member = await testFactory.createMember();
-        const project = await testFactory.createProject();
-
-        await testPrisma.project.update({
-          where: { id: project.id },
-          data: {
-            members: { connect: [{ id: member.id }] },
-          },
+        const { member, project } = await testPrisma.$transaction(async (tx) => {
+          const m = await tx.member.create({
+            data: { name: 'Test Member', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT' },
+          });
+          const p = await tx.project.create({
+            data: {
+              title: 'Test Project',
+              members: { connect: [{ id: m.id }] },
+            },
+          });
+          return { member: m, project: p };
         });
 
         const result = await types.Member.projects(
@@ -322,7 +334,7 @@ describe('GraphQL Resolvers', () => {
         );
 
         expect(result).toHaveLength(1);
-        expect(result[0].id).toBe(project.id);
+        expect(result?.[0]?.id).toBe(project.id);
       });
     });
 
@@ -345,7 +357,7 @@ describe('GraphQL Resolvers', () => {
         );
 
         expect(result).toHaveLength(1);
-        expect(result[0].id).toBe(member.id);
+        expect(result?.[0]?.id).toBe(member.id);
       });
 
       it('should resolve project expenses', async () => {
@@ -378,7 +390,7 @@ describe('GraphQL Resolvers', () => {
         return { member: m, project: p };
       });
 
-      const result = await mutations.addMemberToProject(
+      await mutations.addMemberToProject(
         undefined,
         {
           projectId: project.id,

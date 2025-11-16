@@ -42,15 +42,26 @@ describe('Authentication Integration Tests', () => {
     });
 
     it('should create Account linked to User', async () => {
-      const user = await createUser({ email: 'test@example.com' });
+      // Create user and account in transaction to ensure atomicity
+      const { user, account } = await testPrisma.$transaction(async (tx) => {
+        const u = await tx.user.create({
+          data: {
+            email: 'test@example.com',
+            name: 'Test User',
+            memberId: null,
+          },
+        });
 
-      const account = await testPrisma.account.create({
-        data: {
-          userId: user.id,
-          type: 'email',
-          provider: 'email',
-          providerAccountId: user.email,
-        },
+        const a = await tx.account.create({
+          data: {
+            userId: u.id,
+            type: 'email',
+            provider: 'email',
+            providerAccountId: u.email,
+          },
+        });
+
+        return { user: u, account: a };
       });
 
       expect(account.userId).toBe(user.id);
@@ -132,8 +143,10 @@ describe('Authentication Integration Tests', () => {
         include: { user: { include: { member: true } } },
       });
 
+      // memberId is stored in User model, not Session model
+      // The session callback adds it to the session object, but here we're checking the database
       expect(sessionWithUser?.user.memberId).toBe(member.id);
-      expect(sessionWithUser?.user.member).toBeDefined();
+      expect(sessionWithUser?.user.member?.id).toBe(member.id);
     });
 
     it('should handle expired sessions', async () => {
@@ -314,15 +327,13 @@ describe('Authentication Integration Tests', () => {
         },
       });
 
-      // Create first User linked to this Member
-      const { user: firstUser } = await createUserWithMember({
-        memberName: 'First Member',
-      });
-      
-      // Update first user to use our test member
-      await testPrisma.user.update({
-        where: { id: firstUser.id },
-        data: { memberId: member.id },
+      // Create first User linked to our test member
+      await testPrisma.user.create({
+        data: {
+          email: 'first@example.com',
+          name: 'First User',
+          memberId: member.id,
+        },
       });
 
       // Try to create second User with same memberId - should fail
@@ -338,15 +349,26 @@ describe('Authentication Integration Tests', () => {
     });
 
     it('should enforce unique provider+providerAccountId on Account', async () => {
-      const user = await createUser();
+      // Create user and first account in transaction
+      const { user } = await testPrisma.$transaction(async (tx) => {
+        const u = await tx.user.create({
+          data: {
+            email: 'test@example.com',
+            name: 'Test User',
+            memberId: null,
+          },
+        });
 
-      await testPrisma.account.create({
-        data: {
-          userId: user.id,
-          type: 'email',
-          provider: 'email',
-          providerAccountId: 'test@example.com',
-        },
+        await tx.account.create({
+          data: {
+            userId: u.id,
+            type: 'email',
+            provider: 'email',
+            providerAccountId: 'test@example.com',
+          },
+        });
+
+        return { user: u };
       });
 
       await expect(

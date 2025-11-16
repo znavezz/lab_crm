@@ -177,22 +177,33 @@ describe('Authentication E2E Tests', () => {
 
   describe('User-Member Linking E2E', () => {
     it('should link User to Member after both exist', async () => {
-      // Create User first (as in sign-in)
-      const user = await createUser({ email: 'link@example.com' });
+      // Create User and Member, then link them in a transaction to ensure visibility
+      const { user, member, updatedUser } = await testPrisma.$transaction(async (tx) => {
+        // Create User first (as in sign-in)
+        const u = await tx.user.create({
+          data: {
+            email: 'link@example.com',
+            name: 'Test User',
+            memberId: null,
+          },
+        });
 
-      // Create Member separately (as admin would)
-      const member = await testPrisma.member.create({
-        data: {
-          name: 'Lab Member',
-          status: 'ACTIVE',
-          role: 'STUDENT',
-        },
-      });
+        // Create Member separately (as admin would)
+        const m = await tx.member.create({
+          data: {
+            name: 'Lab Member',
+            status: 'ACTIVE',
+            role: 'STUDENT',
+          },
+        });
 
-      // Link them (as admin would)
-      const updatedUser = await testPrisma.user.update({
-        where: { id: user.id },
-        data: { memberId: member.id },
+        // Link them (as admin would)
+        const updated = await tx.user.update({
+          where: { id: u.id },
+          data: { memberId: m.id },
+        });
+
+        return { user: u, member: m, updatedUser: updated };
       });
 
       expect(updatedUser.memberId).toBe(member.id);
@@ -228,32 +239,37 @@ describe('Authentication E2E Tests', () => {
 
   describe('Complete Authentication Flow E2E', () => {
     it('should handle complete sign-in flow: User creation -> Account creation -> Session creation', async () => {
-      // Step 1: User signs in for first time
-      const user = await testPrisma.user.create({
-        data: {
-          email: 'complete@example.com',
-          name: 'Complete User',
-          memberId: null,
-        },
-      });
+      // Create everything in a transaction to ensure atomicity
+      const { user, account, session } = await testPrisma.$transaction(async (tx) => {
+        // Step 1: User signs in for first time
+        const u = await tx.user.create({
+          data: {
+            email: 'complete@example.com',
+            name: 'Complete User',
+            memberId: null,
+          },
+        });
 
-      // Step 2: Account is created
-      await testPrisma.account.create({
-        data: {
-          userId: user.id,
-          type: 'email',
-          provider: 'email',
-          providerAccountId: user.email,
-        },
-      });
+        // Step 2: Account is created
+        const a = await tx.account.create({
+          data: {
+            userId: u.id,
+            type: 'email',
+            provider: 'email',
+            providerAccountId: u.email,
+          },
+        });
 
-      // Step 3: Session is created
-      await testPrisma.session.create({
-        data: {
-          sessionToken: 'complete-session',
-          userId: user.id,
-          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        },
+        // Step 3: Session is created
+        const s = await tx.session.create({
+          data: {
+            sessionToken: 'complete-session',
+            userId: u.id,
+            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          },
+        });
+
+        return { user: u, account: a, session: s };
       });
 
       // Verify complete flow
@@ -269,6 +285,8 @@ describe('Authentication E2E Tests', () => {
       expect(userComplete?.accounts).toHaveLength(1);
       expect(userComplete?.sessions).toHaveLength(1);
       expect(userComplete?.memberId).toBeNull(); // No Member auto-created
+      expect(account.userId).toBe(user.id);
+      expect(session.userId).toBe(user.id);
     });
 
     it('should handle User sign-in -> Member creation -> Linking', async () => {
