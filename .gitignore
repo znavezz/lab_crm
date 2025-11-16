@@ -467,3 +467,12 @@ src/generated/*
 !src/generated/graphql/
 src/generated/graphql/*
 !src/generated/graphql/resolvers-types.ts
+# Exclude generated Prisma schema to avoid duplicate model errors
+src/generated/prisma/schema.prisma
+
+# Test results (regenerated on each test run)
+tests/*_TEST_RESULTS.md
+
+# Prisma generated files (if any exist)
+prisma/generated/
+prisma/schema/
