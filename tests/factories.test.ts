@@ -87,6 +87,87 @@ describe('Factory Tests', () => {
     });
   });
 
+  describe('Expense Factory', () => {
+    it('should create expense without any IDs (auto-creates project)', async () => {
+      const expense = await testFactory.createExpense({
+        description: 'Test Expense',
+        amount: 1000,
+      });
+
+      expect(expense.description).toBe('Test Expense');
+      expect(expense.amount).toBe(1000);
+      expect(expense.projectId).toBeDefined();
+      // Verify the project was created
+      const project = await testFactory.prisma.project.findUnique({
+        where: { id: expense.projectId! },
+      });
+      expect(project).toBeDefined();
+    });
+
+    it('should create expense with valid projectId', async () => {
+      const project = await testFactory.createProject();
+      const expense = await testFactory.createExpense({
+        projectId: project.id,
+        description: 'Test Expense',
+        amount: 1000,
+      });
+
+      expect(expense.projectId).toBe(project.id);
+    });
+
+    it('should throw error when projectId does not exist', async () => {
+      await expect(
+        testFactory.createExpense({
+          projectId: 'non-existent-id',
+          description: 'Test Expense',
+          amount: 1000,
+        })
+      ).rejects.toThrow('Project with id non-existent-id does not exist');
+    });
+
+    it('should create expense with valid grantId', async () => {
+      const grant = await testFactory.createGrant();
+      const expense = await testFactory.createExpense({
+        grantId: grant.id,
+        description: 'Test Expense',
+        amount: 1000,
+      });
+
+      expect(expense.grantId).toBe(grant.id);
+    });
+
+    it('should throw error when grantId does not exist', async () => {
+      await expect(
+        testFactory.createExpense({
+          grantId: 'non-existent-id',
+          description: 'Test Expense',
+          amount: 1000,
+        })
+      ).rejects.toThrow('Grant with id non-existent-id does not exist');
+    });
+
+    it('should create expense with valid eventId', async () => {
+      const event = await testFactory.createEvent();
+      const expense = await testFactory.createExpense({
+        eventId: event.id,
+        description: 'Test Expense',
+        amount: 1000,
+      });
+
+      expect(expense.eventId).toBe(event.id);
+    });
+
+    it('should throw error when eventId does not exist', async () => {
+      await expect(
+        testFactory.createExpense({
+          eventId: 'non-existent-id',
+          description: 'Test Expense',
+          amount: 1000,
+        })
+      ).rejects.toThrow('Event with id non-existent-id does not exist');
+    });
+  });
+
   describe('Booking Factory', () => {
     it('should create booking with valid time range', async () => {
       const member = await testFactory.createMember();
@@ -107,6 +188,52 @@ describe('Factory Tests', () => {
       expect(booking.startTime).toEqual(startTime);
       expect(booking.endTime).toEqual(endTime);
       expect(booking.endTime.getTime()).toBeGreaterThan(booking.startTime.getTime());
+    });
+
+    it('should create booking without equipmentId (auto-creates equipment)', async () => {
+      const member = await testFactory.createMember();
+      const booking = await testFactory.createBooking({
+        memberId: member.id,
+      });
+
+      expect(booking.memberId).toBe(member.id);
+      expect(booking.equipmentId).toBeDefined();
+      // Verify the equipment was created
+      const equipment = await testFactory.prisma.equipment.findUnique({
+        where: { id: booking.equipmentId! },
+      });
+      expect(equipment).toBeDefined();
+    });
+
+    it('should create booking without memberId (auto-creates member)', async () => {
+      const equipment = await testFactory.createEquipment();
+      const booking = await testFactory.createBooking({
+        equipmentId: equipment.id,
+      });
+
+      expect(booking.equipmentId).toBe(equipment.id);
+      expect(booking.memberId).toBeDefined();
+      // Verify the member was created
+      const member = await testFactory.prisma.member.findUnique({
+        where: { id: booking.memberId! },
+      });
+      expect(member).toBeDefined();
+    });
+
+    it('should create booking without equipmentId or memberId (auto-creates both)', async () => {
+      const booking = await testFactory.createBooking();
+
+      expect(booking.equipmentId).toBeDefined();
+      expect(booking.memberId).toBeDefined();
+      // Verify both were created
+      const equipment = await testFactory.prisma.equipment.findUnique({
+        where: { id: booking.equipmentId! },
+      });
+      const member = await testFactory.prisma.member.findUnique({
+        where: { id: booking.memberId! },
+      });
+      expect(equipment).toBeDefined();
+      expect(member).toBeDefined();
     });
   });
 
