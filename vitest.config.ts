@@ -9,7 +9,9 @@ export default defineConfig({
     include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts'],
     // Run integration and E2E tests sequentially to avoid database conflicts
     testTimeout: 10000,
+    fileParallelism: false, // Run test files sequentially
     pool: 'threads',
+    maxConcurrency: 1, // Run tests one at a time within each file
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
