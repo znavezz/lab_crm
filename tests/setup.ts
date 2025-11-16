@@ -64,6 +64,11 @@ export async function teardownTestDatabase() {
  */
 export async function cleanTestDatabase() {
   // Delete in correct order to respect foreign key constraints
+  // Start with NextAuth models (Session, Account depend on User)
+  await testPrisma.session.deleteMany();
+  await testPrisma.account.deleteMany();
+  await testPrisma.verificationToken.deleteMany();
+  
   await testPrisma.noteTask.deleteMany();
   await testPrisma.booking.deleteMany();
   await testPrisma.expense.deleteMany();
