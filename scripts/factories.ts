@@ -161,6 +161,29 @@ export class DataFactory {
 
   // Expense factory
   async createExpense(overrides: ExpenseCreateInput = {}) {
+    // Expense must be linked to either a project, grant, or event
+    if (!overrides.projectId && !overrides.grantId && !overrides.eventId) {
+      // Create a project if none provided
+      const project = await this.createProject();
+      overrides.projectId = project.id;
+    } else if (overrides.projectId) {
+      // Verify project exists
+      const project = await this.prisma.project.findUnique({
+        where: { id: overrides.projectId },
+      });
+      if (!project) {
+        throw new Error(`Project with id ${overrides.projectId} does not exist`);
+      }
+    } else if (overrides.grantId) {
+      // Verify grant exists
+      const grant = await this.prisma.grant.findUnique({
+        where: { id: overrides.grantId },
+      });
+      if (!grant) {
+        throw new Error(`Grant with id ${overrides.grantId} does not exist`);
+      }
+    }
+
     const defaults = {
       description: `Test Expense ${Math.random().toString(36).substring(7)}`,
       amount: 1000,
@@ -177,11 +200,18 @@ export class DataFactory {
     const startTime = overrides.startTime || new Date();
     const endTime = overrides.endTime || new Date(startTime.getTime() + 3 * 60 * 60 * 1000); // 3 hours later
 
-    if (!overrides.equipmentId || !overrides.memberId) {
-      throw new Error('Booking requires equipmentId and memberId');
+    // Create equipment if not provided
+    if (!overrides.equipmentId) {
+      const equipment = await this.createEquipment();
+      overrides.equipmentId = equipment.id;
     }
 
-    // After the check, TypeScript knows equipmentId and memberId are defined
+    // Create member if not provided
+    if (!overrides.memberId) {
+      const member = await this.createMember();
+      overrides.memberId = member.id;
+    }
+
     const data = {
       startTime,
       endTime,
