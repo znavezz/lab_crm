@@ -137,27 +137,27 @@ export async function createUserWithMember(overrides?: {
 }) {
   // Create Member and User in a transaction to ensure atomicity
   return await testPrisma.$transaction(async (tx) => {
-    // Create Member first
+  // Create Member first
     const member = await tx.member.create({
       data: {
-        name: overrides?.memberName || 'Test Member',
+    name: overrides?.memberName || 'Test Member',
         rank: 'MSc',
         status: (overrides?.memberStatus as MemberStatus) || 'ACTIVE',
         role: (overrides?.memberRole as MemberRole) || 'STUDENT',
         scholarship: 30000,
       },
-    });
-    
-    // Create User and link to Member
+  });
+  
+  // Create User and link to Member
     const user = await tx.user.create({
-      data: {
-        email: overrides?.userEmail || `test-${Date.now()}@example.com`,
-        name: overrides?.userName || 'Test User',
-        memberId: member.id,
-      },
-    });
-    
-    return { user, member };
+    data: {
+      email: overrides?.userEmail || `test-${Date.now()}@example.com`,
+      name: overrides?.userName || 'Test User',
+      memberId: member.id,
+    },
+  });
+  
+  return { user, member };
   });
 }
 
