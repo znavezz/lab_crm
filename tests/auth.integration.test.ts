@@ -53,12 +53,12 @@ describe('Authentication Integration Tests', () => {
         });
 
         const a = await tx.account.create({
-          data: {
+        data: {
             userId: u.id,
-            type: 'email',
-            provider: 'email',
+          type: 'email',
+          provider: 'email',
             providerAccountId: u.email,
-          },
+        },
         });
 
         return { user: u, account: a };
@@ -360,12 +360,12 @@ describe('Authentication Integration Tests', () => {
         });
 
         await tx.account.create({
-          data: {
+        data: {
             userId: u.id,
-            type: 'email',
-            provider: 'email',
-            providerAccountId: 'test@example.com',
-          },
+          type: 'email',
+          provider: 'email',
+          providerAccountId: 'test@example.com',
+        },
         });
 
         return { user: u };
