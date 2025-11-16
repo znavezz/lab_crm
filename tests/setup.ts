@@ -69,6 +69,13 @@ export async function cleanTestDatabase() {
   await testPrisma.account.deleteMany();
   await testPrisma.verificationToken.deleteMany();
   
+  // Delete User first (before Member) since User.memberId references Member
+  // But we need to set memberId to null first to avoid FK constraint issues
+  await testPrisma.user.updateMany({
+    data: { memberId: null },
+  });
+  await testPrisma.user.deleteMany();
+  
   await testPrisma.noteTask.deleteMany();
   await testPrisma.booking.deleteMany();
   await testPrisma.expense.deleteMany();
@@ -112,7 +119,6 @@ export async function cleanTestDatabase() {
   await testPrisma.grant.deleteMany();
   await testPrisma.project.deleteMany();
   await testPrisma.member.deleteMany();
-  await testPrisma.user.deleteMany();
 }
 
 /**

@@ -4,6 +4,7 @@
 import { DataFactory } from '../scripts/factories';
 import { TestFixtures } from '../scripts/fixtures';
 import { testPrisma } from './setup';
+import type { MemberStatus, MemberRole } from '@/generated/prisma';
 
 // Export test instances
 export const testFactory = new DataFactory(testPrisma);
@@ -131,26 +132,33 @@ export async function createUserWithMember(overrides?: {
   userEmail?: string;
   userName?: string;
   memberName?: string;
-  memberRole?: string;
-  memberStatus?: string;
+  memberRole?: MemberRole | string;
+  memberStatus?: MemberStatus | string;
 }) {
-  // Create Member first
-  const member = await testFactory.createMember({
-    name: overrides?.memberName || 'Test Member',
-    role: overrides?.memberRole as any,
-    status: overrides?.memberStatus as any,
+  // Create Member and User in a transaction to ensure atomicity
+  return await testPrisma.$transaction(async (tx) => {
+    // Create Member first
+    const member = await tx.member.create({
+      data: {
+        name: overrides?.memberName || 'Test Member',
+        rank: 'MSc',
+        status: (overrides?.memberStatus as MemberStatus) || 'ACTIVE',
+        role: (overrides?.memberRole as MemberRole) || 'STUDENT',
+        scholarship: 30000,
+      },
+    });
+    
+    // Create User and link to Member
+    const user = await tx.user.create({
+      data: {
+        email: overrides?.userEmail || `test-${Date.now()}@example.com`,
+        name: overrides?.userName || 'Test User',
+        memberId: member.id,
+      },
+    });
+    
+    return { user, member };
   });
-  
-  // Create User and link to Member
-  const user = await testPrisma.user.create({
-    data: {
-      email: overrides?.userEmail || `test-${Date.now()}@example.com`,
-      name: overrides?.userName || 'Test User',
-      memberId: member.id,
-    },
-  });
-  
-  return { user, member };
 }
 
 /**
@@ -158,13 +166,13 @@ export async function createUserWithMember(overrides?: {
  */
 export async function createMemberWithoutUser(overrides?: {
   name?: string;
-  role?: string;
-  status?: string;
+  role?: MemberRole | string;
+  status?: MemberStatus | string;
 }) {
   return await testFactory.createMember({
     name: overrides?.name || 'Member Without Access',
-    role: overrides?.role as any,
-    status: overrides?.status as any,
+    role: overrides?.role as MemberRole | undefined,
+    status: overrides?.status as MemberStatus | undefined,
   });
 }
 
