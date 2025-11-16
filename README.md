@@ -138,6 +138,111 @@ This will stop the application and database containers.
 
 ---
 
+## 🔐 Authentication
+
+The application uses [NextAuth.js](https://next-auth.js.org/) for authentication with email/passwordless sign-in.
+
+### Authentication Setup
+
+**Note:** The User model has a nullable `memberId` because `User` (CRM access) and `Member` (lab member) are independent entities:
+- A `User` can exist without a `Member` (e.g., external admin, lab manager)
+- A `Member` can exist without a `User` (e.g., student without CRM access)
+- They can be linked when a User is also a lab Member
+
+**Important:** After pulling this update, you'll need to run a migration to update the schema:
+```bash
+npx prisma migrate dev --name make-memberid-nullable
+```
+
+1. **Configure Email Provider** (Required for passwordless sign-in)
+
+   Add the following environment variables to your `.env` or `.env.local` file:
+
+   ```env
+   # Email server configuration (for sending sign-in links)
+   EMAIL_SERVER_HOST="smtp.example.com"
+   EMAIL_SERVER_PORT=587
+   EMAIL_SERVER_USER="your-email@example.com"
+   EMAIL_SERVER_PASSWORD="your-email-password"
+   EMAIL_FROM="noreply@example.com"
+   
+   # NextAuth.js configuration
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-super-secret-key-here"
+   ```
+
+   **Note:** For development, you can use services like:
+   - [Mailtrap](https://mailtrap.io/) (testing)
+   - [SendGrid](https://sendgrid.com/) (production)
+   - [AWS SES](https://aws.amazon.com/ses/) (production)
+   - [Resend](https://resend.com/) (production)
+
+2. **Generate NEXTAUTH_SECRET**
+
+   You can generate a secure secret using:
+   ```bash
+   openssl rand -base64 32
+   ```
+
+3. **Sign In**
+
+   - Navigate to `/auth/signin`
+   - Enter your email address
+   - Check your email for the sign-in link
+   - Click the link to authenticate
+
+### How Authentication Works
+
+1. **User Registration**: When a user signs in for the first time, a `User` record is created in the database. A `Member` profile is NOT automatically created - Users and Members are independent. If a User is also a lab Member, they can be linked later.
+
+2. **Session Management**: Sessions are stored in the database using the `Session` model. The session includes the user's ID, email, and optionally linked `memberId` (if the User is also a lab Member).
+
+3. **GraphQL Integration**: The GraphQL context automatically extracts the authenticated user from the session, making it available to all resolvers via `context.user`. The `context.user.memberId` may be `null` if the User is not linked to a Member.
+
+4. **Protected Routes**: You can protect routes and GraphQL operations by checking `context.user` in your resolvers.
+
+### Using Authentication in Your Code
+
+**Server Components / API Routes:**
+```typescript
+import { getSession, getCurrentUser } from '@/lib/session';
+
+// Get full session
+const session = await getSession();
+
+// Get current user
+const user = await getCurrentUser();
+```
+
+**Client Components:**
+```typescript
+'use client';
+import { useSession } from '@/hooks/use-session';
+
+function MyComponent() {
+  const { data: session, status } = useSession();
+  
+  if (status === 'loading') return <p>Loading...</p>;
+  if (!session) return <p>Not authenticated</p>;
+  
+  return <p>Welcome, {session.user.email}!</p>;
+}
+```
+
+**GraphQL Resolvers:**
+```typescript
+export const queries = {
+  myData: async (_: unknown, __: unknown, context: GraphQLContext) => {
+    if (!context.user) {
+      throw new Error('Authentication required');
+    }
+    // Access context.user.id, context.user.email, context.user.memberId
+  },
+};
+```
+
+---
+
 ## 🧪 Testing
 
 The project includes a comprehensive test suite with **83 tests** covering database models, relationships, factory methods, and GraphQL resolvers.
