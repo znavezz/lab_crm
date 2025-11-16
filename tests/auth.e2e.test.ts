@@ -179,7 +179,7 @@ describe('Authentication E2E Tests', () => {
     it('should link User to Member after both exist', async () => {
       // Create User and Member, then link them in a transaction to ensure visibility
       const { user, member, updatedUser } = await testPrisma.$transaction(async (tx) => {
-        // Create User first (as in sign-in)
+      // Create User first (as in sign-in)
         const u = await tx.user.create({
           data: {
             email: 'link@example.com',
@@ -188,16 +188,16 @@ describe('Authentication E2E Tests', () => {
           },
         });
 
-        // Create Member separately (as admin would)
+      // Create Member separately (as admin would)
         const m = await tx.member.create({
-          data: {
-            name: 'Lab Member',
-            status: 'ACTIVE',
-            role: 'STUDENT',
-          },
-        });
+        data: {
+          name: 'Lab Member',
+          status: 'ACTIVE',
+          role: 'STUDENT',
+        },
+      });
 
-        // Link them (as admin would)
+      // Link them (as admin would)
         const updated = await tx.user.update({
           where: { id: u.id },
           data: { memberId: m.id },
@@ -241,32 +241,32 @@ describe('Authentication E2E Tests', () => {
     it('should handle complete sign-in flow: User creation -> Account creation -> Session creation', async () => {
       // Create everything in a transaction to ensure atomicity
       const { user, account, session } = await testPrisma.$transaction(async (tx) => {
-        // Step 1: User signs in for first time
+      // Step 1: User signs in for first time
         const u = await tx.user.create({
-          data: {
-            email: 'complete@example.com',
-            name: 'Complete User',
-            memberId: null,
-          },
-        });
+        data: {
+          email: 'complete@example.com',
+          name: 'Complete User',
+          memberId: null,
+        },
+      });
 
-        // Step 2: Account is created
+      // Step 2: Account is created
         const a = await tx.account.create({
-          data: {
+        data: {
             userId: u.id,
-            type: 'email',
-            provider: 'email',
+          type: 'email',
+          provider: 'email',
             providerAccountId: u.email,
-          },
-        });
+        },
+      });
 
-        // Step 3: Session is created
+      // Step 3: Session is created
         const s = await tx.session.create({
-          data: {
-            sessionToken: 'complete-session',
+        data: {
+          sessionToken: 'complete-session',
             userId: u.id,
-            expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          },
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
         });
 
         return { user: u, account: a, session: s };
