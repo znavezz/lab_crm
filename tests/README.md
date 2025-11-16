@@ -67,7 +67,7 @@ npm run test:docker
 
 ### Unit Tests
 - `database.test.ts` - Database model and relationship tests (37 tests)
-- `factories.test.ts` - Factory method tests (24 tests)
+- `factories.test.ts` - Factory method tests (34 tests)
 - `graphql.test.ts` - GraphQL resolver tests (22 tests)
 - `auth.test.ts` - Authentication unit tests (30+ tests)
 

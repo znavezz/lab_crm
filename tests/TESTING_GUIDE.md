@@ -73,12 +73,12 @@ If you're using Docker, the test database will be created automatically based on
 ### Test Files
 
 - **`tests/database.test.ts`** - Integration tests for database models and relationships (37 tests)
-- **`tests/factories.test.ts`** - Tests for factory methods (24 tests)
+- **`tests/factories.test.ts`** - Tests for factory methods (34 tests)
 - **`tests/graphql.test.ts`** - GraphQL resolver tests for queries, mutations, and computed fields (22 tests)
 - **`tests/setup.ts`** - Test database setup and teardown utilities
 - **`tests/helpers.ts`** - Test helper functions and utilities
 
-**Total Test Coverage: 83 tests** covering:
+**Total Test Coverage: 100+ tests** covering:
 - Database models and relationships
 - Factory methods
 - GraphQL queries and mutations

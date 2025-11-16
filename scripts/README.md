@@ -110,7 +110,30 @@ const equipment = await factory.createEquipment({
   name: 'Microscope',
   status: 'AVAILABLE',
 });
+
+// Create expense (auto-creates project if no IDs provided)
+const expense = await factory.createExpense({
+  description: 'Lab supplies',
+  amount: 5000,
+});
+
+// Create expense with validation (validates projectId, grantId, or eventId exist)
+const expense = await factory.createExpense({
+  projectId: project.id,
+  description: 'Lab supplies',
+  amount: 5000,
+});
 ```
+
+### Factory Features
+
+**Automatic Resource Creation:**
+- **Expense Factory**: Automatically creates a project if no `projectId`, `grantId`, or `eventId` is provided
+- **Booking Factory**: Automatically creates equipment and/or member if not provided
+
+**Input Validation:**
+- **Expense Factory**: Validates that `projectId`, `grantId`, or `eventId` exist when provided, throwing clear error messages if they don't
+- This prevents silent failures and provides better error messages than database constraint errors
 
 ## Fixtures
 
@@ -144,6 +167,7 @@ const budgetTest = await fixtures.createProjectWithExpenses();
 2. **Explicit Reset Flag**: Requires `--reset` flag to delete data
 3. **Clear Warnings**: Shows warnings when data exists
 4. **Transaction Safety**: Uses Prisma transactions where appropriate
+5. **Input Validation**: Factories validate foreign key relationships before creating records
 
 ## Best Practices
 

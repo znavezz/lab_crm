@@ -197,7 +197,7 @@ npx prisma migrate dev --name make-memberid-nullable
 
 2. **Session Management**: Sessions are stored in the database using the `Session` model. The session includes the user's ID, email, and optionally linked `memberId` (if the User is also a lab Member).
 
-3. **GraphQL Integration**: The GraphQL context automatically extracts the authenticated user from the session, making it available to all resolvers via `context.user`. The `context.user.memberId` may be `null` if the User is not linked to a Member.
+3. **GraphQL Integration**: The GraphQL context automatically extracts the authenticated user from the session, making it available to all resolvers via `context.user`. The `context.user.memberId` may be `null` if the User is not linked to a Member. The Apollo Client is configured to include session cookies in all GraphQL requests via `credentials: 'include'` in the HttpLink.
 
 4. **Protected Routes**: You can protect routes and GraphQL operations by checking `context.user` in your resolvers.
 
@@ -245,7 +245,7 @@ export const queries = {
 
 ## 🧪 Testing
 
-The project includes a comprehensive test suite with **83 tests** covering database models, relationships, factory methods, and GraphQL resolvers.
+The project includes a comprehensive test suite with **100+ tests** covering database models, relationships, factory methods, and GraphQL resolvers.
 
 ### Quick Start
 
@@ -266,8 +266,9 @@ npm run test:coverage
 ### Test Coverage
 
 - **Database Tests** (37 tests): Models, relationships, constraints
-- **Factory Tests** (24 tests): Data generation methods
+- **Factory Tests** (34 tests): Data generation methods with validation
 - **GraphQL Tests** (22 tests): Query resolvers, mutations, computed fields
+- **Authentication Tests** (50+ tests): Unit, integration, and E2E tests
 
 For detailed testing documentation, see:
 - [tests/README.md](./tests/README.md) - Quick reference
