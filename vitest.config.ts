@@ -7,6 +7,9 @@ export default defineConfig({
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts'],
+    // Run integration and E2E tests sequentially to avoid database conflicts
+    testTimeout: 10000,
+    pool: 'threads',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
