@@ -1,0 +1,12 @@
+{
+  "prisma.include": [
+    "prisma/schema.prisma"
+  ],
+  "prisma.exclude": [
+    "**/node_modules/**",
+    "**/src/generated/**"
+  ],
+  "files.exclude": {
+    "**/src/generated/prisma/schema.prisma": true
+  }
+}
