@@ -429,8 +429,9 @@ model User {
   image         String?
 
   /// 1:1 link to the corresponding Member profile.
-  memberId String @unique
-  member   Member @relation(name: "MemberUser", fields: [memberId], references: [id], onDelete: Cascade)
+  /// Nullable to allow User creation before Member profile is created during authentication.
+  memberId String? @unique
+  member   Member? @relation(name: "MemberUser", fields: [memberId], references: [id], onDelete: Cascade)
 
   /// 1:M link to all login methods (e.g., Google, GitHub).
   accounts Account[]

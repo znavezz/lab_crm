@@ -1,25 +1,31 @@
 'use client';
 
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+import { ApolloClient, InMemoryCache, HttpLink, from } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import { getSession } from 'next-auth/react';
 
 const httpLink = new HttpLink({
   uri: '/api/graphql',
+  credentials: 'include', // Include cookies in requests
 });
 
-// Optional: Add auth link if you need to send auth tokens
-// const authLink = setContext((_, { headers }) => {
-//   // Get the authentication token from wherever you store it
-//   const token = getAuthToken();
-//   return {
-//     headers: {
-//       ...headers,
-//       authorization: token ? `Bearer ${token}` : '',
-//     },
-//   };
-// });
+// Auth link to include session token in requests
+const authLink = setContext(async (_, { headers }) => {
+  // Get the session token from NextAuth
+  const session = await getSession();
+  
+  return {
+    headers: {
+      ...headers,
+      // Include session cookie automatically via credentials
+      // NextAuth handles session via cookies, so we don't need to manually add tokens
+      // The session cookie will be sent automatically with the request
+    },
+  };
+});
 
 export const apolloClient = new ApolloClient({
-  link: httpLink,
+  link: from([authLink, httpLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

@@ -40,6 +40,17 @@ describe('Database Tests', () => {
       expect(data.events).toHaveLength(1);
       expect(data.publication).toBeDefined();
     });
+
+    it('should create project with expenses', async () => {
+      const data = await testFixtures.createProjectWithExpenses();
+      
+      expect(data.project).toBeDefined();
+      expect(data.grant).toBeDefined();
+      expect(data.expenses).toHaveLength(3);
+      expect(data.expenses[0]?.amount).toBe(10000);
+      expect(data.expenses[1]?.amount).toBe(5000);
+      expect(data.expenses[2]?.amount).toBe(3000);
+    });
   });
 
   describe('Member Model', () => {
@@ -111,16 +122,10 @@ describe('Database Tests', () => {
         const p = await tx.project.create({
           data: {
             title: 'Test Project',
+            members: { connect: [{ id: m.id }] },
           },
         });
         return { member: m, project: p };
-      });
-
-      await testPrisma.project.update({
-        where: { id: project.id },
-        data: {
-          members: { connect: [{ id: member.id }] },
-        },
       });
 
       const updatedProject = await testPrisma.project.findUnique({
@@ -176,8 +181,8 @@ describe('Database Tests', () => {
     });
 
     it('should link expenses to both project and grant', async () => {
-      // Use transaction to ensure both records are visible
-      const { project, grant } = await testPrisma.$transaction(async (tx) => {
+      // Use transaction to ensure all records are created atomically
+      const { project, grant, expense } = await testPrisma.$transaction(async (tx) => {
         const p = await tx.project.create({ data: { title: 'Test Project' } });
         const g = await tx.grant.create({
           data: {
@@ -186,13 +191,16 @@ describe('Database Tests', () => {
             deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           },
         });
-        return { project: p, grant: g };
-      });
-
-      const expense = await testFactory.createExpense({
-        amount: 5000,
-        projectId: project.id,
-        grantId: grant.id,
+        const e = await tx.expense.create({
+          data: {
+            description: 'Test Expense',
+            amount: 5000,
+            date: new Date(),
+            projectId: p.id,
+            grantId: g.id,
+          },
+        });
+        return { project: p, grant: g, expense: e };
       });
 
       expect(expense.projectId).toBe(project.id);
@@ -251,7 +259,7 @@ describe('Database Tests', () => {
 
     it('should link publication to members and projects', async () => {
       // Create all records in transaction to ensure visibility
-      const { member1, member2, project, publication } = await testPrisma.$transaction(async (tx) => {
+      const { publication } = await testPrisma.$transaction(async (tx) => {
         const m1 = await tx.member.create({
           data: { name: 'Member 1', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT' },
         });
@@ -259,16 +267,14 @@ describe('Database Tests', () => {
           data: { name: 'Member 2', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT' },
         });
         const p = await tx.project.create({ data: { title: 'Test Project' } });
-        const pub = await tx.publication.create({ data: { title: 'Test Publication' } });
-        return { member1: m1, member2: m2, project: p, publication: pub };
-      });
-
-      await testPrisma.publication.update({
-        where: { id: publication.id },
+        const pub = await tx.publication.create({
         data: {
-          members: { connect: [{ id: member1.id }, { id: member2.id }] },
-          projects: { connect: [{ id: project.id }] },
+            title: 'Test Publication',
+            members: { connect: [{ id: m1.id }, { id: m2.id }] },
+            projects: { connect: [{ id: p.id }] },
         },
+        });
+        return { publication: pub };
       });
 
       const updatedPublication = await testPrisma.publication.findUnique({
@@ -285,7 +291,7 @@ describe('Database Tests', () => {
   describe('Event Model', () => {
     it('should create an event with attendees', async () => {
       // Create all records in transaction to ensure visibility
-      const { member1, member2, event } = await testPrisma.$transaction(async (tx) => {
+      const { event } = await testPrisma.$transaction(async (tx) => {
         const m1 = await tx.member.create({
           data: { name: 'Member 1', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT' },
         });
@@ -297,16 +303,10 @@ describe('Database Tests', () => {
             title: 'Lab Meeting',
             date: new Date(),
             location: 'Conference Room',
+            attendees: { connect: [{ id: m1.id }, { id: m2.id }] },
           },
         });
-        return { member1: m1, member2: m2, event: e };
-      });
-
-      await testPrisma.event.update({
-        where: { id: event.id },
-        data: {
-          attendees: { connect: [{ id: member1.id }, { id: member2.id }] },
-        },
+        return { event: e };
       });
 
       const updatedEvent = await testPrisma.event.findUnique({
@@ -417,15 +417,13 @@ describe('Database Tests', () => {
         const c = await tx.collaborator.create({
           data: { name: 'Test Collaborator', organization: 'Test Org' },
         });
-        const p = await tx.project.create({ data: { title: 'Test Project' } });
+        const p = await tx.project.create({
+          data: {
+            title: 'Test Project',
+            collaborators: { connect: [{ id: c.id }] },
+          },
+        });
         return { collaborator: c, project: p };
-      });
-
-      await testPrisma.project.update({
-        where: { id: project.id },
-        data: {
-          collaborators: { connect: [{ id: collaborator.id }] },
-        },
       });
 
       const updatedProject = await testPrisma.project.findUnique({

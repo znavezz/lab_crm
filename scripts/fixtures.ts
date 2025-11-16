@@ -96,41 +96,44 @@ export class TestFixtures {
       return { professor: prof, postdoc: post, student1: stud1, student2: stud2, labManager: labMgr };
     });
 
-    // Create projects using direct Prisma calls to ensure same connection
-    const project1 = await this.prisma.project.create({
+    // Create projects and link members in a transaction to ensure visibility
+    // Members are created in a transaction above, so they should be visible here
+    const { project1, project2 } = await this.prisma.$transaction(async (tx) => {
+      // Verify members exist before connecting
+      const prof = await tx.member.findUnique({ where: { id: professor.id } });
+      const post = await tx.member.findUnique({ where: { id: postdoc.id } });
+      const stud1 = await tx.member.findUnique({ where: { id: student1.id } });
+      const stud2 = await tx.member.findUnique({ where: { id: student2.id } });
+      const labMgr = await tx.member.findUnique({ where: { id: labManager.id } });
+
+      if (!prof || !post || !stud1 || !stud2 || !labMgr) {
+        throw new Error('One or more members not found when creating projects');
+      }
+
+      const p1 = await tx.project.create({
       data: {
         title: 'Genome Sequencing Analysis',
         description: 'Advanced analysis of genomic data using machine learning',
         startDate: new Date('2024-01-01'),
         endDate: new Date('2025-12-31'),
-      },
-    });
-
-    const project2 = await this.prisma.project.create({
-      data: {
-        title: 'Protein Structure Prediction',
-        description: 'Using AI to predict protein folding patterns',
-        startDate: new Date('2024-06-01'),
-      },
-    });
-
-    // Link members to projects
-    await this.prisma.project.update({
-      where: { id: project1.id },
-      data: {
         members: {
           connect: [{ id: professor.id }, { id: postdoc.id }, { id: student1.id }],
         },
       },
     });
 
-    await this.prisma.project.update({
-      where: { id: project2.id },
+      const p2 = await tx.project.create({
       data: {
+          title: 'Protein Structure Prediction',
+          description: 'Using AI to predict protein folding patterns',
+          startDate: new Date('2024-06-01'),
         members: {
           connect: [{ id: professor.id }, { id: student2.id }, { id: labManager.id }],
         },
       },
+      });
+
+      return { project1: p1, project2: p2 };
     });
 
     // Create grants using direct Prisma calls
@@ -320,11 +323,11 @@ export class TestFixtures {
     });
 
     return {
-      members: { professor, postdoc, student1, student2, labManager },
-      projects: { project1, project2 },
-      grants: { grant1, grant2 },
-      equipment: { sequencer, microscope, laptop, centrifuge },
-      events: { labMeeting },
+      members: [professor, postdoc, student1, student2, labManager],
+      projects: [project1, project2],
+      grants: [grant1, grant2],
+      equipment: [sequencer, microscope, laptop, centrifuge],
+      events: [labMeeting],
       publication,
       collaborator,
     };
@@ -337,19 +340,40 @@ export class TestFixtures {
    * - 1 Grant
    */
   async createMinimalSetup() {
-    const member = await this.factory.createMember();
-    const project = await this.factory.createProject();
-    const grant = await this.factory.createGrant();
+    // Create everything in a transaction to ensure visibility
+    return await this.prisma.$transaction(async (tx) => {
+      const member = await tx.member.create({
+        data: {
+          name: `Test Member ${Math.random().toString(36).substring(7)}`,
+          rank: 'MSc',
+          status: 'ACTIVE',
+          role: 'STUDENT',
+          scholarship: 30000,
+        },
+      });
+      const project = await tx.project.create({
+        data: {
+          title: `Test Project ${Math.random().toString(36).substring(7)}`,
+          members: { connect: [{ id: member.id }] },
+        },
+      });
+      const grant = await tx.grant.create({
+        data: {
+          name: `Test Grant ${Math.random().toString(36).substring(7)}`,
+          budget: 100000,
+          deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+      });
 
-    await this.prisma.project.update({
+      await tx.project.update({
       where: { id: project.id },
       data: {
-        members: { connect: [{ id: member.id }] },
         grants: { connect: [{ id: grant.id }] },
       },
     });
 
     return { member, project, grant };
+    });
   }
 
   /**

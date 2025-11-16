@@ -6,13 +6,17 @@ This document explains the core business logic and data concepts for the Lab CRM
 
 The application intentionally separates "authentication" from "lab profile data." This is a crucial distinction.
 
-* **`User` Model:** This is the core **identity**. It's part of the NextAuth.js schema and stores the absolute minimum for a user (email, name). It's the central link for both authentication and the profile.
+* **`User` Model:** Represents **CRM access** (authentication). It's part of the NextAuth.js schema and stores the absolute minimum for a user (email, name). A `User` can access the CRM system but may or may not be a lab member.
 
 * **`Account` Model:** This is the **authentication method**. It's also part of NextAuth.js. This model links a `User` to an external login provider like Google or GitHub. A single `User` can have multiple `Account` records (e.g., they can log in with Google *or* GitHub).
 
-* **`Member` Model:** This is the **lab profile**. It stores all lab-specific data: their rank (`PI`, `Student`), status (`ACTIVE`, `ALUMNI`), projects, and publications.
+* **`Member` Model:** This is the **lab profile**. It stores all lab-specific data: their rank (`PI`, `Student`), status (`ACTIVE`, `ALUMNI`), projects, and publications. A `Member` represents someone who works in the lab, regardless of whether they have CRM access.
 
-> **Rule:** Every `User` has a **1-to-1** relationship with a `Member`. A `User` (the login) *cannot* exist without a `Member` (the profile), and vice versa.
+> **Rule:** `User` and `Member` have an **optional 1-to-1** relationship:
+> * A `User` can exist without a `Member` (e.g., external admin, lab manager who isn't a researcher)
+> * A `Member` can exist without a `User` (e.g., a student who doesn't have CRM access)
+> * When a `User` is also a lab `Member`, they can be linked via `User.memberId`
+> * This allows flexibility: not all lab members need CRM access, and not all CRM users are lab members
 
 ---
 

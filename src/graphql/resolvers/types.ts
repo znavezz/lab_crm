@@ -235,13 +235,19 @@ export const types = {
       });
       return expenses.reduce((sum, expense) => sum + expense.amount, 0);
     },
-    remainingBudget: async (parent: { id: string; budget: number }, _: unknown, context: GraphQLContext) => {
+    remainingBudget: async (parent: { id: string; budget?: number }, _: unknown, context: GraphQLContext) => {
+      // Fetch grant to get budget if not provided in parent
+      const budget = parent.budget ?? (await context.prisma.grant.findUnique({
+        where: { id: parent.id },
+        select: { budget: true },
+      }))?.budget ?? 0;
+      
       const expenses = await context.prisma.expense.findMany({
         where: { grantId: parent.id },
         select: { amount: true },
       });
       const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-      return parent.budget - totalSpent;
+      return budget - totalSpent;
     },
   },
   
