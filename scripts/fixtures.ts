@@ -111,26 +111,26 @@ export class TestFixtures {
       }
 
       const p1 = await tx.project.create({
-        data: {
-          title: 'Genome Sequencing Analysis',
-          description: 'Advanced analysis of genomic data using machine learning',
-          startDate: new Date('2024-01-01'),
-          endDate: new Date('2025-12-31'),
-          members: {
-            connect: [{ id: professor.id }, { id: postdoc.id }, { id: student1.id }],
-          },
+      data: {
+        title: 'Genome Sequencing Analysis',
+        description: 'Advanced analysis of genomic data using machine learning',
+        startDate: new Date('2024-01-01'),
+        endDate: new Date('2025-12-31'),
+        members: {
+          connect: [{ id: professor.id }, { id: postdoc.id }, { id: student1.id }],
         },
-      });
+      },
+    });
 
       const p2 = await tx.project.create({
-        data: {
+      data: {
           title: 'Protein Structure Prediction',
           description: 'Using AI to predict protein folding patterns',
           startDate: new Date('2024-06-01'),
-          members: {
-            connect: [{ id: professor.id }, { id: student2.id }, { id: labManager.id }],
-          },
+        members: {
+          connect: [{ id: professor.id }, { id: student2.id }, { id: labManager.id }],
         },
+      },
       });
 
       return { project1: p1, project2: p2 };
@@ -364,15 +364,15 @@ export class TestFixtures {
           deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         },
       });
-      
-      await tx.project.update({
-        where: { id: project.id },
-        data: {
-          grants: { connect: [{ id: grant.id }] },
-        },
-      });
 
-      return { member, project, grant };
+      await tx.project.update({
+      where: { id: project.id },
+      data: {
+        grants: { connect: [{ id: grant.id }] },
+      },
+    });
+
+    return { member, project, grant };
     });
   }
 

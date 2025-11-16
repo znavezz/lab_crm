@@ -6,6 +6,7 @@ import { getSession } from 'next-auth/react';
 
 const httpLink = new HttpLink({
   uri: '/api/graphql',
+  credentials: 'include', // Include cookies in requests
 });
 
 // Auth link to include session token in requests
@@ -26,7 +27,6 @@ const authLink = setContext(async (_, { headers }) => {
 export const apolloClient = new ApolloClient({
   link: from([authLink, httpLink]),
   cache: new InMemoryCache(),
-  credentials: 'include', // Include cookies in requests
   defaultOptions: {
     watchQuery: {
       errorPolicy: 'all',

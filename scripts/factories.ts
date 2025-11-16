@@ -182,6 +182,14 @@ export class DataFactory {
       if (!grant) {
         throw new Error(`Grant with id ${overrides.grantId} does not exist`);
       }
+    } else if (overrides.eventId) {
+      // Verify event exists
+      const event = await this.prisma.event.findUnique({
+        where: { id: overrides.eventId },
+      });
+      if (!event) {
+        throw new Error(`Event with id ${overrides.eventId} does not exist`);
+      }
     }
 
     const defaults = {
