@@ -1,0 +1,378 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { useQuery, useMutation } from '@apollo/client/react'
+import { gql } from '@apollo/client'
+import { toast } from 'sonner'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { SearchIcon, PlusIcon, DollarSignIcon, CalendarIcon } from 'lucide-react'
+
+// Type definitions for GraphQL query responses
+interface GrantsQueryData {
+  grants: Array<{
+    id: string
+    name: string
+    budget: number
+    deadline: string
+    totalSpent: number
+    remainingBudget: number
+    projects: Array<{
+      id: string
+      title: string
+    }>
+    createdAt: string
+  }>
+}
+
+interface CreateGrantMutationData {
+  createGrant: {
+    id: string
+    name: string
+    budget: number
+  }
+}
+
+const GET_GRANTS = gql`
+  query GetGrants {
+    grants {
+      id
+      name
+      budget
+      deadline
+      totalSpent
+      remainingBudget
+      projects {
+        id
+        title
+      }
+      createdAt
+    }
+  }
+`
+
+const CREATE_GRANT = gql`
+  mutation CreateGrant($input: CreateGrantInput!) {
+    createGrant(input: $input) {
+      id
+      name
+      budget
+    }
+  }
+`
+
+function getGrantStatus(grant: { deadline: string; remainingBudget: number; budget: number }): 'ACTIVE' | 'COMPLETED' {
+  const now = new Date()
+  const deadline = new Date(grant.deadline)
+  const budgetUsed = grant.budget - grant.remainingBudget
+  const budgetPercentage = grant.budget > 0 ? (budgetUsed / grant.budget) * 100 : 0
+  
+  if (deadline < now || budgetPercentage >= 100) return 'COMPLETED'
+  return 'ACTIVE'
+}
+
+function getGrantProgress(grant: { remainingBudget: number; budget: number }): number {
+  const budgetUsed = grant.budget - grant.remainingBudget
+  return grant.budget > 0 ? Math.min(100, Math.round((budgetUsed / grant.budget) * 100)) : 0
+}
+
+const statusColors: Record<string, string> = {
+  ACTIVE: 'bg-chart-2 text-white',
+  COMPLETED: 'bg-chart-3 text-white',
+}
+
+export default function GrantsPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    budget: '',
+    deadline: '',
+  })
+
+  const { data, loading, error, refetch } = useQuery<GrantsQueryData>(GET_GRANTS)
+  const [createGrant, { loading: creating }] = useMutation<CreateGrantMutationData>(CREATE_GRANT, {
+    onCompleted: () => {
+      toast.success('Grant created successfully')
+      setIsDialogOpen(false)
+      setFormData({ name: '', budget: '', deadline: '' })
+      refetch()
+    },
+    onError: (error) => {
+      toast.error(`Failed to create grant: ${error.message}`)
+    },
+  })
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+        </div>
+        <Skeleton className="h-96" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-destructive">Error loading grants: {error.message}</div>
+      </div>
+    )
+  }
+
+  const grants = data?.grants || []
+
+  const filteredGrants = grants.filter((grant: any) => {
+    const matchesSearch = grant.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
+    const status = getGrantStatus(grant)
+    const matchesStatus = statusFilter === 'ALL' || status === statusFilter
+    
+    return matchesSearch && matchesStatus
+  })
+
+  const stats = {
+    total: grants.length,
+    active: grants.filter((g: any) => getGrantStatus(g) === 'ACTIVE').length,
+    totalFunding: grants.reduce((sum: number, g: any) => sum + (g.budget || 0), 0),
+    completed: grants.filter((g: any) => getGrantStatus(g) === 'COMPLETED').length,
+    pending: 0, // Placeholder for pending grants if needed in the future
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    createGrant({
+      variables: {
+        input: {
+          name: formData.name,
+          budget: parseFloat(formData.budget),
+          deadline: new Date(formData.deadline).toISOString(),
+        },
+      },
+    })
+  }
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+            Track research funding and grant applications
+          </p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 shrink-0">
+              <PlusIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Grant</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <form onSubmit={handleSubmit}>
+              <DialogHeader>
+                <DialogTitle>Add New Grant</DialogTitle>
+                <DialogDescription>
+                  Add a new grant or funding application to track.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Grant Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="NSF Research Grant 2024"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="budget">Budget ($)</Label>
+                    <Input
+                      id="budget"
+                      type="number"
+                      value={formData.budget}
+                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                      placeholder="250000"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="deadline">Deadline</Label>
+                    <Input
+                      id="deadline"
+                      type="date"
+                      value={formData.deadline}
+                      onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={creating}>
+                  {creating ? 'Adding...' : 'Add Grant'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Total Grants</CardDescription>
+            <CardTitle className="text-3xl">{stats.total}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Active Grants</CardDescription>
+            <CardTitle className="text-3xl text-chart-2">{stats.active}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Active Funding</CardDescription>
+            <CardTitle className="text-2xl text-accent">{formatCurrency(stats.totalFunding)}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Pending</CardDescription>
+            <CardTitle className="text-3xl text-chart-4">{stats.pending}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader className="p-3 sm:p-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search grants..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
+            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)} className="w-full">
+              <TabsList className="w-full grid grid-cols-3 h-auto">
+                <TabsTrigger value="ACTIVE" className="text-xs sm:text-sm px-2">Active</TabsTrigger>
+                <TabsTrigger value="COMPLETED" className="text-xs sm:text-sm px-2">Completed</TabsTrigger>
+                <TabsTrigger value="ALL" className="text-xs sm:text-sm px-2">All</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-6">
+          <div className="space-y-3 sm:space-y-4">
+            {filteredGrants.map((grant: any) => {
+              const status = getGrantStatus(grant)
+              const progress = getGrantProgress(grant)
+              
+              return (
+                <Link key={grant.id} href={`/grants/${grant.id}`}>
+                  <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+                    <CardHeader>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                          <CardTitle className="text-lg">{grant.name}</CardTitle>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge className={statusColors[status] || 'bg-muted text-muted-foreground'}>
+                              {status}
+                            </Badge>
+                            <span className="text-sm font-semibold text-accent">
+                              {formatCurrency(grant.budget)}
+                            </span>
+                            {grant.projects && grant.projects.length > 0 && (
+                              <span className="text-sm text-muted-foreground">
+                                {grant.projects.length} project{grant.projects.length !== 1 ? 's' : ''}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Budget Utilization</span>
+                          <span className="font-medium">{progress}%</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>Spent: {formatCurrency(grant.totalSpent || 0)}</span>
+                          <span>Remaining: {formatCurrency(grant.remainingBudget || 0)}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <CalendarIcon className="h-3.5 w-3.5" />
+                          <span>Deadline: {new Date(grant.deadline).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
+            
+            {filteredGrants.length === 0 && (
+              <div className="py-12 text-center">
+                <p className="text-muted-foreground">No grants found matching your criteria</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
