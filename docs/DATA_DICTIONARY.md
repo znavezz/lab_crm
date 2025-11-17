@@ -10,7 +10,7 @@ The application intentionally separates "authentication" from "lab profile data.
 
 * **`Account` Model:** This is the **authentication method**. It's also part of NextAuth.js. This model links a `User` to an external login provider like Google or GitHub. A single `User` can have multiple `Account` records (e.g., they can log in with Google *or* GitHub).
 
-* **`Member` Model:** This is the **lab profile**. It stores all lab-specific data: their rank (`PI`, `Student`), status (`ACTIVE`, `ALUMNI`), projects, and publications. A `Member` represents someone who works in the lab, regardless of whether they have CRM access.
+* **`Member` Model:** This is the **lab profile**. It stores all lab-specific data: their rank (`PI`, `Student`), status (`ACTIVE`, `ALUMNI`), projects, publications, and profile photo (`photoUrl`). A `Member` represents someone who works in the lab, regardless of whether they have CRM access.
 
 > **Rule:** `User` and `Member` have an **optional 1-to-1** relationship:
 > * A `User` can exist without a `Member` (e.g., external admin, lab manager who isn't a researcher)
@@ -56,6 +56,7 @@ Equipment management is the most complex system. It's split into three distinct 
     * If `memberId` is set: The equipment is a "personal" item (e.g., a laptop).
     * If `projectId` is set: The equipment "belongs" to a project (e.g., a sequencer bought for that project).
     * If both are `null`: The equipment is in the general lab pool.
+    * **Important Validation:** Equipment **cannot** be set to `IN_USE` status without being assigned to either a `memberId` or `projectId`. The system will automatically set status to `AVAILABLE` if a member/project is deleted while equipment is `IN_USE` (due to `onDelete: SetNull` cascade).
 
 ### B. Scheduling (Reservations)
 

@@ -116,6 +116,8 @@ model Document {
   /// Optional: Link a document to a specific member (e.g., their CV).
   memberId  String?
   member    Member?  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  /// Optional: Link a document to a protocol (e.g., PDF version of protocol).
+  protocol  Protocol?
 
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -268,6 +270,8 @@ model NoteTask {
   collaborator   Collaborator? @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
   expenseId      String?
   expense        Expense?      @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  protocolId     String?
+  protocol       Protocol?     @relation(fields: [protocolId], references: [id], onDelete: Cascade)
 
   // Indexes on all foreign keys for efficient lookups.
   @@index([memberId])
@@ -279,11 +283,12 @@ model NoteTask {
   @@index([equipmentId])
   @@index([collaboratorId])
   @@index([expenseId])
+  @@index([protocolId])
 }
 
 enum MemberRank {
   PROFESSOR
-  DOCTOR
+  PhD
   POSTDOC
   MSc
   BSc
@@ -319,6 +324,8 @@ model Member {
   status       MemberStatus? // e.g. active, alumni, etc.
   role         MemberRole? // e.g. PI, Student, Lab Manager
   scholarship  Int?
+  photoUrl     String? // URL to profile photo
+  joinedDate   DateTime? // Date when member joined the lab (defaults to createdAt if not specified)
   /// 1:M relation for all academic degrees this member holds.
   academicInfo AcademicInfo[]
 
@@ -338,6 +345,8 @@ model Member {
   events       Event[]
   /// 1:M relation for all documents attached to this member (e.g., their CV).
   documents    Document[]
+  /// 1:M relation for all protocols authored by this member.
+  protocols    Protocol[]     @relation("ProtocolAuthor")
   /// 1:1 link to the authentication User account.
   user         User?         @relation(name: "MemberUser")
 
@@ -373,6 +382,8 @@ model Project {
   collaborators Collaborator[]
   /// 1:M relation for all documents related to this project.
   documents     Document[]
+  /// 1:M relation for all protocols related to this project.
+  protocols     Protocol[]
   /// M:N relation for all events related to this project.
   events        Event[]
   /// 1:M relation for all expenses charged to this project.
@@ -383,6 +394,60 @@ model Project {
   noteTasks NoteTask[]
 
   @@index([title]) // For searching by project title
+}
+
+/// A lab protocol or standard operating procedure (SOP).
+model Protocol {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  category     ProtocolCategory @default(GENERAL)
+  version      String   @default("1.0")
+  estimatedTime String?
+  difficulty   ProtocolDifficulty @default(INTERMEDIATE)
+  tags         String?  @db.Text // JSON array or comma-separated
+  downloads    Int      @default(0)
+  
+  /// Optional: Link to the member who created/owns this protocol.
+  authorId     String?
+  author       Member?  @relation("ProtocolAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  
+  /// Optional: Link to a project this protocol is associated with.
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  /// Optional: Link to a document (PDF, etc.) for this protocol.
+  documentId   String?  @unique
+  document     Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  
+  /// Structured protocol data stored as JSON
+  materials    String?  @db.Text // JSON array
+  equipment    String?  @db.Text // JSON array
+  steps        String?  @db.Text // JSON array of {step, instruction, time}
+  safetyNotes  String?  @db.Text // JSON array
+  versionHistory String? @db.Text // JSON array of {version, date, changes}
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  noteTasks NoteTask[]
+
+  @@index([title]) // For searching by protocol title
+  @@index([category])
+  @@index([authorId])
+  @@index([projectId])
+}
+
+enum ProtocolCategory {
+  WET_LAB
+  COMPUTATIONAL
+  SAFETY
+  GENERAL
+}
+
+enum ProtocolDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 /// An academic paper or article resulting from a project.

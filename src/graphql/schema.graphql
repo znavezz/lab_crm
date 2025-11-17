@@ -3,7 +3,7 @@ scalar DateTime
 # Enums from Prisma
 enum MemberRank {
   PROFESSOR
-  DOCTOR
+  PhD
   POSTDOC
   MSc
   BSc
@@ -56,6 +56,8 @@ type Member {
   status: MemberStatus
   role: MemberRole
   scholarship: Int
+  photoUrl: String
+  joinedDate: DateTime
   academicInfo: [AcademicInfo!]!
   equipments: [Equipment!]!
   bookings: [Booking!]!
@@ -63,6 +65,7 @@ type Member {
   publications: [Publication!]!
   events: [Event!]!
   documents: [Document!]!
+  protocols: [Protocol!]!
   noteTasks: [NoteTask!]!
   user: User
   createdAt: DateTime!
@@ -82,6 +85,7 @@ type Project {
   publications: [Publication!]!
   collaborators: [Collaborator!]!
   documents: [Document!]!
+  protocols: [Protocol!]!
   events: [Event!]!
   expenses: [Expense!]!
   noteTasks: [NoteTask!]!
@@ -186,9 +190,49 @@ type Document {
   project: Project
   memberId: String
   member: Member
+  protocol: Protocol
   noteTasks: [NoteTask!]!
   createdAt: DateTime!
   updatedAt: DateTime!
+}
+
+type Protocol {
+  id: ID!
+  title: String!
+  description: String
+  category: ProtocolCategory!
+  version: String!
+  estimatedTime: String
+  difficulty: ProtocolDifficulty!
+  tags: String
+  downloads: Int!
+  authorId: String
+  author: Member
+  projectId: String
+  project: Project
+  documentId: String
+  document: Document
+  materials: String
+  equipment: String
+  steps: String
+  safetyNotes: String
+  versionHistory: String
+  noteTasks: [NoteTask!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum ProtocolCategory {
+  WET_LAB
+  COMPUTATIONAL
+  SAFETY
+  GENERAL
+}
+
+enum ProtocolDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 type Expense {
@@ -229,6 +273,8 @@ type NoteTask {
   collaborator: Collaborator
   expenseId: String
   expense: Expense
+  protocolId: String
+  protocol: Protocol
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -252,6 +298,8 @@ input CreateMemberInput {
   status: MemberStatus
   role: MemberRole
   scholarship: Int
+  photoUrl: String
+  joinedDate: DateTime
 }
 
 input UpdateMemberInput {
@@ -260,6 +308,8 @@ input UpdateMemberInput {
   status: MemberStatus
   role: MemberRole
   scholarship: Int
+  photoUrl: String
+  joinedDate: DateTime
 }
 
 input CreateProjectInput {
@@ -378,6 +428,42 @@ input UpdateDocumentInput {
   memberId: String
 }
 
+input CreateProtocolInput {
+  title: String!
+  description: String
+  category: ProtocolCategory
+  version: String
+  estimatedTime: String
+  difficulty: ProtocolDifficulty
+  tags: String
+  authorId: String
+  projectId: String
+  documentId: String
+  materials: String
+  equipment: String
+  steps: String
+  safetyNotes: String
+  versionHistory: String
+}
+
+input UpdateProtocolInput {
+  title: String
+  description: String
+  category: ProtocolCategory
+  version: String
+  estimatedTime: String
+  difficulty: ProtocolDifficulty
+  tags: String
+  authorId: String
+  projectId: String
+  documentId: String
+  materials: String
+  equipment: String
+  steps: String
+  safetyNotes: String
+  versionHistory: String
+}
+
 input CreateExpenseInput {
   description: String!
   amount: Float!
@@ -410,6 +496,7 @@ input CreateNoteTaskInput {
   equipmentId: String
   collaboratorId: String
   expenseId: String
+  protocolId: String
 }
 
 input UpdateNoteTaskInput {
@@ -417,6 +504,16 @@ input UpdateNoteTaskInput {
   content: String
   completed: Boolean
   dueDate: DateTime
+  memberId: String
+  projectId: String
+  grantId: String
+  eventId: String
+  publicationId: String
+  documentId: String
+  equipmentId: String
+  collaboratorId: String
+  expenseId: String
+  protocolId: String
 }
 
 input CreateAcademicInfoInput {
@@ -476,6 +573,10 @@ type Query {
   # Document queries
   documents: [Document!]!
   document(id: ID!): Document
+  
+  # Protocol queries
+  protocols: [Protocol!]!
+  protocol(id: ID!): Protocol
   
   # Expense queries
   expenses: [Expense!]!
@@ -541,6 +642,11 @@ type Mutation {
   createDocument(input: CreateDocumentInput!): Document!
   updateDocument(id: ID!, input: UpdateDocumentInput!): Document!
   deleteDocument(id: ID!): Boolean!
+  
+  # Protocol mutations
+  createProtocol(input: CreateProtocolInput!): Protocol!
+  updateProtocol(id: ID!, input: UpdateProtocolInput!): Protocol!
+  deleteProtocol(id: ID!): Boolean!
   
   # Expense mutations
   createExpense(input: CreateExpenseInput!): Expense!

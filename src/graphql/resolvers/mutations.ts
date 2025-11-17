@@ -48,6 +48,9 @@ import type {
   MutationRemoveProjectFromPublicationArgs,
   MutationAddMemberToEventArgs,
   MutationRemoveMemberFromEventArgs,
+  CreateMemberInput,
+  UpdateMemberInput,
+  CreateNoteTaskInput,
   MutationAddProjectToEventArgs,
   MutationRemoveProjectFromEventArgs,
   MutationAddProjectToGrantArgs,
@@ -58,13 +61,96 @@ import type {
   MutationRemoveEquipmentFromEventArgs,
 } from '@/generated/graphql/resolvers-types';
 
+// Type extensions for missing fields in generated types
+type ExtendedCreateMemberInput = CreateMemberInput & {
+  photoUrl?: string | null;
+  joinedDate?: string | null;
+};
+
+type ExtendedUpdateMemberInput = UpdateMemberInput & {
+  photoUrl?: string | null;
+  joinedDate?: string | null;
+};
+
+type ExtendedCreateNoteTaskInput = CreateNoteTaskInput & {
+  protocolId?: string | null;
+};
+
+// Protocol input types (not generated, so we define them based on schema)
+type CreateProtocolInput = {
+  title: string;
+  description?: string | null;
+  category?: 'WET_LAB' | 'COMPUTATIONAL' | 'SAFETY' | 'GENERAL' | null;
+  version?: string | null;
+  estimatedTime?: string | null;
+  difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null;
+  tags?: string | null;
+  authorId?: string | null;
+  projectId?: string | null;
+  documentId?: string | null;
+  materials?: string | null;
+  equipment?: string | null;
+  steps?: string | null;
+  safetyNotes?: string | null;
+  versionHistory?: string | null;
+};
+
+type UpdateProtocolInput = {
+  title?: string | null;
+  description?: string | null;
+  category?: 'WET_LAB' | 'COMPUTATIONAL' | 'SAFETY' | 'GENERAL' | null;
+  version?: string | null;
+  estimatedTime?: string | null;
+  difficulty?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null;
+  tags?: string | null;
+  authorId?: string | null;
+  projectId?: string | null;
+  documentId?: string | null;
+  materials?: string | null;
+  equipment?: string | null;
+  steps?: string | null;
+  safetyNotes?: string | null;
+  versionHistory?: string | null;
+};
+
+type ExtendedCreateProtocolInput = CreateProtocolInput;
+type ExtendedUpdateProtocolInput = UpdateProtocolInput;
+
+// Protocol mutation args types (not generated, so we define them)
+type MutationCreateProtocolArgs = {
+  input: ExtendedCreateProtocolInput;
+};
+
+type MutationUpdateProtocolArgs = {
+  id: string;
+  input: ExtendedUpdateProtocolInput;
+};
+
+type MutationDeleteProtocolArgs = {
+  id: string;
+};
+
+// Extended mutation args with proper types
+type ExtendedMutationCreateMemberArgs = Omit<MutationCreateMemberArgs, 'input'> & {
+  input: ExtendedCreateMemberInput;
+};
+
+type ExtendedMutationUpdateMemberArgs = Omit<MutationUpdateMemberArgs, 'input'> & {
+  input: ExtendedUpdateMemberInput;
+};
+
+type ExtendedMutationCreateNoteTaskArgs = Omit<MutationCreateNoteTaskArgs, 'input'> & {
+  input: ExtendedCreateNoteTaskInput;
+};
+
 export const mutations = {
   // Member mutations
   createMember: async (
     _: unknown,
-    args: MutationCreateMemberArgs,
+    args: ExtendedMutationCreateMemberArgs,
     context: GraphQLContext
   ) => {
+    const now = new Date();
     return await context.prisma.member.create({
       data: {
         name: args.input.name,
@@ -72,13 +158,15 @@ export const mutations = {
         status: args.input.status ?? undefined,
         role: args.input.role ?? undefined,
         scholarship: args.input.scholarship ?? undefined,
+        photoUrl: args.input.photoUrl ?? undefined,
+        joinedDate: args.input.joinedDate ? new Date(args.input.joinedDate) : now, // Default to current date if not provided
       },
     });
   },
   
   updateMember: async (
     _: unknown,
-    args: MutationUpdateMemberArgs,
+    args: ExtendedMutationUpdateMemberArgs,
     context: GraphQLContext
   ) => {
     return await context.prisma.member.update({
@@ -89,6 +177,8 @@ export const mutations = {
         ...(args.input.status !== undefined && { status: args.input.status ?? undefined }),
         ...(args.input.role !== undefined && { role: args.input.role ?? undefined }),
         ...(args.input.scholarship !== undefined && { scholarship: args.input.scholarship }),
+        ...(args.input.photoUrl !== undefined && { photoUrl: args.input.photoUrl === null ? null : (args.input.photoUrl || undefined) }),
+        ...(args.input.joinedDate !== undefined && { joinedDate: args.input.joinedDate ? new Date(args.input.joinedDate) : undefined }),
       },
     });
   },
@@ -153,12 +243,19 @@ export const mutations = {
     args: MutationCreateEquipmentArgs,
     context: GraphQLContext
   ) => {
+    const status = args.input.status ?? 'AVAILABLE';
+    
+    // Validate: Equipment cannot be IN_USE without a member or project
+    if (status === 'IN_USE' && !args.input.memberId && !args.input.projectId) {
+      throw new Error('Equipment cannot be set to IN_USE without being assigned to a member or project');
+    }
+    
     return await context.prisma.equipment.create({
       data: {
         name: args.input.name,
         description: args.input.description ?? undefined,
         serialNumber: args.input.serialNumber ?? undefined,
-        status: args.input.status ?? 'AVAILABLE',
+        status,
         projectId: args.input.projectId ?? undefined,
         memberId: args.input.memberId ?? undefined,
       },
@@ -170,6 +267,16 @@ export const mutations = {
     args: MutationUpdateEquipmentArgs,
     context: GraphQLContext
   ) => {
+    // Get current equipment to check existing assignments
+    const currentEquipment = await context.prisma.equipment.findUnique({
+      where: { id: args.id },
+      select: { memberId: true, projectId: true },
+    });
+
+    if (!currentEquipment) {
+      throw new Error('Equipment not found');
+    }
+
     const updateData: Prisma.EquipmentUpdateInput = {
       ...(args.input.name && { name: args.input.name }),
       ...(args.input.description !== undefined && { description: args.input.description }),
@@ -193,6 +300,50 @@ export const mutations = {
       } else {
         updateData.member = { connect: { id: args.input.memberId } };
       }
+    }
+
+    // Get current status to check if equipment is IN_USE
+    const currentStatus = await context.prisma.equipment.findUnique({
+      where: { id: args.id },
+      select: { status: true },
+    });
+
+    // Determine what the final state will be after the update
+    const willHaveMember = args.input.memberId !== undefined 
+      ? args.input.memberId !== null 
+      : currentEquipment.memberId !== null;
+    const willHaveProject = args.input.projectId !== undefined 
+      ? args.input.projectId !== null 
+      : currentEquipment.projectId !== null;
+    const willBeInUse = args.input.status === 'IN_USE' || 
+      (args.input.status === undefined && currentStatus?.status === 'IN_USE');
+
+    // Validate: Equipment cannot be IN_USE without a member or project
+    if (willBeInUse && !willHaveMember && !willHaveProject) {
+      throw new Error('Equipment cannot be IN_USE without being assigned to a member or project. Please assign a member or project, or change the status to AVAILABLE or MAINTENANCE.');
+    }
+
+    // Validate: Cannot remove member/project from equipment that's IN_USE
+    if (currentStatus?.status === 'IN_USE' && !willBeInUse) {
+      // If changing away from IN_USE, that's fine
+    } else if (currentStatus?.status === 'IN_USE' && args.input.memberId === null && args.input.projectId === null) {
+      // Trying to remove both member and project while IN_USE
+      if (!willHaveMember && !willHaveProject) {
+        throw new Error('Cannot remove both member and project from equipment that is IN_USE. Please change the status first or assign a new member/project.');
+      }
+    }
+
+    // Auto-fix: If equipment is IN_USE but has no member or project (e.g., due to deletion),
+    // automatically set status to AVAILABLE
+    // This handles the case where member/project was deleted (onDelete: SetNull)
+    // and equipment is still IN_USE - automatically fix it
+    if (currentStatus?.status === 'IN_USE' && !willHaveMember && !willHaveProject) {
+      // If status is being explicitly set to something else, use that
+      // Otherwise, auto-fix by setting to AVAILABLE
+      if (args.input.status === undefined) {
+        updateData.status = 'AVAILABLE';
+      }
+      // If status is being set to IN_USE explicitly, the validation above will catch it
     }
 
     return await context.prisma.equipment.update({
@@ -470,6 +621,97 @@ export const mutations = {
     return true;
   },
   
+  // Protocol mutations
+  createProtocol: async (
+    _: unknown,
+    args: MutationCreateProtocolArgs,
+    context: GraphQLContext
+  ) => {
+    return await context.prisma.protocol.create({
+      data: {
+        title: args.input.title,
+        description: args.input.description ?? undefined,
+        category: args.input.category ?? 'GENERAL',
+        version: args.input.version ?? '1.0',
+        estimatedTime: args.input.estimatedTime ?? undefined,
+        difficulty: args.input.difficulty ?? 'INTERMEDIATE',
+        tags: args.input.tags ?? undefined,
+        authorId: args.input.authorId ?? undefined,
+        projectId: args.input.projectId ?? undefined,
+        documentId: args.input.documentId ?? undefined,
+        materials: args.input.materials ?? undefined,
+        equipment: args.input.equipment ?? undefined,
+        steps: args.input.steps ?? undefined,
+        safetyNotes: args.input.safetyNotes ?? undefined,
+        versionHistory: args.input.versionHistory ?? undefined,
+      },
+    });
+  },
+  
+  updateProtocol: async (
+    _: unknown,
+    args: MutationUpdateProtocolArgs,
+    context: GraphQLContext
+  ) => {
+    const updateData: Prisma.ProtocolUpdateInput = {};
+    
+    if (args.input.title !== undefined && args.input.title !== null) updateData.title = args.input.title;
+    if (args.input.description !== undefined) updateData.description = args.input.description;
+    if (args.input.category !== undefined && args.input.category !== null) updateData.category = args.input.category;
+    if (args.input.version !== undefined && args.input.version !== null) updateData.version = args.input.version;
+    if (args.input.estimatedTime !== undefined) updateData.estimatedTime = args.input.estimatedTime;
+    if (args.input.difficulty !== undefined && args.input.difficulty !== null) updateData.difficulty = args.input.difficulty;
+    if (args.input.tags !== undefined) updateData.tags = args.input.tags;
+    if (args.input.materials !== undefined) updateData.materials = args.input.materials;
+    if (args.input.equipment !== undefined) updateData.equipment = args.input.equipment;
+    if (args.input.steps !== undefined) updateData.steps = args.input.steps;
+    if (args.input.safetyNotes !== undefined) updateData.safetyNotes = args.input.safetyNotes;
+    if (args.input.versionHistory !== undefined) updateData.versionHistory = args.input.versionHistory;
+    
+    // Handle authorId using relation syntax
+    if (args.input.authorId !== undefined) {
+      if (args.input.authorId === null) {
+        updateData.author = { disconnect: true };
+      } else {
+        updateData.author = { connect: { id: args.input.authorId } };
+      }
+    }
+    
+    // Handle projectId using relation syntax
+    if (args.input.projectId !== undefined) {
+      if (args.input.projectId === null) {
+        updateData.project = { disconnect: true };
+      } else {
+        updateData.project = { connect: { id: args.input.projectId } };
+      }
+    }
+    
+    // Handle documentId using relation syntax
+    if (args.input.documentId !== undefined) {
+      if (args.input.documentId === null) {
+        updateData.document = { disconnect: true };
+      } else {
+        updateData.document = { connect: { id: args.input.documentId } };
+      }
+    }
+    
+    return await context.prisma.protocol.update({
+      where: { id: args.id },
+      data: updateData,
+    });
+  },
+  
+  deleteProtocol: async (
+    _: unknown,
+    args: MutationDeleteProtocolArgs,
+    context: GraphQLContext
+  ) => {
+    await context.prisma.protocol.delete({
+      where: { id: args.id },
+    });
+    return true;
+  },
+  
   // Expense mutations
   createExpense: async (
     _: unknown,
@@ -520,7 +762,7 @@ export const mutations = {
   // NoteTask mutations
   createNoteTask: async (
     _: unknown,
-    args: MutationCreateNoteTaskArgs,
+    args: ExtendedMutationCreateNoteTaskArgs,
     context: GraphQLContext
   ) => {
     return await context.prisma.noteTask.create({
@@ -538,6 +780,7 @@ export const mutations = {
         equipmentId: args.input.equipmentId ?? undefined,
         collaboratorId: args.input.collaboratorId ?? undefined,
         expenseId: args.input.expenseId ?? undefined,
+        protocolId: args.input.protocolId ?? undefined,
       },
     });
   },
