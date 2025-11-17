@@ -395,12 +395,22 @@ export default function PublicationsPage() {
                       <div className="space-y-2 flex-1">
                         <div className="flex items-start gap-2">
                           <FileTextIcon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                          <div className="space-y-1">
+                          <div className="space-y-1 flex-1">
                             <CardTitle className="text-lg leading-tight">{pub.title}</CardTitle>
                             {pub.members && pub.members.length > 0 && (
-                              <p className="text-sm text-muted-foreground">
-                                {pub.members.map((m: PublicationMember) => m.name).join(', ')}
-                              </p>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                <span className="text-xs text-muted-foreground font-medium">Authors:</span>
+                                {pub.members.map((m: PublicationMember, idx: number) => (
+                                  <Link
+                                    key={m.id}
+                                    href={`/members/${m.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-sm text-primary hover:underline font-medium"
+                                  >
+                                    {m.name}{idx < pub.members.length - 1 ? ',' : ''}
+                                  </Link>
+                                ))}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -425,8 +435,32 @@ export default function PublicationsPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    {pub.members && pub.members.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Authors ({pub.members.length})</p>
+                        <div className="flex flex-wrap gap-2">
+                          {pub.members.map((m: PublicationMember) => (
+                            <Link
+                              key={m.id}
+                              href={`/members/${m.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Badge variant="secondary" className="hover:bg-secondary/80 transition-colors cursor-pointer">
+                                {m.name}
+                              </Badge>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {pub.url && (
-                      <a href={pub.url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                      <a 
+                        href={pub.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-sm text-primary hover:underline inline-block"
+                      >
                         View Publication →
                       </a>
                     )}
