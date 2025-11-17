@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide-react'
 
 const GET_PUBLICATION = gql`
@@ -21,6 +22,8 @@ const GET_PUBLICATION = gql`
       members {
         id
         name
+        photoUrl
+        role
       }
       projects {
         id
@@ -34,6 +37,8 @@ const GET_PUBLICATION = gql`
 interface PublicationMember {
   id: string
   name: string
+  photoUrl: string | null
+  role: string | null
 }
 
 interface PublicationProject {
@@ -177,8 +182,8 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UsersIcon className="h-5 w-5" />
-              Related Projects
+              <FileTextIcon className="h-5 w-5" />
+              Related Projects ({pub.projects.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -193,6 +198,62 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {pub.members && pub.members.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-2">
+            <UsersIcon className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">Authors</h2>
+            <Badge variant="secondary" className="ml-2">{pub.members.length}</Badge>
+          </div>
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8 py-6">
+            {pub.members.map((member: PublicationMember, index: number) => {
+              const initials = member.name
+                ?.split(' ')
+                .map((n: string) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2) || 'M'
+              
+              return (
+                <Link
+                  key={member.id}
+                  href={`/members/${member.id}`}
+                  className="group relative"
+                >
+                  <div className="flex flex-col items-center gap-4 p-6 rounded-2xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 min-w-[160px] sm:min-w-[180px] transform hover:scale-105 hover:-translate-y-2">
+                    <div className="relative">
+                      <Avatar className="h-28 w-28 sm:h-32 sm:w-32 ring-4 ring-background ring-offset-2 ring-offset-background group-hover:ring-primary/50 transition-all duration-300 group-hover:scale-110">
+                        <AvatarImage 
+                          src={member.photoUrl || "/placeholder.svg"} 
+                          alt={member.name || 'Author'} 
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-2xl sm:text-3xl font-semibold">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary rounded-full border-2 border-background flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <UsersIcon className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <p className="font-semibold text-base sm:text-lg group-hover:text-primary transition-colors">
+                        {member.name}
+                      </p>
+                      {member.role && (
+                        <Badge variant="secondary" className="text-xs sm:text-sm">
+                          {member.role}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
       )}
     </div>
   )
