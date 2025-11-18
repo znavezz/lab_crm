@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useQuery } from '@apollo/client/react'
 import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,7 +41,8 @@ const GET_ANALYTICS_DATA = gql`
       id
       name
       budget
-      deadline
+      startDate
+      endDate
       createdAt
       totalSpent
       remainingBudget
@@ -130,7 +132,8 @@ interface AnalyticsGrant {
   id: string
   name: string
   budget: number | null
-  deadline: string | null
+  startDate: string | null
+  endDate: string | null
   createdAt: string
   totalSpent?: number
   remainingBudget?: number
@@ -178,6 +181,7 @@ interface GetAnalyticsData {
 }
 
 export default function AnalyticsPage() {
+  const router = useRouter()
   const { data, loading, error } = useQuery<GetAnalyticsData>(GET_ANALYTICS_DATA)
 
   if (loading) {
@@ -236,22 +240,22 @@ export default function AnalyticsPage() {
   ]
 
   // Calculate active vs completed grants
-  // A grant is completed if: deadline has passed OR budget is fully spent
+  // A grant is completed if: endDate has passed OR budget is fully spent
   const now = new Date()
   const activeGrants = grants.filter((grant: AnalyticsGrant) => {
-    const deadlinePassed = grant.deadline ? new Date(grant.deadline) < now : false
-    const budgetSpent = grant.totalSpent !== undefined 
+    const endDatePassed = grant.endDate ? new Date(grant.endDate) < now : false
+    const budgetSpent = grant.totalSpent !== undefined
       ? grant.totalSpent >= (grant.budget || 0)
       : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0) >= (grant.budget || 0)
-    return !deadlinePassed && !budgetSpent
+    return !endDatePassed && !budgetSpent
   })
   const completedGrants = grants.filter((grant: AnalyticsGrant) => {
-    const deadlinePassed = grant.deadline ? new Date(grant.deadline) < now : false
-    const totalSpent = grant.totalSpent !== undefined 
+    const endDatePassed = grant.endDate ? new Date(grant.endDate) < now : false
+    const totalSpent = grant.totalSpent !== undefined
       ? grant.totalSpent
       : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0)
     const budgetSpent = totalSpent >= (grant.budget || 0)
-    return deadlinePassed || budgetSpent
+    return endDatePassed || budgetSpent
   })
 
   // Calculate grant funding per year
@@ -290,11 +294,11 @@ export default function AnalyticsPage() {
   }))
 
   // Publications per member (sorted by count)
-  const publicationsPerMemberMap: Record<string, { name: string; count: number }> = {}
+  const publicationsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
     pub.members.forEach((member) => {
       if (!publicationsPerMemberMap[member.id]) {
-        publicationsPerMemberMap[member.id] = { name: member.name, count: 0 }
+        publicationsPerMemberMap[member.id] = { id: member.id, name: member.name, count: 0 }
       }
       publicationsPerMemberMap[member.id].count++
     })
@@ -304,11 +308,11 @@ export default function AnalyticsPage() {
     .slice(0, 10) // Top 10
 
   // Publications per project (sorted by count)
-  const publicationsPerProjectMap: Record<string, { title: string; count: number }> = {}
+  const publicationsPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
     pub.projects.forEach((project) => {
       if (!publicationsPerProjectMap[project.id]) {
-        publicationsPerProjectMap[project.id] = { title: project.title, count: 0 }
+        publicationsPerProjectMap[project.id] = { id: project.id, title: project.title, count: 0 }
       }
       publicationsPerProjectMap[project.id].count++
     })
@@ -318,11 +322,11 @@ export default function AnalyticsPage() {
     .slice(0, 10) // Top 10
 
   // Projects per member (sorted by count)
-  const projectsPerMemberMap: Record<string, { name: string; count: number }> = {}
+  const projectsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   projects.forEach((project: AnalyticsProject) => {
     project.members.forEach((member) => {
       if (!projectsPerMemberMap[member.id]) {
-        projectsPerMemberMap[member.id] = { name: member.name, count: 0 }
+        projectsPerMemberMap[member.id] = { id: member.id, name: member.name, count: 0 }
       }
       projectsPerMemberMap[member.id].count++
     })
@@ -348,6 +352,7 @@ export default function AnalyticsPage() {
   // Grants by number of projects funded (sorted)
   const grantsByProjectCount = grantsWithProjects
     .map((grant) => ({
+      id: grant.id,
       name: grant.name,
       projectCount: grant.projectCount,
       budget: grant.budget,
@@ -373,16 +378,20 @@ export default function AnalyticsPage() {
       projectsFundingMap[project.id].grants.push(grant.name)
     })
   })
-  const projectsByFunding = Object.values(projectsFundingMap)
+  const projectsByFunding = Object.keys(projectsFundingMap)
+    .map(id => ({
+      id,
+      ...projectsFundingMap[id]
+    }))
     .sort((a, b) => b.totalFunding - a.totalFunding)
     .slice(0, 10) // Top 10
 
   // Equipment per member (sorted by count)
-  const equipmentPerMemberMap: Record<string, { name: string; count: number }> = {}
+  const equipmentPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   equipments.forEach((eq: AnalyticsEquipment) => {
     if (eq.member) {
       if (!equipmentPerMemberMap[eq.member.id]) {
-        equipmentPerMemberMap[eq.member.id] = { name: eq.member.name, count: 0 }
+        equipmentPerMemberMap[eq.member.id] = { id: eq.member.id, name: eq.member.name, count: 0 }
       }
       equipmentPerMemberMap[eq.member.id].count++
     }
@@ -392,11 +401,11 @@ export default function AnalyticsPage() {
     .slice(0, 10) // Top 10
 
   // Equipment per project (sorted by count)
-  const equipmentPerProjectMap: Record<string, { title: string; count: number }> = {}
+  const equipmentPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   equipments.forEach((eq: AnalyticsEquipment) => {
     if (eq.project) {
       if (!equipmentPerProjectMap[eq.project.id]) {
-        equipmentPerProjectMap[eq.project.id] = { title: eq.project.title, count: 0 }
+        equipmentPerProjectMap[eq.project.id] = { id: eq.project.id, title: eq.project.title, count: 0 }
       }
       equipmentPerProjectMap[eq.project.id].count++
     }
@@ -498,7 +507,17 @@ export default function AnalyticsPage() {
                           <XAxis type="number" />
                           <YAxis dataKey="name" type="category" width={110} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="count" fill="var(--color-count)" name="Publications" />
+                          <Bar
+                            dataKey="count"
+                            fill="var(--color-count)"
+                            name="Publications"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/members/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -532,7 +551,17 @@ export default function AnalyticsPage() {
                           <XAxis type="number" />
                           <YAxis dataKey="title" type="category" width={110} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="count" fill="var(--color-count)" name="Publications" />
+                          <Bar
+                            dataKey="count"
+                            fill="var(--color-count)"
+                            name="Publications"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/projects/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -649,7 +678,17 @@ export default function AnalyticsPage() {
                           <XAxis type="number" />
                           <YAxis dataKey="name" type="category" width={110} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="count" fill="var(--color-count)" name="Projects" />
+                          <Bar
+                            dataKey="count"
+                            fill="var(--color-count)"
+                            name="Projects"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/members/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -783,7 +822,7 @@ export default function AnalyticsPage() {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
                           <YAxis dataKey="name" type="category" width={110} />
-                          <ChartTooltip 
+                          <ChartTooltip
                             content={<ChartTooltipContent />}
                             formatter={(value: number, name: string) => {
                               if (name === 'projectCount') {
@@ -792,7 +831,17 @@ export default function AnalyticsPage() {
                               return [`$${(value / 1000000).toFixed(2)}M`, 'Budget']
                             }}
                           />
-                          <Bar dataKey="projectCount" fill="var(--color-projectCount)" name="Projects" />
+                          <Bar
+                            dataKey="projectCount"
+                            fill="var(--color-projectCount)"
+                            name="Projects"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/grants/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -823,16 +872,26 @@ export default function AnalyticsPage() {
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={projectsByFunding} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            type="number" 
+                          <XAxis
+                            type="number"
                             tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
                           />
                           <YAxis dataKey="title" type="category" width={110} />
-                          <ChartTooltip 
+                          <ChartTooltip
                             content={<ChartTooltipContent />}
                             formatter={(value: number) => [`$${(value / 1000000).toFixed(2)}M`, 'Funding']}
                           />
-                          <Bar dataKey="totalFunding" fill="var(--color-totalFunding)" name="Funding" />
+                          <Bar
+                            dataKey="totalFunding"
+                            fill="var(--color-totalFunding)"
+                            name="Funding"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/projects/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -1018,7 +1077,17 @@ export default function AnalyticsPage() {
                           <XAxis type="number" />
                           <YAxis dataKey="name" type="category" width={110} />
                           <ChartTooltip content={<ChartTooltipContent />} />
-                          <Bar dataKey="count" fill="var(--color-count)" name="Equipment" />
+                          <Bar
+                            dataKey="count"
+                            fill="var(--color-count)"
+                            name="Equipment"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/members/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
@@ -1047,15 +1116,25 @@ export default function AnalyticsPage() {
                     }}
                     className="h-[300px]"
                   >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={equipmentPerProject} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="title" type="category" width={110} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="count" fill="var(--color-count)" name="Equipment" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={equipmentPerProject} layout="vertical" margin={{ top: 5, right: 30, left: 120, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis dataKey="title" type="category" width={110} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Bar
+                            dataKey="count"
+                            fill="var(--color-count)"
+                            name="Equipment"
+                            onClick={(data) => {
+                              if (data && data.id) {
+                                router.push(`/projects/${data.id}`)
+                              }
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
                   </ChartContainer>
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-muted-foreground">

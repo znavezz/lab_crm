@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client/react'
@@ -52,6 +52,16 @@ const GET_EQUIPMENTS = gql`
       }
       createdAt
     }
+    bookings {
+      id
+      startTime
+      endTime
+      equipmentId
+      member {
+        id
+        name
+      }
+    }
   }
 `
 
@@ -93,6 +103,17 @@ interface EquipmentMember {
   name: string
 }
 
+interface Booking {
+  id: string
+  startTime: string
+  endTime: string
+  equipmentId: string
+  member: {
+    id: string
+    name: string
+  }
+}
+
 interface Equipment {
   id: string
   name: string
@@ -108,6 +129,7 @@ interface Equipment {
 
 interface GetEquipmentsData {
   equipments: Equipment[]
+  bookings: Booking[]
 }
 
 interface Member {
@@ -145,6 +167,14 @@ export default function EquipmentPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE'>('ALL')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  // Refs for auto-focus functionality
+  const nameRef = useRef<HTMLInputElement>(null)
+  const descriptionRef = useRef<HTMLTextAreaElement>(null)
+  const serialNumberRef = useRef<HTMLInputElement>(null)
+  const memberSelectRef = useRef<HTMLButtonElement>(null)
+  const projectSelectRef = useRef<HTMLButtonElement>(null)
+  const statusSelectRef = useRef<HTMLButtonElement>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -168,6 +198,60 @@ export default function EquipmentPage() {
       toast.error(`Failed to create equipment: ${error.message}`)
     },
   })
+
+  // Auto-focus effect when dialog opens
+  useEffect(() => {
+    if (isDialogOpen && nameRef.current) {
+      // Small delay to ensure the dialog is rendered
+      setTimeout(() => {
+        nameRef.current?.focus()
+      }, 100)
+    }
+  }, [isDialogOpen])
+
+  // Auto-focus helper functions
+  const focusNextField = (currentField: string, value: string) => {
+    if (!value.trim()) return // Don't move focus if field is empty
+
+    setTimeout(() => {
+      switch (currentField) {
+        case 'name':
+          descriptionRef.current?.focus()
+          break
+        case 'description':
+          serialNumberRef.current?.focus()
+          break
+        case 'serialNumber':
+          // For select fields, we focus the trigger button
+          memberSelectRef.current?.focus()
+          break
+      }
+    }, 100)
+  }
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setFormData({ ...formData, name: value })
+    if (value.length >= 3) { // Move to next field when name has at least 3 characters
+      focusNextField('name', value)
+    }
+  }
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setFormData({ ...formData, description: value })
+    if (value.length >= 10) { // Move to next field when description has at least 10 characters
+      focusNextField('description', value)
+    }
+  }
+
+  const handleSerialNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setFormData({ ...formData, serialNumber: value })
+    if (value.length >= 5) { // Move to next field when serial number has at least 5 characters
+      focusNextField('serialNumber', value)
+    }
+  }
 
   if (loading) {
     return (
@@ -197,18 +281,44 @@ export default function EquipmentPage() {
     const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.serialNumber?.toLowerCase().includes(searchQuery.toLowerCase()) || false
-    
-    const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter
-    
+
+    // Calculate effective status for filtering
+    const now = new Date()
+    const hasPermanentAssignment = (item.member || item.project) && item.status !== 'MAINTENANCE'
+    // Filter bookings for this equipment
+    const equipmentBookings = data?.bookings?.filter((booking) => (booking as any).equipmentId === item.id) || []
+    const hasActiveBooking = equipmentBookings.some(booking => {
+      const startTime = new Date(booking.startTime)
+      const endTime = new Date(booking.endTime)
+      return startTime <= now && now <= endTime
+    })
+    const effectiveStatus = hasPermanentAssignment || hasActiveBooking ? 'IN_USE' : item.status
+
+    const matchesStatus = statusFilter === 'ALL' || effectiveStatus === statusFilter
+
     return matchesSearch && matchesStatus
   })
 
-  const stats = {
-    total: equipments.length,
-    available: equipments.filter((e: Equipment) => e.status === 'AVAILABLE').length,
-    inUse: equipments.filter((e: Equipment) => e.status === 'IN_USE').length,
-    maintenance: equipments.filter((e: Equipment) => e.status === 'MAINTENANCE').length,
-  }
+  const stats = equipments.reduce((acc, e: Equipment) => {
+    // Calculate effective status for each equipment
+    const now = new Date()
+    const hasPermanentAssignment = (e.member || e.project) && e.status !== 'MAINTENANCE'
+    // Filter bookings for this equipment
+    const equipmentBookings = data?.bookings?.filter((booking) => (booking as any).equipmentId === e.id) || []
+    const hasActiveBooking = equipmentBookings.some(booking => {
+      const startTime = new Date(booking.startTime)
+      const endTime = new Date(booking.endTime)
+      return startTime <= now && now <= endTime
+    })
+    const effectiveStatus = hasPermanentAssignment || hasActiveBooking ? 'IN_USE' : e.status
+
+    acc.total++
+    if (effectiveStatus === 'AVAILABLE') acc.available++
+    else if (effectiveStatus === 'IN_USE') acc.inUse++
+    else if (effectiveStatus === 'MAINTENANCE') acc.maintenance++
+
+    return acc
+  }, { total: 0, available: 0, inUse: 0, maintenance: 0 })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -264,9 +374,10 @@ export default function EquipmentPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="name">Equipment Name</Label>
                   <Input
+                    ref={nameRef}
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleNameChange}
                     placeholder="PCR Machine"
                     required
                   />
@@ -274,9 +385,10 @@ export default function EquipmentPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="description">Description (Optional)</Label>
                   <Textarea
+                    ref={descriptionRef}
                     id="description"
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={handleDescriptionChange}
                     placeholder="Thermal cycler for DNA amplification"
                     rows={3}
                   />
@@ -284,9 +396,10 @@ export default function EquipmentPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="serialNumber">Serial Number (Optional)</Label>
                   <Input
+                    ref={serialNumberRef}
                     id="serialNumber"
                     value={formData.serialNumber}
-                    onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                    onChange={handleSerialNumberChange}
                     placeholder="SN-2024-001"
                   />
                 </div>
@@ -295,18 +408,22 @@ export default function EquipmentPage() {
                   <Select
                     value={formData.memberId || ''}
                     onValueChange={(value) => {
-                      setFormData({ 
-                        ...formData, 
-                        memberId: value || undefined,
-                        projectId: value ? undefined : formData.projectId, // Clear project if member selected
+                      setFormData({
+                        ...formData,
+                        memberId: value === 'none' ? undefined : value || undefined,
+                        projectId: value && value !== 'none' ? undefined : formData.projectId, // Clear project if member selected
                       })
+                      // Auto-focus to project select after member selection
+                      if (value && value !== 'none') {
+                        setTimeout(() => projectSelectRef.current?.focus(), 100)
+                      }
                     }}
                   >
-                    <SelectTrigger id="memberId">
+                    <SelectTrigger ref={memberSelectRef} id="memberId">
                       <SelectValue placeholder="Select a member (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {members.map((member: Member) => (
                         <SelectItem key={member.id} value={member.id}>
                           {member.name}
@@ -323,18 +440,22 @@ export default function EquipmentPage() {
                   <Select
                     value={formData.projectId || ''}
                     onValueChange={(value) => {
-                      setFormData({ 
-                        ...formData, 
-                        projectId: value || undefined,
-                        memberId: value ? undefined : formData.memberId, // Clear member if project selected
+                      setFormData({
+                        ...formData,
+                        projectId: value === 'none' ? undefined : value || undefined,
+                        memberId: value && value !== 'none' ? undefined : formData.memberId, // Clear member if project selected
                       })
+                      // Auto-focus to status select after project selection
+                      if (value && value !== 'none') {
+                        setTimeout(() => statusSelectRef.current?.focus(), 100)
+                      }
                     }}
                   >
-                    <SelectTrigger id="projectId">
+                    <SelectTrigger ref={projectSelectRef} id="projectId">
                       <SelectValue placeholder="Select a project (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {projects.map((project: Project) => (
                         <SelectItem key={project.id} value={project.id}>
                           {project.title}
@@ -351,19 +472,19 @@ export default function EquipmentPage() {
                   <Select
                     value={formData.status || ''}
                     onValueChange={(value) => {
-                      setFormData({ 
-                        ...formData, 
+                      setFormData({
+                        ...formData,
                         status: value === 'MAINTENANCE' ? 'MAINTENANCE' : undefined,
                         memberId: value === 'MAINTENANCE' ? undefined : formData.memberId, // Clear assignments if maintenance
                         projectId: value === 'MAINTENANCE' ? undefined : formData.projectId,
                       })
                     }}
                   >
-                    <SelectTrigger id="status">
+                    <SelectTrigger ref={statusSelectRef} id="status">
                       <SelectValue placeholder="Normal operation" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Normal Operation</SelectItem>
+                      <SelectItem value="AVAILABLE">Normal Operation</SelectItem>
                       <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
                     </SelectContent>
                   </Select>
@@ -438,9 +559,22 @@ export default function EquipmentPage() {
         <CardContent className="p-3 sm:p-6">
           <div className="grid gap-4 md:grid-cols-2">
             {filteredEquipment.map((item: Equipment) => {
-              // Compute effective status: if member OR project is assigned, equipment is IN_USE (unless MAINTENANCE)
-              const effectiveStatus = (item.member || item.project) && item.status !== 'MAINTENANCE' 
-                ? 'IN_USE' 
+              // Compute effective status:
+              // 1. If permanently assigned (member/project), equipment is IN_USE (unless MAINTENANCE)
+              // 2. If has active booking (current time between start/end), equipment is IN_USE
+              // 3. Otherwise use the stored status
+              const now = new Date()
+              const hasPermanentAssignment = (item.member || item.project) && item.status !== 'MAINTENANCE'
+              // Filter bookings for this equipment
+              const equipmentBookings = data?.bookings?.filter((booking) => (booking as any).equipmentId === item.id) || []
+              const hasActiveBooking = equipmentBookings.some(booking => {
+                const startTime = new Date(booking.startTime)
+                const endTime = new Date(booking.endTime)
+                return startTime <= now && now <= endTime
+              })
+
+              const effectiveStatus = hasPermanentAssignment || hasActiveBooking
+                ? 'IN_USE'
                 : item.status
               
               return (

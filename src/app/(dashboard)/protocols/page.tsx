@@ -346,14 +346,14 @@ export default function ProtocolsPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="authorId">Author (Optional)</Label>
                   <Select
-                    value={formData.authorId}
-                    onValueChange={(value) => setFormData({ ...formData, authorId: value })}
+                    value={formData.authorId || "none"}
+                    onValueChange={(value) => setFormData({ ...formData, authorId: value === "none" ? "" : value })}
                   >
                     <SelectTrigger id="authorId">
                       <SelectValue placeholder="Select author" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {members.map((member: Member) => (
                         <SelectItem key={member.id} value={member.id}>
                           {member.name}

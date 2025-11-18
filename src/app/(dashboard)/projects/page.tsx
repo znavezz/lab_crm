@@ -547,12 +547,12 @@ export default function ProjectsPage() {
                                 {memberAvatars.map((member: any, idx: number) => {
                                   const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
                                   return (
-                                    <Avatar 
-                                      key={member.id} 
+                                    <Avatar
+                                      key={member.id}
                                       className="h-8 w-8 border-2 border-background"
                                       title={member.name}
                                     >
-                                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                      <AvatarFallback className="bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground text-xs transition-colors">
                                         {initials}
                                       </AvatarFallback>
                                     </Avatar>

@@ -17,7 +17,8 @@ interface GrantQueryData {
     id: string
     name: string
     budget: number
-    deadline: string
+    startDate: string
+    endDate: string
     totalSpent: number
     remainingBudget: number
     projects: Array<{
@@ -37,7 +38,8 @@ const GET_GRANT = gql`
       id
       name
       budget
-      deadline
+      startDate
+      endDate
       totalSpent
       remainingBudget
       projects {
@@ -146,9 +148,9 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
             <div className="flex items-center gap-3">
               <CalendarIcon className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Deadline</p>
+                <p className="text-sm font-medium">Duration</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(grant.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  {new Date(grant.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })} - {new Date(grant.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 </p>
               </div>
             </div>

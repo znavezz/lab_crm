@@ -34,7 +34,8 @@ const GET_DASHBOARD_STATS = gql`
     grants {
       id
       name
-      deadline
+      startDate
+      endDate
       createdAt
     }
     events {
@@ -80,7 +81,8 @@ interface Publication {
 
 interface Grant {
   id: string
-  deadline: string
+  startDate: string
+  endDate: string
   name?: string
 }
 
@@ -275,7 +277,7 @@ export default function DashboardPage() {
     return new Date(p.endDate) > new Date()
   }).length
   const publishedCount = publications.filter((p) => p.published).length
-  const activeGrants = grants.filter((g) => new Date(g.deadline) > new Date()).length
+  const activeGrants = grants.filter((g) => new Date(g.endDate) > new Date()).length
 
   // Get upcoming events
   const upcomingEvents = [...events]
@@ -290,15 +292,15 @@ export default function DashboardPage() {
       href: `/events/${e.id}`,
     }))
 
-  // Get upcoming grant deadlines
+  // Get upcoming grant end dates
   const upcomingGrantDeadlines = [...grants]
-    .filter((g) => new Date(g.deadline) >= new Date())
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+    .filter((g) => new Date(g.endDate) >= new Date())
+    .sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
     .slice(0, 3 - upcomingEvents.length)
     .map((g) => ({
       id: g.id,
       title: g.name || 'Untitled Grant',
-      date: new Date(g.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      date: new Date(g.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       type: 'deadline',
       href: `/grants/${g.id}`,
     }))

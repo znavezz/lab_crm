@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { gql } from '@apollo/client'
@@ -38,7 +38,8 @@ interface GrantsQueryData {
     id: string
     name: string
     budget: number
-    deadline: string
+    startDate: string
+    endDate: string
     totalSpent: number
     remainingBudget: number
     projects: Array<{
@@ -63,7 +64,8 @@ const GET_GRANTS = gql`
       id
       name
       budget
-      deadline
+      startDate
+      endDate
       totalSpent
       remainingBudget
       projects {
@@ -85,13 +87,13 @@ const CREATE_GRANT = gql`
   }
 `
 
-function getGrantStatus(grant: { deadline: string; remainingBudget: number; budget: number }): 'ACTIVE' | 'COMPLETED' {
+function getGrantStatus(grant: { endDate: string; remainingBudget: number; budget: number }): 'ACTIVE' | 'COMPLETED' {
   const now = new Date()
-  const deadline = new Date(grant.deadline)
+  const endDate = new Date(grant.endDate)
   const budgetUsed = grant.budget - grant.remainingBudget
   const budgetPercentage = grant.budget > 0 ? (budgetUsed / grant.budget) * 100 : 0
-  
-  if (deadline < now || budgetPercentage >= 100) return 'COMPLETED'
+
+  if (endDate < now || budgetPercentage >= 100) return 'COMPLETED'
   return 'ACTIVE'
 }
 
@@ -109,10 +111,17 @@ export default function GrantsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  // Refs for auto-focus functionality
+  const nameRef = useRef<HTMLInputElement>(null)
+  const budgetRef = useRef<HTMLInputElement>(null)
+  const startDateRef = useRef<HTMLInputElement>(null)
+  const endDateRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: '',
     budget: '',
-    deadline: '',
+    startDate: '',
+    endDate: '',
   })
 
   const { data, loading, error, refetch } = useQuery<GrantsQueryData>(GET_GRANTS)
@@ -120,13 +129,66 @@ export default function GrantsPage() {
     onCompleted: () => {
       toast.success('Grant created successfully')
       setIsDialogOpen(false)
-      setFormData({ name: '', budget: '', deadline: '' })
+      setFormData({ name: '', budget: '', startDate: '', endDate: '' })
       refetch()
     },
     onError: (error) => {
       toast.error(`Failed to create grant: ${error.message}`)
     },
   })
+
+  // Auto-focus effect when dialog opens
+  useEffect(() => {
+    if (isDialogOpen && nameRef.current) {
+      // Small delay to ensure the dialog is rendered
+      setTimeout(() => {
+        nameRef.current?.focus()
+      }, 100)
+    }
+  }, [isDialogOpen])
+
+  // Auto-focus helper functions
+  const focusNextField = (currentField: string, value: string) => {
+    if (!value.trim()) return // Don't move focus if field is empty
+
+    setTimeout(() => {
+      switch (currentField) {
+        case 'name':
+          budgetRef.current?.focus()
+          break
+        case 'budget':
+          startDateRef.current?.focus()
+          break
+        case 'startDate':
+          endDateRef.current?.focus()
+          break
+      }
+    }, 100)
+  }
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setFormData({ ...formData, name: value })
+    if (value.length >= 5) { // Move to next field when name has at least 5 characters
+      focusNextField('name', value)
+    }
+  }
+
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setFormData({ ...formData, budget: value })
+    if (value.length >= 3) { // Move to next field when budget has at least 3 digits
+      focusNextField('budget', value)
+    }
+  }
+
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setFormData({ ...formData, startDate: value })
+    if (value) { // Move to next field when date is selected
+      focusNextField('startDate', value)
+    }
+  }
 
   if (loading) {
     return (
@@ -184,7 +246,8 @@ export default function GrantsPage() {
         input: {
           name: formData.name,
           budget: parseFloat(formData.budget),
-          deadline: new Date(formData.deadline).toISOString(),
+          startDate: new Date(formData.startDate).toISOString(),
+          endDate: new Date(formData.endDate).toISOString(),
         },
       },
     })
@@ -218,9 +281,10 @@ export default function GrantsPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="name">Grant Name</Label>
                   <Input
+                    ref={nameRef}
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleNameChange}
                     placeholder="NSF Research Grant 2024"
                     required
                   />
@@ -229,21 +293,34 @@ export default function GrantsPage() {
                   <div className="grid gap-2">
                     <Label htmlFor="budget">Budget ($)</Label>
                     <Input
+                      ref={budgetRef}
                       id="budget"
                       type="number"
                       value={formData.budget}
-                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                      onChange={handleBudgetChange}
                       placeholder="250000"
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="deadline">Deadline</Label>
+                    <Label htmlFor="startDate">Start Date</Label>
                     <Input
-                      id="deadline"
+                      ref={startDateRef}
+                      id="startDate"
                       type="date"
-                      value={formData.deadline}
-                      onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                      value={formData.startDate}
+                      onChange={handleStartDateChange}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="endDate">End Date</Label>
+                    <Input
+                      ref={endDateRef}
+                      id="endDate"
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                       required
                     />
                   </div>
@@ -356,7 +433,7 @@ export default function GrantsPage() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <CalendarIcon className="h-3.5 w-3.5" />
-                          <span>Deadline: {new Date(grant.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                          <span>{new Date(grant.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })} - {new Date(grant.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                         </div>
                       </div>
                     </CardContent>

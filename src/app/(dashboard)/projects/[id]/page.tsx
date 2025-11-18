@@ -237,7 +237,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <CardContent className="space-y-3">
               {project.members.map((member: ProjectMember) => (
                 <Link key={member.id} href={`/members/${member.id}`}>
-                  <div className="flex items-center gap-3 p-2 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
