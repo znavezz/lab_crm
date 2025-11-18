@@ -374,5 +374,45 @@ export class DataFactory {
       data: { ...defaults, ...overrides },
     });
   }
+
+  // Protocol factory
+  async createProtocol(overrides: {
+    title?: string;
+    category?: 'WET_LAB' | 'COMPUTATIONAL' | 'SAFETY' | 'GENERAL';
+    authorId?: string;
+    projectId?: string;
+  } = {}) {
+    // Create author if not provided
+    if (!overrides.authorId) {
+      const member = await this.createMember();
+      overrides.authorId = member.id;
+    }
+
+    // Create project if not provided
+    if (!overrides.projectId) {
+      const project = await this.createProject();
+      overrides.projectId = project.id;
+    }
+
+    const defaults = {
+      title: `Test Protocol ${Math.random().toString(36).substring(7)}`,
+      category: 'GENERAL' as const,
+    };
+
+    const { authorId, projectId, ...restOverrides } = overrides;
+    
+    return await this.prisma.protocol.create({
+      data: {
+        ...defaults,
+        ...restOverrides,
+        author: authorId ? {
+          connect: { id: authorId },
+        } : undefined,
+        project: projectId ? {
+          connect: { id: projectId },
+        } : undefined,
+      },
+    });
+  }
 }
 
