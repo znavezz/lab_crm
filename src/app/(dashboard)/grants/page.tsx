@@ -356,7 +356,7 @@ export default function GrantsPage() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <CalendarIcon className="h-3.5 w-3.5" />
-                          <span>Deadline: {new Date(grant.deadline).toLocaleDateString()}</span>
+                          <span>Deadline: {new Date(grant.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                         </div>
                       </div>
                     </CardContent>

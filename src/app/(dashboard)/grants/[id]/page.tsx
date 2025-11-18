@@ -148,7 +148,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
               <div>
                 <p className="text-sm font-medium">Deadline</p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(grant.deadline).toLocaleDateString()}
+                  {new Date(grant.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 </p>
               </div>
             </div>
@@ -187,8 +187,8 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
                     )}
                     {project.startDate && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(project.startDate).toLocaleDateString()}
-                        {project.endDate && ` - ${new Date(project.endDate).toLocaleDateString()}`}
+                        {new Date(project.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        {project.endDate && ` - ${new Date(project.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}`}
                       </p>
                     )}
                   </div>

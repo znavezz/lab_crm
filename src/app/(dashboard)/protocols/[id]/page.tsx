@@ -263,7 +263,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
                 <HistoryIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Last Updated</p>
-                  <p className="text-sm text-muted-foreground">{new Date(protocol.updatedAt).toLocaleDateString()}</p>
+                  <p className="text-sm text-muted-foreground">{new Date(protocol.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
                 </div>
               </div>
             )}
@@ -385,7 +385,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
                     v{version.version}
                   </Badge>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{new Date(version.date).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium">{new Date(version.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
                     <p className="text-sm text-muted-foreground mt-1">{version.changes}</p>
                   </div>
                 </div>

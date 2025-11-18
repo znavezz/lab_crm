@@ -210,7 +210,7 @@ export default function DashboardPage() {
         } else if (days < 7) {
           timeStr = days === 1 ? '1 day ago' : `${days} days ago`
         } else {
-          timeStr = activity.time.toLocaleDateString()
+          timeStr = activity.time.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
         }
         
         return {
@@ -261,7 +261,7 @@ export default function DashboardPage() {
     .slice(0, 3)
     .map((e) => ({
       title: e.title || 'Untitled Event',
-      date: new Date(e.date).toLocaleDateString(),
+      date: new Date(e.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       type: 'event',
     }))
 
@@ -272,7 +272,7 @@ export default function DashboardPage() {
     .slice(0, 3 - upcomingEvents.length)
     .map((g) => ({
       title: g.name || 'Untitled Grant',
-      date: new Date(g.deadline).toLocaleDateString(),
+      date: new Date(g.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       type: 'deadline',
     }))
 

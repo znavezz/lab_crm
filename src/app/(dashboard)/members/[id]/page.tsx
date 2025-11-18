@@ -475,7 +475,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               )}
               <div className="flex items-center gap-2 text-sm">
                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                <span>Joined {new Date(member.joinedDate || member.createdAt).toLocaleDateString()}</span>
+                <span>Joined {new Date(member.joinedDate || member.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
               </div>
               {member.publications && member.publications.length >= 0 && (
                 <div className="flex items-center gap-2 text-sm">

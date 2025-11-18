@@ -188,7 +188,7 @@ export default function EventsPage() {
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1.5">
                                   <CalendarIcon className="h-3.5 w-3.5" />
-                                  <span>{new Date(event.date).toLocaleDateString()}</span>
+                                  <span>{new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                                   <span>{new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                                 {event.location && (
@@ -240,7 +240,7 @@ export default function EventsPage() {
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1.5">
                                   <CalendarIcon className="h-3.5 w-3.5" />
-                                  <span>{new Date(event.date).toLocaleDateString()}</span>
+                                  <span>{new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                                 </div>
                               </div>
                             </div>

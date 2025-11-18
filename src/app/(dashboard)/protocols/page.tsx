@@ -484,7 +484,7 @@ export default function ProtocolsPage() {
                     
                     {protocol.updatedAt && (
                       <div className="text-xs text-muted-foreground">
-                        Last updated: {new Date(protocol.updatedAt).toLocaleDateString()}
+                        Last updated: {new Date(protocol.updatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                       </div>
                     )}
                     

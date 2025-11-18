@@ -201,7 +201,7 @@ export default function ActivitiesPage() {
     } else if (months < 12) {
       return months === 1 ? '1 month ago' : `${months} months ago`
     } else {
-      return date.toLocaleDateString()
+      return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
     }
   }
 

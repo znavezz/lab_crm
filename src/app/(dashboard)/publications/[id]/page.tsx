@@ -146,13 +146,13 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
             {pub.published && (
               <div>
                 <p className="text-sm font-medium mb-1">Published Date</p>
-                <p className="text-sm text-muted-foreground">{new Date(pub.published).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">{new Date(pub.published).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
               </div>
             )}
             {pub.createdAt && (
               <div>
                 <p className="text-sm font-medium mb-1">Added to System</p>
-                <p className="text-sm text-muted-foreground">{new Date(pub.createdAt).toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">{new Date(pub.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
               </div>
             )}
           </div>

@@ -183,8 +183,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 <div>
                   <p className="text-sm font-medium">Timeline</p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(project.startDate).toLocaleDateString()}
-                    {project.endDate && ` - ${new Date(project.endDate).toLocaleDateString()}`}
+                    {new Date(project.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    {project.endDate && ` - ${new Date(project.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}`}
                   </p>
                 </div>
               </div>
