@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { BeakerIcon, UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BookOpenIcon, LayoutDashboardIcon, TrendingUpIcon } from 'lucide-react'
+import { BeakerIcon, UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BookOpenIcon, LayoutDashboardIcon, TrendingUpIcon, CalendarIcon } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 const navigation = [
@@ -14,6 +14,7 @@ const navigation = [
   { name: 'Publications', href: '/publications', icon: FileTextIcon },
   { name: 'Grants', href: '/grants', icon: BanknoteIcon },
   { name: 'Equipment', href: '/equipment', icon: BeakerIcon },
+  { name: 'Events', href: '/events', icon: CalendarIcon },
   { name: 'Protocols', href: '/protocols', icon: BookOpenIcon },
   { name: 'Analytics', href: '/analytics', icon: TrendingUpIcon },
 ]
