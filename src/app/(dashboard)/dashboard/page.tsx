@@ -58,39 +58,46 @@ const GET_DASHBOARD_STATS = gql`
 
 // Type definitions
 interface Member {
+  id: string
   status?: string
   name?: string
   createdAt: string
 }
 
 interface Project {
+  id: string
   endDate?: string | null
   title?: string
   createdAt: string
 }
 
 interface Publication {
+  id: string
   published?: string | null
   title?: string
   createdAt: string
 }
 
 interface Grant {
+  id: string
   deadline: string
   name?: string
 }
 
 interface Protocol {
+  id: string
   title?: string
   createdAt: string
 }
 
 interface Equipment {
+  id: string
   name?: string
   createdAt: string
 }
 
 interface Event {
+  id: string
   date: string
   title?: string
 }
@@ -100,6 +107,8 @@ interface RecentActivity {
   message: string
   time: Date
   createdAt: string
+  id: string
+  href: string
 }
 
 interface DashboardData {
@@ -135,6 +144,8 @@ export default function DashboardPage() {
         message: `New member joined: ${m.name || 'Unknown'}`,
         time: new Date(m.createdAt),
         createdAt: m.createdAt,
+        id: m.id,
+        href: `/members/${m.id}`,
       })
     })
     
@@ -145,6 +156,8 @@ export default function DashboardPage() {
         message: `Project created: ${p.title || 'Unknown'}`,
         time: new Date(p.createdAt),
         createdAt: p.createdAt,
+        id: p.id,
+        href: `/projects/${p.id}`,
       })
     })
     
@@ -156,6 +169,8 @@ export default function DashboardPage() {
           message: `New publication: ${p.title || 'Unknown'}`,
           time: new Date(p.published),
           createdAt: p.published,
+          id: p.id,
+          href: `/publications/${p.id}`,
         })
       } else {
         activities.push({
@@ -163,6 +178,8 @@ export default function DashboardPage() {
           message: `Publication added: ${p.title || 'Unknown'}`,
           time: new Date(p.createdAt),
           createdAt: p.createdAt,
+          id: p.id,
+          href: `/publications/${p.id}`,
         })
       }
     })
@@ -174,6 +191,8 @@ export default function DashboardPage() {
         message: `Protocol created: ${p.title || 'Unknown'}`,
         time: new Date(p.createdAt),
         createdAt: p.createdAt,
+        id: p.id,
+        href: `/protocols/${p.id}`,
       })
     })
     
@@ -184,6 +203,8 @@ export default function DashboardPage() {
         message: `Equipment added: ${e.name || 'Unknown'}`,
         time: new Date(e.createdAt),
         createdAt: e.createdAt,
+        id: e.id,
+        href: `/equipment/${e.id}`,
       })
     })
     
@@ -217,6 +238,8 @@ export default function DashboardPage() {
           type: activity.type,
           message: activity.message,
           time: timeStr,
+          id: activity.id,
+          href: activity.href,
         }
       })
   }, [allRecentActivities])
@@ -260,9 +283,11 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 3)
     .map((e) => ({
+      id: e.id,
       title: e.title || 'Untitled Event',
       date: new Date(e.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       type: 'event',
+      href: `/events/${e.id}`,
     }))
 
   // Get upcoming grant deadlines
@@ -271,9 +296,11 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 3 - upcomingEvents.length)
     .map((g) => ({
+      id: g.id,
       title: g.name || 'Untitled Grant',
       date: new Date(g.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
       type: 'deadline',
+      href: `/grants/${g.id}`,
     }))
 
   const allUpcoming = [...upcomingEvents, ...upcomingGrantDeadlines].slice(0, 3)
@@ -352,16 +379,18 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {recentActivities.length > 0 ? (
-                recentActivities.map((activity: { type: string; message: string; time: string }, index: number) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="rounded-full bg-primary/10 p-2">
-                      <AlertCircleIcon className="h-4 w-4 text-primary" />
+                recentActivities.map((activity: { type: string; message: string; time: string; href: string; id: string }, index: number) => (
+                  <Link key={activity.id || index} href={activity.href}>
+                    <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+                      <div className="rounded-full bg-primary/10 p-2">
+                        <AlertCircleIcon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{activity.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{activity.message}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
-                    </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">No recent activities</p>
@@ -385,19 +414,21 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {allUpcoming.length > 0 ? (
-                allUpcoming.map((event, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="rounded-full bg-secondary p-2">
-                      <CalendarIcon className="h-4 w-4" />
+                allUpcoming.map((event) => (
+                  <Link key={event.id} href={event.href}>
+                    <div className="flex items-start gap-4 p-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
+                      <div className="rounded-full bg-secondary p-2">
+                        <CalendarIcon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{event.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{event.date}</p>
+                        <Badge variant="outline" className="mt-1 text-xs">
+                          {event.type}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{event.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{event.date}</p>
-                      <Badge variant="outline" className="mt-1 text-xs">
-                        {event.type}
-                      </Badge>
-                    </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">No upcoming events or deadlines</p>
