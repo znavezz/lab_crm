@@ -123,90 +123,24 @@
   }
 }
 
-/* Cool color painting animation for dashboard cards */
-@keyframes paint-sweep {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes paint-fill {
-  0% {
-    background-size: 0% 100%;
-  }
-  50% {
-    background-size: 100% 100%;
-  }
-  100% {
-    background-size: 100% 100%;
-  }
-}
+/* Simple hover animation for dashboard cards */
 
 .paint-card {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    oklch(0.600 0.150 240.0 / 0.1) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
   transition: all 0.3s ease;
 }
 
-.paint-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    oklch(0.600 0.150 240.0 / 0.08) 50%,
-    transparent 100%
-  );
-  transition: left 0.5s ease;
-}
-
-.paint-card:hover::before {
-  left: 100%;
-}
-
 .paint-card:hover {
-  animation: paint-sweep 0.8s ease-in-out;
   box-shadow: 0 10px 25px -5px oklch(0.600 0.150 240.0 / 0.3),
               0 8px 10px -6px oklch(0.600 0.150 240.0 / 0.2);
   border-color: oklch(0.600 0.150 240.0 / 0.5);
+  transform: translateY(-2px);
 }
 
 .dark .paint-card:hover {
   box-shadow: 0 10px 25px -5px oklch(0.650 0.180 240.0 / 0.4),
               0 8px 10px -6px oklch(0.650 0.180 240.0 / 0.3);
   border-color: oklch(0.650 0.180 240.0 / 0.6);
-}
-
-.paint-card .paint-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg,
-    oklch(0.600 0.150 240.0 / 0) 0%,
-    oklch(0.950 0.010 120.0 / 0.02) 50%,
-    oklch(0.600 0.150 240.0 / 0) 100%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-}
-
-.paint-card:hover .paint-overlay {
-  opacity: 1;
+  transform: translateY(-2px);
 }
 
 /* Diagonal Tear-Strip Peel Animation */
