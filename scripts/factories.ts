@@ -27,7 +27,8 @@ type ProjectCreateInput = {
 type GrantCreateInput = {
   name?: string;
   budget?: number;
-  deadline?: Date;
+  startDate?: Date;
+  endDate?: Date;
 };
 
 type EquipmentCreateInput = {
@@ -138,7 +139,8 @@ export class DataFactory {
     const defaults = {
       name: `Test Grant ${Math.random().toString(36).substring(7)}`,
       budget: 100000,
-      deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      endDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000), // 11 months from now (total 1 year)
     };
 
     return await this.prisma.grant.create({

@@ -507,7 +507,8 @@ export const mutations = {
       data: {
         name: args.input.name,
         budget: args.input.budget,
-        deadline: args.input.deadline,
+        startDate: args.input.startDate,
+        endDate: args.input.endDate,
       },
     });
   },
@@ -522,7 +523,8 @@ export const mutations = {
       data: {
         ...(args.input.name && { name: args.input.name }),
         ...(args.input.budget !== undefined && { budget: args.input.budget }),
-        ...(args.input.deadline && { deadline: args.input.deadline }),
+        ...(args.input.startDate && { startDate: args.input.startDate }),
+        ...(args.input.endDate && { endDate: args.input.endDate }),
       },
     });
   },

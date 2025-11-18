@@ -149,7 +149,8 @@ type Grant {
   id: ID!
   name: String!
   budget: Float!
-  deadline: DateTime!
+  startDate: DateTime!
+  endDate: DateTime!
   projects: [Project!]!
   expenses: [Expense!]!
   noteTasks: [NoteTask!]!
@@ -381,13 +382,15 @@ input UpdateEventInput {
 input CreateGrantInput {
   name: String!
   budget: Float!
-  deadline: DateTime!
+  startDate: DateTime!
+  endDate: DateTime!
 }
 
 input UpdateGrantInput {
   name: String
   budget: Float
-  deadline: DateTime
+  startDate: DateTime
+  endDate: DateTime
 }
 
 input CreatePublicationInput {

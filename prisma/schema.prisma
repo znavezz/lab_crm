@@ -222,10 +222,11 @@ model Expense {
 
 /// Represents a funding source or grant that provides a budget for projects.
 model Grant {
-  id       String   @id @default(cuid())
-  name     String
-  budget   Float // total budget amount
-  deadline DateTime // e.g. grant end date or deadline
+  id        String   @id @default(cuid())
+  name      String
+  budget    Float // total budget amount
+  startDate DateTime // grant start date
+  endDate   DateTime // grant end date
 
   /// M:N relation for all projects funded by this grant.
   projects Project[]

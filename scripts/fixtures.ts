@@ -141,7 +141,8 @@ export class TestFixtures {
         data: {
           name: `${grantNames[i]} ${grantYear}`,
           budget: 200000 + Math.floor(Math.random() * 800000), // $200k - $1M
-          deadline: new Date(`${grantYear + Math.floor(Math.random() * 3) + 1}-12-31`),
+          startDate: new Date(`${grantYear}-01-01`),
+          endDate: new Date(`${grantYear + 2}-12-31`), // 3-year grant
           createdAt: new Date(`${grantYear}-${Math.floor(Math.random() * 12) + 1}-15`),
         },
       });
@@ -539,7 +540,8 @@ export class TestFixtures {
         data: {
           name: `Test Grant ${Math.random().toString(36).substring(7)}`,
           budget: 100000,
-          deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+          endDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000), // 11 months from now
         },
       });
 
