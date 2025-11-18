@@ -28,8 +28,9 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { SearchIcon, PlusIcon, FileTextIcon, Check, ChevronsUpDown, X } from 'lucide-react'
+import { SearchIcon, PlusIcon, FileTextIcon, Check, ChevronsUpDown, X, ExternalLinkIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Carousel, CarouselCard } from '@/components/ui/carousel'
 
 const GET_PUBLICATIONS = gql`
   query GetPublications {
@@ -385,101 +386,94 @@ export default function PublicationsPage() {
             
           </div>
         </CardHeader>
-        <CardContent className="p-3 sm:p-6">
-          <div className="space-y-3 sm:space-y-4">
-            {filteredPublications.map((pub: Publication) => (
-              <Link key={pub.id} href={`/publications/${pub.id}`}>
-                <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-start gap-2">
-                          <FileTextIcon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                          <div className="space-y-1 flex-1">
-                            <CardTitle className="text-lg leading-tight">{pub.title}</CardTitle>
-                            {pub.members && pub.members.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span className="text-xs text-muted-foreground font-medium">Authors:</span>
-                                {pub.members.map((m: PublicationMember, idx: number) => (
-                                  <Link
-                                    key={m.id}
-                                    href={`/members/${m.id}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="text-sm text-primary hover:underline font-medium"
-                                  >
-                                    {m.name}{idx < pub.members.length - 1 ? ',' : ''}
-                                  </Link>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {pub.published && (
-                            <Badge className="bg-chart-2 text-white">
-                              Published {new Date(pub.published).getFullYear()}
+        <CardContent className="p-3 sm:p-6 overflow-visible">
+          {filteredPublications.length > 0 ? (
+            <Carousel gap="md">
+              {filteredPublications.map((pub: Publication) => {
+                const publishedYear = pub.published ? new Date(pub.published).getFullYear() : null
+                return (
+                  <CarouselCard key={pub.id} href={`/publications/${pub.id}`}>
+                    <div className="flex flex-col h-full rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[280px] group cursor-pointer overflow-hidden transform hover:scale-105 hover:-translate-y-2 relative z-10">
+                      {/* Visual Header */}
+                      <div className="relative h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-background flex items-center justify-center">
+                        <FileTextIcon className="h-16 w-16 text-primary/30 group-hover:text-primary/50 transition-colors" />
+                        {publishedYear && (
+                          <div className="absolute top-3 right-3">
+                            <Badge className="bg-chart-2 text-white text-xs">
+                              {publishedYear}
                             </Badge>
-                          )}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="flex flex-col flex-1 p-4 space-y-3">
+                        <h3 className="font-semibold text-base leading-tight line-clamp-3 group-hover:text-primary transition-colors">
+                          {pub.title}
+                        </h3>
+                        
+                        {/* Authors */}
+                        {pub.members && pub.members.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                              Authors ({pub.members.length})
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {pub.members.slice(0, 3).map((m: PublicationMember) => (
+                                <Badge 
+                                  key={m.id}
+                                  variant="secondary" 
+                                  className="text-xs hover:bg-secondary/80 transition-colors"
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    window.location.href = `/members/${m.id}`
+                                  }}
+                                >
+                                  {m.name}
+                                </Badge>
+                              ))}
+                              {pub.members.length > 3 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  +{pub.members.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Metadata */}
+                        <div className="flex items-center gap-2 flex-wrap mt-auto">
                           {pub.doi && (
                             <Badge variant="outline" className="text-xs font-mono">
-                              DOI: {pub.doi}
+                              DOI
                             </Badge>
                           )}
                           {pub.projects && pub.projects.length > 0 && (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               {pub.projects.length} project{pub.projects.length !== 1 ? 's' : ''}
                             </span>
                           )}
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {pub.members && pub.members.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Authors ({pub.members.length})</p>
-                        <div className="flex flex-wrap gap-2">
-                          {pub.members.map((m: PublicationMember) => (
-                            <Link
-                              key={m.id}
-                              href={`/members/${m.id}`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Badge variant="secondary" className="hover:bg-secondary/80 transition-colors cursor-pointer">
-                                {m.name}
-                              </Badge>
-                            </Link>
-                          ))}
+                        
+                        {/* Hover Overlay */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2">
+                          <div className="flex items-center gap-2 text-sm text-primary font-medium">
+                            <span>View Details</span>
+                            <ExternalLinkIcon className="h-4 w-4" />
+                          </div>
                         </div>
                       </div>
-                    )}
-                    {pub.url && (
-                      <a 
-                        href={pub.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-primary hover:underline inline-block"
-                      >
-                        View Publication →
-                      </a>
-                    )}
-                    {pub.createdAt && (
-                      <p className="text-xs text-muted-foreground">
-                        Added {new Date(pub.createdAt).toLocaleDateString()}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-            
-            {filteredPublications.length === 0 && (
-              <div className="py-12 text-center">
-                <p className="text-muted-foreground">No publications found matching your criteria</p>
-              </div>
-            )}
-          </div>
+                    </div>
+                  </CarouselCard>
+                )
+              })}
+            </Carousel>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">No publications found matching your criteria</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

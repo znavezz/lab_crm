@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Carousel, CarouselCard } from '@/components/ui/carousel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SearchIcon, PlusIcon, MailIcon, PhoneIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import type { Member } from '@/generated/graphql/resolvers-types'
 
 interface MemberWithPhoto extends Member {
@@ -354,63 +356,78 @@ export default function MembersPage() {
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {filteredMembers.map((member: MemberWithPhoto) => (
-              <Link key={member.id} href={`/members/${member.id}`}>
-                <div className="flex items-start gap-3 sm:gap-4 rounded-lg border border-border p-3 sm:p-4 transition-colors hover:bg-accent/50 cursor-pointer">
-                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
-                    <AvatarImage src={member.photoUrl || "/placeholder.svg"} alt={member.name || 'Member'} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
-                      {member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 min-w-0 space-y-2">
-                    <div className="flex items-start justify-between gap-2 sm:gap-4">
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-base sm:text-lg truncate">{member.name}</h3>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+        <CardContent className="overflow-visible">
+          {filteredMembers.length > 0 ? (
+            <Carousel gap="md">
+              {filteredMembers.map((member: MemberWithPhoto) => {
+                const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
+                return (
+                  <CarouselCard key={member.id} href={`/members/${member.id}`}>
+                    <div className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[200px] group cursor-pointer transform hover:scale-105 hover:-translate-y-2 relative z-10">
+                      <div className="relative">
+                        <Avatar className="h-24 w-24 ring-2 ring-background ring-offset-2 ring-offset-background group-hover:ring-primary/50 transition-all duration-300 group-hover:scale-110">
+                          <AvatarImage 
+                            src={member.photoUrl || "/placeholder.svg"} 
+                            alt={member.name || 'Member'} 
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        {member.status && (
+                          <div className={cn(
+                            "absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-background flex items-center justify-center",
+                            member.status === 'ACTIVE' ? 'bg-green-500' : 
+                            member.status === 'ALUMNI' ? 'bg-gray-500' : 'bg-muted'
+                          )}>
+                            <div className={cn(
+                              "w-2 h-2 rounded-full",
+                              member.status === 'ACTIVE' ? 'bg-white' : 'bg-white'
+                            )} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center space-y-2 w-full">
+                        <h3 className="font-semibold text-base group-hover:text-primary transition-colors truncate w-full">
+                          {member.name}
+                        </h3>
+                        <div className="flex flex-col items-center gap-1.5 w-full">
                           {member.role && (
-                            <Badge className={roleColors[member.role] || 'bg-muted'} variant="secondary">
+                            <Badge className={cn(roleColors[member.role] || 'bg-muted', 'text-xs w-fit')} variant="secondary">
                               {member.role}
                             </Badge>
                           )}
                           {member.status && (
                             <Badge 
-                              className={statusColors[member.status] || 'bg-muted'} 
+                              className={cn(statusColors[member.status] || 'bg-muted', 'text-xs w-fit')} 
                               variant={member.status === 'ACTIVE' ? 'default' : 'outline'}
                             >
                               {member.status}
                             </Badge>
                           )}
                         </div>
+                        {member.rank && (
+                          <p className="text-xs text-muted-foreground truncate w-full">
+                            {member.rank}
+                          </p>
+                        )}
+                        {member.scholarship && (
+                          <p className="text-xs text-muted-foreground">
+                            ${member.scholarship}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    
-                    <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                      {member.rank && (
-                        <div className="flex items-center gap-2">
-                          <span>{member.rank}</span>
-                        </div>
-                      )}
-                      {member.scholarship && (
-                        <div className="flex items-center gap-2">
-                          <span>Scholarship: ${member.scholarship}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-            
-            {filteredMembers.length === 0 && (
-              <div className="py-12 text-center">
-                <p className="text-muted-foreground">No members found matching your criteria</p>
-              </div>
-            )}
-          </div>
+                  </CarouselCard>
+                )
+              })}
+            </Carousel>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">No members found matching your criteria</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

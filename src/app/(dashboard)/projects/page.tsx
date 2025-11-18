@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Progress } from '@/components/ui/progress'
+import { Carousel, CarouselCard } from '@/components/ui/carousel'
 import {
   Dialog,
   DialogContent,
@@ -490,83 +492,127 @@ export default function ProjectsPage() {
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-            {filteredProjects.map((project: any) => {
-              const firstMember = project.members?.[0]
-              return (
-                <Link key={project.id} href={`/projects/${project.id}`}>
-                  <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1 min-w-0 flex-1">
-                          <CardTitle className="text-base sm:text-lg leading-tight">{project.title}</CardTitle>
-                          <Badge className={statusColors[project.status] || 'bg-muted text-muted-foreground'}>
-                            {statusLabels[project.status] || project.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3 sm:space-y-4">
-                      {project.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {project.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                        {project.startDate && (
-                          <div className="flex items-center gap-1.5">
-                            <CalendarIcon className="h-3.5 w-3.5" />
-                            <span>{new Date(project.startDate).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                        {project.members && project.members.length > 0 && (
-                          <div className="flex items-center gap-1.5">
-                            <UsersIcon className="h-3.5 w-3.5" />
-                            <span>{project.members.length} member{project.members.length !== 1 ? 's' : ''}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {project.grants && project.grants.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {project.grants.map((grant: any) => (
-                            <Badge key={grant.id} variant="outline" className="text-xs">
-                              {grant.name}
+        <CardContent className="overflow-visible">
+          {filteredProjects.length > 0 ? (
+            <Carousel gap="md">
+              {filteredProjects.map((project: any) => {
+                const statusColor = statusColors[project.status] || 'bg-muted text-muted-foreground'
+                const progress = project.progress || 0
+                const memberAvatars = project.members?.slice(0, 4) || []
+                
+                return (
+                  <CarouselCard key={project.id} href={`/projects/${project.id}`}>
+                    <div className="w-[300px] flex-shrink-0">
+                      <div className="flex flex-col rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 relative z-10">
+                        {/* Status Indicator Bar */}
+                        <div className={cn(
+                          "h-1.5 w-full rounded-t-xl",
+                          project.status === 'ACTIVE' ? 'bg-chart-2' :
+                          project.status === 'COMPLETED' ? 'bg-chart-3' :
+                          'bg-muted'
+                        )} />
+                        
+                        {/* Content */}
+                        <div className="flex flex-col flex-1 p-5 space-y-4">
+                          {/* Title and Status */}
+                          <div className="space-y-2">
+                            <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                              {project.title}
+                            </h3>
+                            <Badge className={cn(statusColor, 'text-xs')}>
+                              {statusLabels[project.status] || project.status}
                             </Badge>
-                          ))}
+                          </div>
+                          
+                          {/* Progress Bar */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Progress</span>
+                              <span className="font-medium">{progress}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                          </div>
+                          
+                          {/* Description Preview */}
+                          {project.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 group-hover:line-clamp-none transition-all">
+                              {project.description}
+                            </p>
+                          )}
+                          
+                          {/* Member Avatars */}
+                          {memberAvatars.length > 0 && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex -space-x-2">
+                                {memberAvatars.map((member: any, idx: number) => {
+                                  const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
+                                  return (
+                                    <Avatar 
+                                      key={member.id} 
+                                      className="h-8 w-8 border-2 border-background"
+                                      title={member.name}
+                                    >
+                                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                        {initials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  )
+                                })}
+                              </div>
+                              {project.members && project.members.length > 4 && (
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  +{project.members.length - 4}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground ml-auto">
+                                {project.members?.length || 0} member{(project.members?.length || 0) !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Grants */}
+                          {project.grants && project.grants.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {project.grants.slice(0, 2).map((grant: any) => (
+                                <Badge key={grant.id} variant="outline" className="text-xs">
+                                  {grant.name}
+                                </Badge>
+                              ))}
+                              {project.grants.length > 2 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{project.grants.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Dates */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t">
+                            {project.startDate && (
+                              <div className="flex items-center gap-1.5">
+                                <CalendarIcon className="h-3.5 w-3.5" />
+                                <span>{new Date(project.startDate).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                            {project.endDate && (
+                              <div className="flex items-center gap-1.5">
+                                <span>→</span>
+                                <span>{new Date(project.endDate).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      
-                      {firstMember && (
-                        <div className="flex items-center justify-between pt-2 border-t">
-                          <Link 
-                            href={`/members/${firstMember.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
-                          >
-                            <Avatar className="h-6 w-6 flex-shrink-0">
-                              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                                {firstMember.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm text-muted-foreground truncate">{firstMember.name}</span>
-                          </Link>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
-            
-            {filteredProjects.length === 0 && (
-              <div className="col-span-full py-12 text-center">
-                <p className="text-muted-foreground">No projects found matching your criteria</p>
-              </div>
-            )}
-          </div>
+                      </div>
+                    </div>
+                  </CarouselCard>
+                )
+              })}
+            </Carousel>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">No projects found matching your criteria</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
