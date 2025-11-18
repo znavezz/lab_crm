@@ -130,6 +130,7 @@
 }
 
 .paint-card:hover {
+  background-color: oklch(0.600 0.150 240.0 / 0.05);
   box-shadow: 0 10px 25px -5px oklch(0.600 0.150 240.0 / 0.3),
               0 8px 10px -6px oklch(0.600 0.150 240.0 / 0.2);
   border-color: oklch(0.600 0.150 240.0 / 0.5);
@@ -137,6 +138,7 @@
 }
 
 .dark .paint-card:hover {
+  background-color: oklch(0.650 0.180 240.0 / 0.08);
   box-shadow: 0 10px 25px -5px oklch(0.650 0.180 240.0 / 0.4),
               0 8px 10px -6px oklch(0.650 0.180 240.0 / 0.3);
   border-color: oklch(0.650 0.180 240.0 / 0.6);
