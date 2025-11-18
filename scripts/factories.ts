@@ -147,6 +147,10 @@ export class DataFactory {
   }
 
   // Equipment factory
+  // Automatically sets status based on member/project assignment:
+  // - If member OR project assigned → IN_USE
+  // - If neither → AVAILABLE
+  // - Only explicit MAINTENANCE status is allowed
   async createEquipment(overrides: EquipmentCreateInput = {}) {
     const defaults = {
       name: `Test Equipment ${Math.random().toString(36).substring(7)}`,
@@ -154,8 +158,27 @@ export class DataFactory {
       status: 'AVAILABLE' as EquipmentStatus,
     };
 
+    // Validate: Cannot have both member and project
+    if (overrides.memberId && overrides.projectId) {
+      throw new Error('Equipment cannot be assigned to both a member and a project.');
+    }
+
+    // Determine status automatically:
+    // - If status is explicitly set to MAINTENANCE → use MAINTENANCE
+    // - If member OR project is assigned → status is IN_USE
+    // - Otherwise → status is AVAILABLE
+    let status: EquipmentStatus;
+    
+    if (overrides.status === 'MAINTENANCE') {
+      status = 'MAINTENANCE';
+    } else if (overrides.memberId || overrides.projectId) {
+      status = 'IN_USE';
+    } else {
+      status = overrides.status || defaults.status;
+    }
+
     return await this.prisma.equipment.create({
-      data: { ...defaults, ...overrides },
+      data: { ...defaults, ...overrides, status },
     });
   }
 
