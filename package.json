@@ -11,7 +11,16 @@
     "db:seed": "npx tsx scripts/seed.ts",
     "db:seed:json": "npx tsx scripts/seed-from-json.ts",
     "db:seed:reset": "npx tsx scripts/seed-from-json.ts --reset",
-    "db:seed:dummy": "npx tsx scripts/seed-dummy-data.ts"
+    "db:seed:dummy": "npx tsx scripts/seed-dummy-data.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:docker": "vitest run",
+    "test:docker:ui": "vitest --ui",
+    "test:docker:setup": "docker-compose exec db psql -U myuser -d postgres -c \"CREATE DATABASE test_lab_crm;\" || true",
+    "seed:docker:reset": "docker-compose exec app sh -c 'npm run seed:reset'",
+    "studio": "npx prisma studio"
   },
   "dependencies": {
     "@apollo/client": "4.0.9",
@@ -87,9 +96,12 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "nodemailer": "^6.9.7",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.0.0",
+    "@vitest/ui": "^2.0.0"
   }
 }
