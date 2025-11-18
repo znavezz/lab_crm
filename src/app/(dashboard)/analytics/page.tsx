@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
 import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -823,7 +824,9 @@ export default function AnalyticsPage() {
                     <div key={grant.id} className="border rounded-lg p-4 space-y-2">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="font-semibold text-lg">{grant.name}</h4>
+                          <Link href={`/grants/${grant.id}`}>
+                            <h4 className="font-semibold text-lg hover:text-primary transition-colors cursor-pointer">{grant.name}</h4>
+                          </Link>
                           <p className="text-sm text-muted-foreground">
                             Total Budget: <span className="font-medium">${(grant.budget / 1000000).toFixed(2)}M</span>
                           </p>
@@ -837,12 +840,14 @@ export default function AnalyticsPage() {
                           <p className="text-sm font-medium text-muted-foreground">Funded Projects:</p>
                           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             {grant.projects.map((project) => (
-                              <div key={project.id} className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                                <span className="truncate flex-1">{project.title}</span>
-                                <span className="ml-2 font-medium text-primary">
-                                  ${(project.funding / 1000000).toFixed(2)}M
-                                </span>
-                              </div>
+                              <Link key={project.id} href={`/projects/${project.id}`}>
+                                <div className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm hover:bg-muted transition-colors cursor-pointer">
+                                  <span className="truncate flex-1">{project.title}</span>
+                                  <span className="ml-2 font-medium text-primary">
+                                    ${(project.funding / 1000000).toFixed(2)}M
+                                  </span>
+                                </div>
+                              </Link>
                             ))}
                           </div>
                         </div>
