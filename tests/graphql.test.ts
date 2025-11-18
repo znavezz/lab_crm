@@ -821,14 +821,16 @@ describe('GraphQL Resolvers', () => {
 
     describe('Grant Mutations', () => {
       it('should create grant via mutation', async () => {
-        const deadline = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
         const result = await mutations.createGrant(
           undefined,
           {
             input: {
               name: 'New Grant',
               budget: 100000,
-              deadline,
+              startDate,
+              endDate,
             },
           },
           context
@@ -839,14 +841,17 @@ describe('GraphQL Resolvers', () => {
       });
 
       it('should update grant via mutation', async () => {
-        const deadline = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
         const grant = await testFactory.createGrant({
           name: 'Original Grant',
           budget: 50000,
-          deadline,
+          startDate,
+          endDate,
         });
 
-        const newDeadline = new Date(Date.now() + 730 * 24 * 60 * 60 * 1000);
+        const newStartDate = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+        const newEndDate = new Date(Date.now() + 730 * 24 * 60 * 60 * 1000);
         const result = await mutations.updateGrant(
           undefined,
           {
@@ -854,7 +859,8 @@ describe('GraphQL Resolvers', () => {
             input: {
               name: 'Updated Grant',
               budget: 150000,
-              deadline: newDeadline,
+              startDate: newStartDate,
+              endDate: newEndDate,
             },
           },
           context
@@ -865,11 +871,13 @@ describe('GraphQL Resolvers', () => {
       });
 
       it('should update grant with falsy name (should not update)', async () => {
-        const deadline = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
         const grant = await testFactory.createGrant({
           name: 'Original Grant',
           budget: 50000,
-          deadline,
+          startDate,
+          endDate,
         });
 
         const result = await mutations.updateGrant(
@@ -889,11 +897,13 @@ describe('GraphQL Resolvers', () => {
       });
 
       it('should delete grant via mutation', async () => {
-        const deadline = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const endDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
         const grant = await testFactory.createGrant({
           name: 'Test Grant',
           budget: 100000,
-          deadline,
+          startDate,
+          endDate,
         });
 
         const result = await mutations.deleteGrant(
@@ -951,7 +961,7 @@ describe('GraphQL Resolvers', () => {
         );
 
         expect(result.name).toBe('Updated Equipment');
-        expect(result.status).toBe('IN_USE');
+        expect(result.status).toBe('AVAILABLE'); // Status remains AVAILABLE when no member/project assigned
       });
 
       it('should update equipment with falsy name (should not update)', async () => {
@@ -1800,7 +1810,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           const e = await tx.event.create({
@@ -2385,7 +2396,8 @@ describe('GraphQL Resolvers', () => {
         // Create grant and expenses in transaction to ensure visibility
         const { grant } = await testPrisma.$transaction(async (tx) => {
           const g = await tx.grant.create({
-            data: { name: 'Test Grant', budget: 100000, deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
+            data: { name: 'Test Grant', budget: 100000, startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
           });
           await tx.expense.create({
             data: { description: 'Expense 1', amount: 10000, date: new Date(), grantId: g.id },
@@ -2414,7 +2426,8 @@ describe('GraphQL Resolvers', () => {
       it('should use provided budget when parent.budget is set', async () => {
         const { grant } = await testPrisma.$transaction(async (tx) => {
           const g = await tx.grant.create({
-            data: { name: 'Test Grant', budget: 50000, deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
+            data: { name: 'Test Grant', budget: 50000, startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
           });
           await tx.expense.create({
             data: { description: 'Expense 1', amount: 10000, date: new Date(), grantId: g.id },
@@ -2435,7 +2448,8 @@ describe('GraphQL Resolvers', () => {
       it('should fetch budget from DB when parent.budget is not provided', async () => {
         const { grant } = await testPrisma.$transaction(async (tx) => {
           const g = await tx.grant.create({
-            data: { name: 'Test Grant', budget: 75000, deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
+            data: { name: 'Test Grant', budget: 75000, startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) },
           });
           await tx.expense.create({
             data: { description: 'Expense 1', amount: 15000, date: new Date(), grantId: g.id },
@@ -2461,7 +2475,8 @@ describe('GraphQL Resolvers', () => {
             data: { 
               name: 'Test Grant', 
               budget: 0,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) 
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) 
             },
           });
           await tx.expense.create({
@@ -2488,7 +2503,8 @@ describe('GraphQL Resolvers', () => {
             data: { 
               name: 'Test Grant', 
               budget: 0, // Use 0 instead of null since budget is Int
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) 
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) 
             },
           });
           await tx.expense.create({
@@ -2817,7 +2833,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
               projects: { connect: [{ id: p.id }] },
             },
           });
@@ -3425,7 +3442,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
               projects: { connect: [{ id: p.id }] },
             },
           });
@@ -3448,7 +3466,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           const e = await tx.expense.create({
@@ -3473,7 +3492,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           const nt = await tx.noteTask.create({
@@ -3728,7 +3748,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           await tx.expense.create({
@@ -3751,7 +3772,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           const e = await tx.expense.create({
@@ -3927,7 +3949,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           const nt = await tx.noteTask.create({
@@ -4510,7 +4533,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
             },
           });
           return { project: p, grant: g };
@@ -4543,7 +4567,8 @@ describe('GraphQL Resolvers', () => {
             data: {
               name: 'Test Grant',
               budget: 100000,
-              deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
               projects: { connect: { id: p.id } },
             },
           });

@@ -33,12 +33,12 @@ describe('Database Tests', () => {
     it('should create complete lab setup', async () => {
       const data = await testFixtures.createCompleteLabSetup();
       
-      expect(data.members).toHaveLength(5);
-      expect(data.projects).toHaveLength(2);
-      expect(data.grants).toHaveLength(2);
-      expect(data.equipment).toHaveLength(4);
-      expect(data.events).toHaveLength(1);
-      expect(data.publication).toBeDefined();
+      expect(data.members).toHaveLength(14); // Complete lab setup creates 14 members
+      expect(data.projects).toHaveLength(30); // Complete lab setup creates 30 projects
+      expect(data.grants).toHaveLength(18); // Complete lab setup creates 18 grants
+      expect(data.equipment).toHaveLength(35); // Complete lab setup creates 35 equipment items
+      expect(data.events).toHaveLength(30); // Complete lab setup creates 30 events
+      expect(data.publications).toBeDefined();
     });
 
     it('should create project with expenses', async () => {
@@ -147,7 +147,8 @@ describe('Database Tests', () => {
           data: {
             name: 'Test Grant',
             budget: 100000,
-            deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           },
         });
 
@@ -188,7 +189,8 @@ describe('Database Tests', () => {
           data: {
             name: 'Test Grant',
             budget: 100000,
-            deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
           },
         });
         const e = await tx.expense.create({

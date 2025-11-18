@@ -63,7 +63,8 @@ describe('Factory Tests', () => {
       const grant = await testFactory.createGrant();
       expect(grant.name).toBeTruthy();
       expect(grant.budget).toBeGreaterThan(0);
-      expect(grant.deadline).toBeInstanceOf(Date);
+      expect(grant.startDate).toBeInstanceOf(Date);
+      expect(grant.endDate).toBeInstanceOf(Date);
     });
 
     it('should create grant with custom budget', async () => {
