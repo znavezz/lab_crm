@@ -243,19 +243,39 @@ export const mutations = {
     args: MutationCreateEquipmentArgs,
     context: GraphQLContext
   ) => {
-    const status = args.input.status ?? 'AVAILABLE';
-    
-    // Validate: Equipment cannot be IN_USE without a member or project
-    if (status === 'IN_USE' && !args.input.memberId && !args.input.projectId) {
-      throw new Error('Equipment cannot be set to IN_USE without being assigned to a member or project');
+    // Validate: Cannot have both member and project assigned
+    if (args.input.memberId && args.input.projectId) {
+      throw new Error('Equipment cannot be assigned to both a member and a project. Please assign to either a member OR a project, not both.');
     }
+
+    // Validate: Equipment in MAINTENANCE cannot be assigned to a member or project
+    if (args.input.status === 'MAINTENANCE' && (args.input.memberId || args.input.projectId)) {
+      throw new Error('Equipment in MAINTENANCE status cannot be assigned to a member or project. Please remove the assignment or change the status.');
+    }
+
+    // Determine status automatically:
+    // - If status is explicitly set to MAINTENANCE → use MAINTENANCE
+    // - If member OR project is assigned → status is IN_USE
+    // - Otherwise → status is AVAILABLE
+    let finalStatus: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE';
+    
+    if (args.input.status === 'MAINTENANCE') {
+      finalStatus = 'MAINTENANCE';
+    } else if (args.input.memberId || args.input.projectId) {
+      finalStatus = 'IN_USE';
+    } else {
+      finalStatus = 'AVAILABLE';
+    }
+
+    // If status was provided but conflicts with assignment, ignore it (status is auto-derived)
+    // Only allow explicit MAINTENANCE status
     
     return await context.prisma.equipment.create({
       data: {
         name: args.input.name,
         description: args.input.description ?? undefined,
         serialNumber: args.input.serialNumber ?? undefined,
-        status,
+        status: finalStatus,
         projectId: args.input.projectId ?? undefined,
         memberId: args.input.memberId ?? undefined,
       },
@@ -270,7 +290,7 @@ export const mutations = {
     // Get current equipment to check existing assignments
     const currentEquipment = await context.prisma.equipment.findUnique({
       where: { id: args.id },
-      select: { memberId: true, projectId: true },
+      select: { memberId: true, projectId: true, status: true },
     });
 
     if (!currentEquipment) {
@@ -281,14 +301,41 @@ export const mutations = {
       ...(args.input.name && { name: args.input.name }),
       ...(args.input.description !== undefined && { description: args.input.description }),
       ...(args.input.serialNumber !== undefined && { serialNumber: args.input.serialNumber }),
-      ...(args.input.status !== undefined && args.input.status !== null && { status: args.input.status }),
     };
+
+    // Determine what the final state will be after the update
+    const willHaveMember = args.input.memberId !== undefined 
+      ? args.input.memberId !== null 
+      : currentEquipment.memberId !== null;
+    const willHaveProject = args.input.projectId !== undefined 
+      ? args.input.projectId !== null 
+      : currentEquipment.projectId !== null;
+    const willBeMaintenance = args.input.status === 'MAINTENANCE';
+
+    // Validate: Cannot have both member and project assigned
+    if (willHaveMember && willHaveProject) {
+      throw new Error('Equipment cannot be assigned to both a member and a project. Please assign to either a member OR a project, not both.');
+    }
+
+    // Validate: Equipment in MAINTENANCE cannot be assigned to a member or project
+    if (willBeMaintenance && (willHaveMember || willHaveProject)) {
+      throw new Error('Equipment in MAINTENANCE status cannot be assigned to a member or project. Please remove the assignment first.');
+    }
+
+    // Validate: Cannot set status to MAINTENANCE if member or project is assigned
+    if (willBeMaintenance && (currentEquipment.memberId || currentEquipment.projectId)) {
+      throw new Error('Cannot set equipment to MAINTENANCE status while assigned to a member or project. Please remove the assignment first.');
+    }
 
     // Handle projectId using relation syntax
     if (args.input.projectId !== undefined) {
       if (args.input.projectId === null) {
         updateData.project = { disconnect: true };
       } else {
+        // If assigning to project, remove member assignment if exists
+        if (currentEquipment.memberId) {
+          updateData.member = { disconnect: true };
+        }
         updateData.project = { connect: { id: args.input.projectId } };
       }
     }
@@ -298,52 +345,47 @@ export const mutations = {
       if (args.input.memberId === null) {
         updateData.member = { disconnect: true };
       } else {
-        updateData.member = { connect: { id: args.input.memberId } };
+        // If assigning to member, remove project assignment if exists
+        if (currentEquipment.projectId) {
+          updateData.project = { disconnect: true };
+        }
+        // Only allow member assignment if not going to MAINTENANCE
+        if (!willBeMaintenance) {
+          updateData.member = { connect: { id: args.input.memberId } };
+        } else {
+          throw new Error('Cannot assign member to equipment that is in MAINTENANCE status.');
+        }
       }
     }
 
-    // Get current status to check if equipment is IN_USE
-    const currentStatus = await context.prisma.equipment.findUnique({
-      where: { id: args.id },
-      select: { status: true },
-    });
-
-    // Determine what the final state will be after the update
-    const willHaveMember = args.input.memberId !== undefined 
-      ? args.input.memberId !== null 
-      : currentEquipment.memberId !== null;
-    const willHaveProject = args.input.projectId !== undefined 
-      ? args.input.projectId !== null 
-      : currentEquipment.projectId !== null;
-    const willBeInUse = args.input.status === 'IN_USE' || 
-      (args.input.status === undefined && currentStatus?.status === 'IN_USE');
-
-    // Validate: Equipment cannot be IN_USE without a member or project
-    if (willBeInUse && !willHaveMember && !willHaveProject) {
-      throw new Error('Equipment cannot be IN_USE without being assigned to a member or project. Please assign a member or project, or change the status to AVAILABLE or MAINTENANCE.');
-    }
-
-    // Validate: Cannot remove member/project from equipment that's IN_USE
-    if (currentStatus?.status === 'IN_USE' && !willBeInUse) {
-      // If changing away from IN_USE, that's fine
-    } else if (currentStatus?.status === 'IN_USE' && args.input.memberId === null && args.input.projectId === null) {
-      // Trying to remove both member and project while IN_USE
-      if (!willHaveMember && !willHaveProject) {
-        throw new Error('Cannot remove both member and project from equipment that is IN_USE. Please change the status first or assign a new member/project.');
+    // If setting status to MAINTENANCE, automatically remove member and project assignments
+    if (willBeMaintenance) {
+      if (currentEquipment.memberId) {
+        updateData.member = { disconnect: true };
+      }
+      if (currentEquipment.projectId) {
+        updateData.project = { disconnect: true };
       }
     }
 
-    // Auto-fix: If equipment is IN_USE but has no member or project (e.g., due to deletion),
-    // automatically set status to AVAILABLE
-    // This handles the case where member/project was deleted (onDelete: SetNull)
-    // and equipment is still IN_USE - automatically fix it
-    if (currentStatus?.status === 'IN_USE' && !willHaveMember && !willHaveProject) {
-      // If status is being explicitly set to something else, use that
-      // Otherwise, auto-fix by setting to AVAILABLE
-      if (args.input.status === undefined) {
-        updateData.status = 'AVAILABLE';
-      }
-      // If status is being set to IN_USE explicitly, the validation above will catch it
+    // Determine final status automatically:
+    // - If status is explicitly set to MAINTENANCE → use MAINTENANCE
+    // - If member OR project will be assigned → status is IN_USE
+    // - Otherwise → status is AVAILABLE
+    let finalStatus: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE';
+    
+    if (willBeMaintenance) {
+      finalStatus = 'MAINTENANCE';
+    } else if (willHaveMember || willHaveProject) {
+      finalStatus = 'IN_USE';
+    } else {
+      finalStatus = 'AVAILABLE';
+    }
+
+    // Only set status if it's explicitly MAINTENANCE or if it needs to change
+    // Status is automatically derived from member/project assignment
+    if (args.input.status === 'MAINTENANCE' || finalStatus !== currentEquipment.status) {
+      updateData.status = finalStatus;
     }
 
     return await context.prisma.equipment.update({
