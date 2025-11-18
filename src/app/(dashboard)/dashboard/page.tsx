@@ -368,7 +368,7 @@ export default function DashboardPage() {
               )}
             </div>
             <Button variant="outline" className="w-full mt-4" asChild>
-              <Link href="/members">
+              <Link href="/activities">
                 View All Activities
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
               </Link>
@@ -404,7 +404,7 @@ export default function DashboardPage() {
               )}
             </div>
             <Button variant="outline" className="w-full mt-4" asChild>
-              <Link href="/projects">
+              <Link href="/events">
                 View Calendar
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
               </Link>
