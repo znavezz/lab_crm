@@ -108,16 +108,18 @@ async function main() {
     
     console.log('✅ Seed completed successfully!\n');
     console.log('📊 Summary:');
-    console.log(`   Members: 5 (1 professor, 1 postdoc, 2 students, 1 lab manager)`);
-    console.log(`   Projects: 2`);
-    console.log(`   Grants: 2`);
-    console.log(`   Equipment: 4`);
+    console.log(`   Members: 8 (1 professor, 2 postdocs, 4 students, 1 lab manager)`);
+    console.log(`   - Active: 5 members`);
+    console.log(`   - Alumni: 3 members`);
+    console.log(`   Projects: 4 (2 active, 2 completed)`);
+    console.log(`   Grants: 4 (spanning ${new Date().getFullYear() - 4} to ${new Date().getFullYear() + 3})`);
+    console.log(`   Equipment: 6 (with correct status logic)`);
     console.log(`   Bookings: 2`);
     console.log(`   Events: 1`);
-    console.log(`   Publications: 1`);
+    console.log(`   Publications: 4 (spanning ${new Date().getFullYear() - 3} to ${new Date().getFullYear()})`);
     console.log(`   Collaborators: 1`);
     console.log(`   Documents: 2`);
-    console.log(`   Expenses: 2`);
+    console.log(`   Expenses: 4 (spanning multiple years)`);
     console.log(`   NoteTasks: 1\n`);
     
     // Test computed fields
