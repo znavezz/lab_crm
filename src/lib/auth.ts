@@ -33,18 +33,20 @@ export const authOptions: NextAuthOptions = {
     strategy: 'database',
   },
   callbacks: {
+    async signIn() {
+      // Allow all sign-in attempts
+      return true;
+    },
     async session({ session, user }) {
-      if (session.user) {
+      if (session.user && user) {
         // Get the user with member relation
         const userRecord = await prisma.user.findUnique({
           where: { id: user.id },
           select: { memberId: true },
         })
-        
+
         session.user.id = user.id
-        if (userRecord?.memberId) {
-          session.user.memberId = userRecord.memberId
-        }
+        session.user.memberId = userRecord?.memberId ?? null
       }
       return session
     },
