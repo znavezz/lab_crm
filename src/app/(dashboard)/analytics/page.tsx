@@ -42,6 +42,12 @@ const GET_ANALYTICS_DATA = gql`
       budget
       deadline
       createdAt
+      totalSpent
+      remainingBudget
+      expenses {
+        id
+        amount
+      }
       projects {
         id
         title
@@ -115,12 +121,20 @@ interface GrantProject {
   members: Array<{ id: string; name: string }>
 }
 
+interface GrantExpense {
+  id: string
+  amount: number
+}
+
 interface AnalyticsGrant {
   id: string
   name: string
   budget: number | null
   deadline: string | null
   createdAt: string
+  totalSpent?: number
+  remainingBudget?: number
+  expenses?: GrantExpense[]
   projects: GrantProject[]
 }
 
@@ -217,9 +231,28 @@ export default function AnalyticsPage() {
     return new Date(p.endDate) <= new Date()
   }).length
   const projectsByStatus = [
-    { name: 'Active', value: activeProjects, color: 'hsl(var(--chart-1))' },
-    { name: 'Completed', value: completedProjects, color: 'hsl(var(--chart-3))' },
+    { name: 'Active', value: activeProjects, color: 'var(--chart-1)' },
+    { name: 'Completed', value: completedProjects, color: 'var(--chart-3)' },
   ]
+
+  // Calculate active vs completed grants
+  // A grant is completed if: deadline has passed OR budget is fully spent
+  const now = new Date()
+  const activeGrants = grants.filter((grant: AnalyticsGrant) => {
+    const deadlinePassed = grant.deadline ? new Date(grant.deadline) < now : false
+    const budgetSpent = grant.totalSpent !== undefined 
+      ? grant.totalSpent >= (grant.budget || 0)
+      : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0) >= (grant.budget || 0)
+    return !deadlinePassed && !budgetSpent
+  })
+  const completedGrants = grants.filter((grant: AnalyticsGrant) => {
+    const deadlinePassed = grant.deadline ? new Date(grant.deadline) < now : false
+    const totalSpent = grant.totalSpent !== undefined 
+      ? grant.totalSpent
+      : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0)
+    const budgetSpent = totalSpent >= (grant.budget || 0)
+    return deadlinePassed || budgetSpent
+  })
 
   // Calculate grant funding per year
   const grantsByYear: Record<string, number> = {}
@@ -381,9 +414,9 @@ export default function AnalyticsPage() {
   const equipmentStatus = Object.keys(equipmentStatusMap).map(status => ({
     name: status.replace('_', ' '),
     value: equipmentStatusMap[status],
-    color: status === 'AVAILABLE' ? 'hsl(var(--chart-2))' : 
-           status === 'IN_USE' ? 'hsl(var(--chart-4))' : 
-           'hsl(var(--chart-5))'
+    color: status === 'AVAILABLE' ? 'var(--chart-2)' : 
+           status === 'IN_USE' ? 'var(--chart-4)' : 
+           'var(--chart-5)'
   }))
 
   return (
@@ -424,20 +457,19 @@ export default function AnalyticsPage() {
                   className="h-[400px]"
                 >
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={publicationsPerYear} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <BarChart data={publicationsPerYear} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="year" />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Legend />
-                      <Line 
-                        type="monotone" 
+                      <Bar 
                         dataKey="publications" 
-                        stroke="var(--color-publications)" 
-                        strokeWidth={2}
-                        name="Publications" 
+                        fill="hsl(var(--chart-1))" 
+                        name="Publications"
+                        radius={[4, 4, 0, 0]}
                       />
-                    </LineChart>
+                    </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
               </CardContent>
@@ -563,11 +595,11 @@ export default function AnalyticsPage() {
                     config={{
                       active: {
                         label: 'Active',
-                        color: 'hsl(var(--chart-1))',
+                        color: 'var(--chart-1)',
                       },
                       completed: {
                         label: 'Completed',
-                        color: 'hsl(var(--chart-3))',
+                        color: 'var(--chart-3)',
                       },
                     }}
                     className="h-[300px]"
@@ -881,9 +913,20 @@ export default function AnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold">
-                    {grants.filter((g: AnalyticsGrant) => new Date(g.deadline || 0) > new Date()).length}
+                    {activeGrants.length}
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">Currently funded</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Completed Grants</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold">
+                    {completedGrants.length}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">Deadline passed or budget spent</p>
                 </CardContent>
               </Card>
               <Card>
@@ -912,15 +955,15 @@ export default function AnalyticsPage() {
                       config={{
                         available: {
                           label: 'Available',
-                          color: 'hsl(var(--chart-2))',
+                          color: 'var(--chart-2)',
                         },
                         inUse: {
                           label: 'In Use',
-                          color: 'hsl(var(--chart-4))',
+                          color: 'var(--chart-4)',
                         },
                         maintenance: {
                           label: 'Maintenance',
-                          color: 'hsl(var(--chart-5))',
+                          color: 'var(--chart-5)',
                         },
                       }}
                       className="h-[300px]"
