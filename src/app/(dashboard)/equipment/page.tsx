@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { gql } from '@apollo/client'
 import { toast } from 'sonner'
@@ -54,6 +55,24 @@ const GET_EQUIPMENTS = gql`
   }
 `
 
+const GET_MEMBERS = gql`
+  query GetMembers {
+    members {
+      id
+      name
+    }
+  }
+`
+
+const GET_PROJECTS = gql`
+  query GetProjects {
+    projects {
+      id
+      title
+    }
+  }
+`
+
 const CREATE_EQUIPMENT = gql`
   mutation CreateEquipment($input: CreateEquipmentInput!) {
     createEquipment(input: $input) {
@@ -91,6 +110,24 @@ interface GetEquipmentsData {
   equipments: Equipment[]
 }
 
+interface Member {
+  id: string
+  name: string
+}
+
+interface Project {
+  id: string
+  title: string
+}
+
+interface GetMembersData {
+  members: Member[]
+}
+
+interface GetProjectsData {
+  projects: Project[]
+}
+
 const statusColors: Record<string, string> = {
   AVAILABLE: 'bg-chart-2 text-white',
   IN_USE: 'bg-chart-4 text-white',
@@ -104,6 +141,7 @@ const statusLabels: Record<string, string> = {
 }
 
 export default function EquipmentPage() {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE'>('ALL')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -111,15 +149,19 @@ export default function EquipmentPage() {
     name: '',
     description: '',
     serialNumber: '',
-    status: 'AVAILABLE' as 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE',
+    status: undefined as 'MAINTENANCE' | undefined,
+    memberId: undefined as string | undefined,
+    projectId: undefined as string | undefined,
   })
 
   const { data, loading, error, refetch } = useQuery<GetEquipmentsData>(GET_EQUIPMENTS)
+  const { data: membersData } = useQuery<GetMembersData>(GET_MEMBERS)
+  const { data: projectsData } = useQuery<GetProjectsData>(GET_PROJECTS)
   const [createEquipment, { loading: creating }] = useMutation(CREATE_EQUIPMENT, {
     onCompleted: () => {
       toast.success('Equipment created successfully')
       setIsDialogOpen(false)
-      setFormData({ name: '', description: '', serialNumber: '', status: 'AVAILABLE' })
+      setFormData({ name: '', description: '', serialNumber: '', status: undefined, memberId: undefined, projectId: undefined })
       refetch()
     },
     onError: (error) => {
@@ -170,17 +212,29 @@ export default function EquipmentPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate: Cannot have both member and project
+    if (formData.memberId && formData.projectId) {
+      toast.error('Equipment cannot be assigned to both a member and a project. Please select either a member OR a project.')
+      return
+    }
+
     createEquipment({
       variables: {
         input: {
           name: formData.name,
           description: formData.description || undefined,
           serialNumber: formData.serialNumber || undefined,
-          status: formData.status,
+          status: formData.status || undefined,
+          memberId: formData.memberId || undefined,
+          projectId: formData.projectId || undefined,
         },
       },
     })
   }
+
+  const members = membersData?.members || []
+  const projects = projectsData?.projects || []
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -237,20 +291,85 @@ export default function EquipmentPage() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="memberId">Assign to Member (Optional)</Label>
                   <Select
-                    value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value as 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' })}
+                    value={formData.memberId || ''}
+                    onValueChange={(value) => {
+                      setFormData({ 
+                        ...formData, 
+                        memberId: value || undefined,
+                        projectId: value ? undefined : formData.projectId, // Clear project if member selected
+                      })
+                    }}
                   >
-                    <SelectTrigger id="status">
-                      <SelectValue />
+                    <SelectTrigger id="memberId">
+                      <SelectValue placeholder="Select a member (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="AVAILABLE">Available</SelectItem>
-                      <SelectItem value="IN_USE">In Use</SelectItem>
+                      <SelectItem value="">None</SelectItem>
+                      {members.map((member: Member) => (
+                        <SelectItem key={member.id} value={member.id}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Assigning a member will automatically set status to &quot;In Use&quot;
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="projectId">Assign to Project (Optional)</Label>
+                  <Select
+                    value={formData.projectId || ''}
+                    onValueChange={(value) => {
+                      setFormData({ 
+                        ...formData, 
+                        projectId: value || undefined,
+                        memberId: value ? undefined : formData.memberId, // Clear member if project selected
+                      })
+                    }}
+                  >
+                    <SelectTrigger id="projectId">
+                      <SelectValue placeholder="Select a project (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {projects.map((project: Project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Assigning a project will automatically set status to &quot;In Use&quot;
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="status">Set to Maintenance (Optional)</Label>
+                  <Select
+                    value={formData.status || ''}
+                    onValueChange={(value) => {
+                      setFormData({ 
+                        ...formData, 
+                        status: value === 'MAINTENANCE' ? 'MAINTENANCE' : undefined,
+                        memberId: value === 'MAINTENANCE' ? undefined : formData.memberId, // Clear assignments if maintenance
+                        projectId: value === 'MAINTENANCE' ? undefined : formData.projectId,
+                      })
+                    }}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Normal operation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Normal Operation</SelectItem>
                       <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Setting to maintenance will remove any member/project assignments
+                  </p>
                 </div>
               </div>
               <DialogFooter>
@@ -318,9 +437,18 @@ export default function EquipmentPage() {
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
           <div className="grid gap-4 md:grid-cols-2">
-            {filteredEquipment.map((item: Equipment) => (
-              <Link key={item.id} href={`/equipment/${item.id}`}>
-                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
+            {filteredEquipment.map((item: Equipment) => {
+              // Compute effective status: if member OR project is assigned, equipment is IN_USE (unless MAINTENANCE)
+              const effectiveStatus = (item.member || item.project) && item.status !== 'MAINTENANCE' 
+                ? 'IN_USE' 
+                : item.status
+              
+              return (
+              <Card 
+                key={item.id}
+                className="hover:bg-accent/50 transition-colors cursor-pointer h-full"
+                onClick={() => router.push(`/equipment/${item.id}`)}
+              >
                   <CardHeader>
                     <div className="flex items-start gap-3">
                       <div className="rounded-lg bg-primary/10 p-2">
@@ -338,22 +466,35 @@ export default function EquipmentPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge className={statusColors[item.status] || 'bg-muted text-muted-foreground'}>
-                            {statusLabels[item.status] || item.status}
+                          <Badge className={statusColors[effectiveStatus] || 'bg-muted text-muted-foreground'}>
+                            {statusLabels[effectiveStatus] || effectiveStatus}
                           </Badge>
-                          {item.status === 'IN_USE' && item.member && (
-                            <Badge variant="outline" className="text-xs bg-chart-4/10 border-chart-4">
+                          {item.member && (
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs bg-chart-4/10 border-chart-4 hover:bg-chart-4/20 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (item.member) {
+                                  router.push(`/members/${item.member.id}`)
+                                }
+                              }}
+                            >
                               In Use By: {item.member.name}
                             </Badge>
                           )}
                           {item.project && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge 
+                              variant="outline" 
+                              className="text-xs hover:bg-accent cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (item.project) {
+                                  router.push(`/projects/${item.project.id}`)
+                                }
+                              }}
+                            >
                               {item.project.title}
-                            </Badge>
-                          )}
-                          {item.member && item.status !== 'IN_USE' && (
-                            <Badge variant="outline" className="text-xs">
-                              {item.member.name}
                             </Badge>
                           )}
                         </div>
@@ -366,28 +507,10 @@ export default function EquipmentPage() {
                         <span className="font-mono text-xs">Serial: {item.serialNumber}</span>
                       </div>
                     )}
-                    {item.project && (
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Project: </span>
-                        <Link href={`/projects/${item.project.id}`} className="font-medium text-primary hover:underline">
-                          {item.project.title}
-                        </Link>
-                      </div>
-                    )}
-                    {item.member && (
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">
-                          {item.status === 'IN_USE' ? 'Currently used by: ' : 'Assigned to: '}
-                        </span>
-                        <Link href={`/members/${item.member.id}`} className="font-medium text-primary hover:underline">
-                          {item.member.name}
-                        </Link>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
+              )
+            })}
             
             {filteredEquipment.length === 0 && (
               <div className="col-span-2 py-12 text-center">

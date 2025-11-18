@@ -101,6 +101,11 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
 
   const equipment = data.equipment
 
+  // Compute effective status: if member OR project is assigned, equipment is IN_USE (unless MAINTENANCE)
+  const effectiveStatus = (equipment.member || equipment.project) && equipment.status !== 'MAINTENANCE' 
+    ? 'IN_USE' 
+    : equipment.status
+
   return (
     <div className="space-y-6">
       <Link href="/equipment">
@@ -126,27 +131,26 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                 )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={statusColors[equipment.status] || 'bg-muted text-muted-foreground'}>
-                  {equipment.status.replace('_', ' ')}
+                <Badge className={statusColors[effectiveStatus] || 'bg-muted text-muted-foreground'}>
+                  {effectiveStatus.replace('_', ' ')}
                 </Badge>
-                {equipment.status === 'IN_USE' && equipment.member && (
-                  <Badge variant="outline" className="bg-chart-4/10 border-chart-4">
-                    In Use By: {equipment.member.name}
-                  </Badge>
+                {equipment.member && (
+                  <Link href={`/members/${equipment.member.id}`}>
+                    <Badge variant="outline" className="bg-chart-4/10 border-chart-4 hover:bg-chart-4/20 cursor-pointer">
+                      In Use By: {equipment.member.name}
+                    </Badge>
+                  </Link>
                 )}
                 {equipment.project && (
-                  <Badge variant="outline">
-                    Project: {equipment.project.title}
-                  </Badge>
-                )}
-                {equipment.member && equipment.status !== 'IN_USE' && (
-                  <Badge variant="outline">
-                    Assigned: {equipment.member.name}
-                  </Badge>
+                  <Link href={`/projects/${equipment.project.id}`}>
+                    <Badge variant="outline" className="hover:bg-accent cursor-pointer">
+                      Project: {equipment.project.title}
+                    </Badge>
+                  </Link>
                 )}
               </div>
             </div>
-            {equipment.status === 'AVAILABLE' && (
+            {effectiveStatus === 'AVAILABLE' && (
               <Button size="lg">Book Equipment</Button>
             )}
           </div>
@@ -166,9 +170,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
               <div className="flex items-center gap-3">
                 <UserIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">
-                    {equipment.status === 'IN_USE' ? 'Currently Used By' : 'Assigned To'}
-                  </p>
+                  <p className="text-sm font-medium">In Use By</p>
                   <Link href={`/members/${equipment.member.id}`} className="text-sm text-primary hover:underline">
                     {equipment.member.name}
                   </Link>
