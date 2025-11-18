@@ -27,7 +27,7 @@ export function NavBar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-            <BeakerIcon className="h-6 w-6 text-primary" />
+            <BeakerIcon className="h-6 w-6" style={{ color: 'var(--logo)' }} />
             <span className="font-semibold text-lg hidden sm:inline">Lab CRM</span>
           </Link>
           

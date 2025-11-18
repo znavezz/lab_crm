@@ -51,31 +51,32 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.650 0.150 270.0); /* Transparent Purple - Primary color */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
+  --secondary: oklch(0.920 0.060 85.0); /* Transparent Cream - Secondary color */
+  --secondary-foreground: oklch(0.145 0 0);
+  --muted: oklch(0.920 0.060 85.0); /* Transparent Cream - Neutral elements */
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --accent: oklch(0.750 0.100 220.0); /* Transparent Blue - Attention/special */
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.700 0.180 25.0); /* Transparent Coral - Warnings/errors */
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --ring: oklch(0.650 0.150 270.0); /* Transparent Purple - Focus states */
+  --chart-1: oklch(0.650 0.150 270.0); /* Transparent Purple */
+  --chart-2: oklch(0.920 0.060 85.0); /* Transparent Cream */
+  --chart-3: oklch(0.750 0.100 220.0); /* Transparent Blue */
+  --chart-4: oklch(0.700 0.180 25.0); /* Transparent Coral */
+  --chart-5: oklch(0.920 0.060 85.0); /* Transparent Cream */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.650 0.150 270.0); /* Transparent Purple - Navigation */
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent: oklch(0.920 0.060 85.0); /* Transparent Cream - Subtle accents */
+  --sidebar-accent-foreground: oklch(0.145 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.650 0.150 270.0); /* Transparent Purple - Focus */
+  --logo: oklch(0.750 0.100 220.0); /* Transparent Blue - Logo color */
 }
 
 .dark {
@@ -85,31 +86,32 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: oklch(0.700 0.160 270.0); /* Transparent Purple - Primary color (dark) */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.750 0.090 85.0); /* Transparent Cream - Secondary color (dark) */
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.750 0.090 85.0); /* Transparent Cream - Neutral elements (dark) */
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.780 0.120 220.0); /* Transparent Blue - Attention/special (dark) */
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.720 0.180 25.0); /* Light Coral Pink (#FF8F8F) - Warnings/errors (dark) */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --ring: oklch(0.700 0.160 270.0); /* Transparent Purple - Focus states (dark) */
+  --chart-1: oklch(0.700 0.160 270.0); /* Transparent Purple */
+  --chart-2: oklch(0.750 0.090 85.0); /* Transparent Cream */
+  --chart-3: oklch(0.780 0.120 220.0); /* Transparent Blue */
+  --chart-4: oklch(0.720 0.180 25.0); /* Light Coral Pink (#FF8F8F) */
+  --chart-5: oklch(0.800 0.080 85.0); /* Light Cream (#FFF1CB) */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.700 0.160 270.0); /* Transparent Purple - Navigation (dark) */
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.750 0.090 85.0); /* Transparent Cream - Subtle accents (dark) */
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.700 0.160 270.0); /* Transparent Purple - Focus (dark) */
+  --logo: oklch(0.780 0.120 220.0); /* Transparent Blue - Logo color (dark) */
 }
 
 @layer base {
@@ -118,5 +120,191 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Cool color painting animation for dashboard cards */
+@keyframes paint-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes paint-fill {
+  0% {
+    background-size: 0% 100%;
+  }
+  50% {
+    background-size: 100% 100%;
+  }
+  100% {
+    background-size: 100% 100%;
+  }
+}
+
+.paint-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    oklch(0.650 0.150 270.0 / 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  transition: all 0.3s ease;
+}
+
+.paint-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    oklch(0.650 0.150 270.0 / 0.08) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+}
+
+.paint-card:hover::before {
+  left: 100%;
+}
+
+.paint-card:hover {
+  animation: paint-sweep 0.8s ease-in-out;
+  box-shadow: 0 10px 25px -5px oklch(0.650 0.150 270.0 / 0.3),
+              0 8px 10px -6px oklch(0.650 0.150 270.0 / 0.2);
+  border-color: oklch(0.650 0.150 270.0 / 0.5);
+}
+
+.dark .paint-card:hover {
+  box-shadow: 0 10px 25px -5px oklch(0.700 0.160 270.0 / 0.4),
+              0 8px 10px -6px oklch(0.700 0.160 270.0 / 0.3);
+  border-color: oklch(0.700 0.160 270.0 / 0.6);
+}
+
+.paint-card .paint-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg,
+    oklch(0.650 0.150 270.0 / 0) 0%,
+    oklch(0.920 0.060 85.0 / 0.02) 25%,
+    oklch(0.750 0.100 220.0 / 0.02) 50%,
+    oklch(0.700 0.180 25.0 / 0.02) 75%,
+    oklch(0.650 0.150 270.0 / 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.paint-card:hover .paint-overlay {
+  opacity: 1;
+}
+
+/* Diagonal Tear-Strip Peel Animation */
+@layer components {
+  .peel-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Backing layer - reveals the palette color underneath with gradient */
+  .peel-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--peel-color, var(--chart-1));
+    background-image: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.08),
+      transparent 25%,
+      transparent 75%,
+      rgba(255, 255, 255, 0.15)
+    );
+    /* Start with no reveal - completely hidden */
+    clip-path: polygon(100% 0%, 100% 0%, 100% 0%);
+    transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    transform-origin: top right;
+    transform: scale(1);
+  }
+
+  a:hover .peel-card::after,
+  .peel-card:hover::after {
+    /* Diagonal reveal from top-right corner - creates diagonal tear strip */
+    /* Reveals a diagonal triangle from top-right to bottom-left - larger reveal */
+    clip-path: polygon(100% 0%, 100% 0%, 70% 30%, 0% 100%);
+    transform: scale(0.98);
+  }
+
+  /* The tear strip that peels away - card surface */
+  .peel-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: hsl(var(--card));
+    /* Default: show full card (no clipping) */
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    transform-origin: top right;
+    transform: perspective(300px) rotateX(0deg) rotateY(0deg) scale(1);
+    box-shadow: none;
+    opacity: 1;
+  }
+
+  a:hover .peel-card::before,
+  .peel-card:hover::before {
+    /* Clip away the diagonal strip to reveal the backing layer underneath */
+    /* This creates the "peeled" area - everything except the diagonal triangle */
+    clip-path: polygon(0% 0%, 100% 0%, 70% 30%, 0% 100%, 0% 100%);
+    transform: perspective(300px) rotateX(-12deg) rotateY(-25deg) translateZ(12px) scale(0.97);
+    /* Shadow that follows the diagonal tear edge - creates depth */
+    box-shadow: 
+      -15px -15px 40px rgba(0, 0, 0, 0.25),
+      -8px -8px 20px rgba(0, 0, 0, 0.2),
+      inset -4px -4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0.92;
+  }
+
+  /* Ensure card content stays above the peel effect */
+  .peel-card > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Color variants for different entity types */
+  .peel-chart-1::after {
+    --peel-color: var(--chart-1);
+  }
+
+  .peel-chart-2::after {
+    --peel-color: var(--chart-2);
+  }
+
+  .peel-chart-3::after {
+    --peel-color: var(--chart-3);
+  }
+
+  .peel-chart-4::after {
+    --peel-color: var(--chart-4);
+  }
+
+  .peel-chart-5::after {
+    --peel-color: var(--chart-5);
   }
 }

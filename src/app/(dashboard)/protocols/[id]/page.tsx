@@ -330,20 +330,20 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
               {steps.map((step: { step?: number; instruction?: string; time?: string } | string, index: number) => {
                 const stepObj = typeof step === 'string' ? { instruction: step } : step
                 return (
-                  <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
                       {stepObj.step || index + 1}
-                    </div>
-                    <div className="flex-1">
+                  </div>
+                  <div className="flex-1">
                       <p className="text-sm mb-1">{stepObj.instruction || (typeof step === 'string' ? step : '')}</p>
                       {stepObj.time && (
-                        <div className="flex items-center gap-2">
-                          <ClockIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        <ClockIcon className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs text-muted-foreground">{stepObj.time}</span>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
+                </div>
                 )
               })}
             </div>

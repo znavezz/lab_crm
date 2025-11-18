@@ -66,14 +66,14 @@ export class TestFixtures {
           const institutions = ['Tel Aviv University', 'Hebrew University', 'Weizmann Institute', 'Ben-Gurion University', 'Technion'];
           const fields = ['Bioinformatics', 'Molecular Biology', 'Biochemistry', 'Genetics', 'Computational Biology'];
           await tx.academicInfo.create({
-            data: {
+        data: {
               memberId: member.id,
               degree: data.rank === 'POSTDOC' ? 'PhD' : data.rank,
               field: fields[Math.floor(Math.random() * fields.length)],
               institution: institutions[Math.floor(Math.random() * institutions.length)],
               graduationYear: data.joinedYear - (data.rank === 'POSTDOC' ? 2 : 1),
-            },
-          });
+        },
+      });
         }
       }
 
@@ -301,7 +301,7 @@ export class TestFixtures {
         projectId,
       });
       equipment.push(eq);
-    }
+      }
 
     // ========== CREATE 25 PROTOCOLS ==========
     const protocolTitles = [
@@ -342,7 +342,7 @@ export class TestFixtures {
         description: `Lab event scheduled for ${eventYear}`,
         date: new Date(eventYear, month - 1, day, 10, 0, 0),
         location: ['Conference Room A', 'Conference Room B', 'Lab', 'Auditorium'][Math.floor(Math.random() * 4)],
-      });
+    });
 
       // Link 3-8 attendees
       const numAttendees = 3 + Math.floor(Math.random() * 6);
@@ -366,15 +366,15 @@ export class TestFixtures {
 
       await this.prisma.event.update({
         where: { id: event.id },
-        data: {
+      data: {
           attendees: {
             connect: attendees.map(a => ({ id: a.id })),
-          },
+      },
           projects: eventProjects.length > 0 ? {
             connect: eventProjects.map(p => ({ id: p.id })),
           } : undefined,
-        },
-      });
+      },
+    });
 
       events.push(event);
     }
@@ -393,19 +393,19 @@ export class TestFixtures {
       const projectGrants = await this.prisma.project.findUnique({
         where: { id: project.id },
         include: { grants: true },
-      });
+    });
       const grant = projectGrants?.grants[Math.floor(Math.random() * (projectGrants.grants.length || 1))];
 
       const yearOffset = Math.floor(i / 10);
       const expenseYear = currentYear - yearOffset;
 
-      await this.factory.createExpense({
+    await this.factory.createExpense({
         description: expenseDescriptions[Math.floor(Math.random() * expenseDescriptions.length)],
         amount: 500 + Math.floor(Math.random() * 10000), // $500 - $10k
         date: new Date(`${expenseYear}-${Math.floor(Math.random() * 12) + 1}-${Math.floor(Math.random() * 28) + 1}`),
         projectId: project.id,
         grantId: grant?.id,
-      });
+    });
     }
 
     // ========== CREATE 20 BOOKINGS ==========
@@ -421,14 +421,14 @@ export class TestFixtures {
       const endTime = new Date(startTime);
       endTime.setHours(startTime.getHours() + (1 + Math.floor(Math.random() * 4)), 0, 0, 0);
 
-      await this.factory.createBooking({
+    await this.factory.createBooking({
         startTime,
         endTime,
         purpose: ['Sample analysis', 'Equipment training', 'Research session', 'Maintenance check'][Math.floor(Math.random() * 4)],
         equipmentId: equipmentItem.id,
         memberId: member.id,
         projectId: project?.id,
-      });
+    });
     }
 
     // ========== CREATE 15 COLLABORATORS ==========
@@ -448,23 +448,23 @@ export class TestFixtures {
 
     const collaborators = [];
     for (let i = 0; i < 15; i++) {
-      const collaborator = await this.factory.createCollaborator({
+    const collaborator = await this.factory.createCollaborator({
         name: collaboratorNames[i],
         organization: organizations[i],
-      });
+    });
       collaborators.push(collaborator);
 
       // Link to 1-3 projects
       const numProjects = 1 + Math.floor(Math.random() * 3);
       const linkedProjects = projects.sort(() => Math.random() - 0.5).slice(0, numProjects);
-      await this.prisma.project.update({
+    await this.prisma.project.update({
         where: { id: linkedProjects[0].id },
-        data: {
-          collaborators: {
-            connect: [{ id: collaborator.id }],
-          },
+      data: {
+        collaborators: {
+          connect: [{ id: collaborator.id }],
         },
-      });
+      },
+    });
     }
 
     // ========== CREATE 20 DOCUMENTS ==========
@@ -472,31 +472,31 @@ export class TestFixtures {
       const isMemberDoc = Math.random() < 0.3; // 30% member documents
       if (isMemberDoc) {
         const member = allMembers[Math.floor(Math.random() * allMembers.length)];
-        await this.factory.createDocument({
+    await this.factory.createDocument({
           filename: `${member.name.replace(/\s+/g, '_').toLowerCase()}_cv.pdf`,
           url: `/documents/cvs/${member.name.replace(/\s+/g, '_').toLowerCase()}_cv.pdf`,
           memberId: member.id,
         });
       } else {
         const project = projects[Math.floor(Math.random() * projects.length)];
-        await this.factory.createDocument({
+    await this.factory.createDocument({
           filename: `${project.title.replace(/\s+/g, '_').toLowerCase()}_proposal.pdf`,
           url: `/documents/projects/${project.title.replace(/\s+/g, '_').toLowerCase()}_proposal.pdf`,
           projectId: project.id,
-        });
+    });
       }
     }
 
     // ========== CREATE 15 NOTE TASKS ==========
     for (let i = 0; i < 15; i++) {
       const project = projects[Math.floor(Math.random() * projects.length)];
-      await this.factory.createNoteTask({
+    await this.factory.createNoteTask({
         title: ['Review results', 'Update protocol', 'Prepare presentation', 'Submit report', 'Schedule meeting'][Math.floor(Math.random() * 5)],
         content: `Task related to ${project.title}`,
         completed: Math.random() < 0.3, // 30% completed
         dueDate: new Date(Date.now() + Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
         projectId: project.id,
-      });
+    });
     }
 
     return {

@@ -144,8 +144,8 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                 {equipment.project && (
                   <Link href={`/projects/${equipment.project.id}`}>
                     <Badge variant="outline" className="hover:bg-accent cursor-pointer">
-                      Project: {equipment.project.title}
-                    </Badge>
+                    Project: {equipment.project.title}
+                  </Badge>
                   </Link>
                 )}
               </div>

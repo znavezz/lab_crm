@@ -247,7 +247,7 @@ export const mutations = {
     if (args.input.memberId && args.input.projectId) {
       throw new Error('Equipment cannot be assigned to both a member and a project. Please assign to either a member OR a project, not both.');
     }
-
+    
     // Validate: Equipment in MAINTENANCE cannot be assigned to a member or project
     if (args.input.status === 'MAINTENANCE' && (args.input.memberId || args.input.projectId)) {
       throw new Error('Equipment in MAINTENANCE status cannot be assigned to a member or project. Please remove the assignment or change the status.');
@@ -351,7 +351,7 @@ export const mutations = {
         }
         // Only allow member assignment if not going to MAINTENANCE
         if (!willBeMaintenance) {
-          updateData.member = { connect: { id: args.input.memberId } };
+        updateData.member = { connect: { id: args.input.memberId } };
         } else {
           throw new Error('Cannot assign member to equipment that is in MAINTENANCE status.');
         }
