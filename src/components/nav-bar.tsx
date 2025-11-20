@@ -39,11 +39,12 @@ export function NavBar() {
               return (
                 <Link key={item.name} href={item.href}>
                   <Button
-                    variant={isActive ? 'secondary' : 'ghost'}
+                    variant={isActive ? 'default' : 'ghost'}
                     size="sm"
                     className={cn(
                       'gap-1.5 flex-shrink-0',
-                      isActive && 'bg-secondary'
+                      isActive && 'bg-primary text-primary-foreground',
+                      !isActive && 'hover:bg-secondary hover:text-secondary-foreground'
                     )}
                     title={item.name}
                   >
