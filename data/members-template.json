@@ -45,12 +45,6 @@
       "scholarship": 25000,
       "academicInfo": [
         {
-            "degree": "POSTDOC",
-            "field": "Computational Biology",
-            "institution": "Tel Aviv University",
-            "graduationYear": 1995
-        },
-        {
           "degree": "PhD",
           "field": "Computational Biology",
           "institution": "Tel Aviv University",
