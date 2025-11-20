@@ -1,0 +1,35 @@
+# Dockerfile for running tests
+FROM node:20-alpine
+
+# Install system dependencies for Playwright
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Set Playwright to use system Chromium
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm install --legacy-peer-deps
+
+# Copy Prisma schema
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Copy all source files
+COPY . .
+
+# Default command (can be overridden)
+CMD ["npm", "run", "test:docker"]
+
