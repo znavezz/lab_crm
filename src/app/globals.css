@@ -1,26 +1,244 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.600 0.150 240.0); /* Blue - Primary color */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.950 0.010 120.0); /* Gray - Secondary color */
+  --secondary-foreground: oklch(0.145 0 0);
+  --muted: oklch(0.950 0.010 120.0); /* Gray - Neutral elements */
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.600 0.150 240.0); /* Blue - Attention/special */
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.577 0.245 27.325); /* Red - Warnings/errors */
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.600 0.150 240.0); /* Blue - Focus states */
+  --chart-1: oklch(0.600 0.150 240.0); /* Blue */
+  --chart-2: oklch(0.950 0.010 120.0); /* Gray */
+  --chart-3: oklch(0.600 0.150 240.0); /* Blue */
+  --chart-4: oklch(0.950 0.010 120.0); /* Gray */
+  --chart-5: oklch(0.950 0.010 120.0); /* Gray */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.600 0.150 240.0); /* Blue - Navigation */
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.950 0.010 120.0); /* Gray - Subtle accents */
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.600 0.150 240.0); /* Blue - Focus */
+  --logo: oklch(0.600 0.150 240.0); /* Blue - Logo color */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.650 0.180 240.0); /* Blue - Primary color (dark) */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.750 0.020 120.0); /* Gray - Secondary color (dark) */
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.750 0.020 120.0); /* Gray - Neutral elements (dark) */
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.650 0.180 240.0); /* Blue - Attention/special (dark) */
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.720 0.180 25.0); /* Light Coral Pink (#FF8F8F) - Warnings/errors (dark) */
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.650 0.180 240.0); /* Blue - Focus states (dark) */
+  --chart-1: oklch(0.650 0.180 240.0); /* Blue */
+  --chart-2: oklch(0.750 0.020 120.0); /* Gray */
+  --chart-3: oklch(0.650 0.180 240.0); /* Blue */
+  --chart-4: oklch(0.750 0.020 120.0); /* Gray */
+  --chart-5: oklch(0.750 0.020 120.0); /* Gray */
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.650 0.180 240.0); /* Blue - Navigation (dark) */
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.750 0.020 120.0); /* Gray - Subtle accents (dark) */
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.650 0.180 240.0); /* Blue - Focus (dark) */
+  --logo: oklch(0.650 0.180 240.0); /* Blue - Logo color (dark) */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Simple hover animation for dashboard cards */
+
+.paint-card {
+  transition: all 0.3s ease;
+}
+
+.paint-card:hover {
+  background-color: oklch(0.600 0.150 240.0 / 0.05);
+  box-shadow: 0 10px 25px -5px oklch(0.600 0.150 240.0 / 0.3),
+              0 8px 10px -6px oklch(0.600 0.150 240.0 / 0.2);
+  border-color: oklch(0.600 0.150 240.0 / 0.5);
+  transform: translateY(-2px);
+}
+
+.dark .paint-card:hover {
+  background-color: oklch(0.650 0.180 240.0 / 0.08);
+  box-shadow: 0 10px 25px -5px oklch(0.650 0.180 240.0 / 0.4),
+              0 8px 10px -6px oklch(0.650 0.180 240.0 / 0.3);
+  border-color: oklch(0.650 0.180 240.0 / 0.6);
+  transform: translateY(-2px);
+}
+
+/* Diagonal Tear-Strip Peel Animation */
+@layer components {
+  .peel-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Backing layer - reveals the palette color underneath with gradient */
+  .peel-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--peel-color, var(--chart-1));
+    background-image: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.08),
+      transparent 25%,
+      transparent 75%,
+      rgba(255, 255, 255, 0.15)
+    );
+    /* Start with no reveal - completely hidden */
+    clip-path: polygon(100% 0%, 100% 0%, 100% 0%);
+    transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    transform-origin: top right;
+    transform: scale(1);
+  }
+
+  a:hover .peel-card::after,
+  .peel-card:hover::after {
+    /* Diagonal reveal from top-right corner - creates diagonal tear strip */
+    /* Reveals a diagonal triangle from top-right to bottom-left - larger reveal */
+    clip-path: polygon(100% 0%, 100% 0%, 70% 30%, 0% 100%);
+    transform: scale(0.98);
+  }
+
+  /* The tear strip that peels away - card surface */
+  .peel-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: hsl(var(--card));
+    /* Default: show full card (no clipping) */
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    transform-origin: top right;
+    transform: perspective(300px) rotateX(0deg) rotateY(0deg) scale(1);
+    box-shadow: none;
+    opacity: 1;
+  }
+
+  a:hover .peel-card::before,
+  .peel-card:hover::before {
+    /* Clip away the diagonal strip to reveal the backing layer underneath */
+    /* This creates the "peeled" area - everything except the diagonal triangle */
+    clip-path: polygon(0% 0%, 100% 0%, 70% 30%, 0% 100%, 0% 100%);
+    transform: perspective(300px) rotateX(-12deg) rotateY(-25deg) translateZ(12px) scale(0.97);
+    /* Shadow that follows the diagonal tear edge - creates depth */
+    box-shadow: 
+      -15px -15px 40px rgba(0, 0, 0, 0.25),
+      -8px -8px 20px rgba(0, 0, 0, 0.2),
+      inset -4px -4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0.92;
+  }
+
+  /* Ensure card content stays above the peel effect */
+  .peel-card > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Color variants for different entity types */
+  .peel-chart-1::after {
+    --peel-color: var(--chart-1);
+  }
+
+  .peel-chart-2::after {
+    --peel-color: var(--chart-2);
+  }
+
+  .peel-chart-3::after {
+    --peel-color: var(--chart-3);
+  }
+
+  .peel-chart-4::after {
+    --peel-color: var(--chart-4);
+  }
+
+  .peel-chart-5::after {
+    --peel-color: var(--chart-5);
+  }
 }

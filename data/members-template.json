@@ -1,0 +1,159 @@
+{
+  "members": [
+    {
+      "name": "Mr. Nave Zehoray",
+      "rank": "BSc",
+      "status": "ACTIVE",
+      "role": "STUDENT",
+      "scholarship": 5000,
+      "photoUrl": null,
+      "academicInfo": [
+        {
+          "degree": "BSc",
+          "field": "Computational Biology",
+          "institution": "Bar Ilan University",
+          "graduationYear": 2025
+        }
+      ]
+    },
+    {
+      "name": "Mr. David Gorelik",
+      "rank": "MSc",
+      "status": "ACTIVE",
+      "role": "STUDENT",
+      "scholarship": 7000,
+      "academicInfo": [
+        {
+          "degree": "MSc",
+          "field": "Computational Biology",
+          "institution": "Bar Ilan University",
+          "graduationYear": 2020
+        },
+        {
+          "degree": "BSc",
+          "field": "Biology",
+          "institution": "Ariel University",
+          "graduationYear": 2017
+        }
+      ]
+    },
+    {
+      "name": "Erez Levanon",
+      "rank": "PROFESSOR",
+      "status": "ACTIVE",
+      "role": "PI",
+      "scholarship": 25000,
+      "academicInfo": [
+        {
+          "degree": "PhD",
+          "field": "Computational Biology",
+          "institution": "Tel Aviv University",
+          "graduationYear": 1992
+        },
+        {
+          "degree": "MSc",
+          "field": "Computational Biology",
+          "institution": "Tel Aviv University",
+          "graduationYear": 1989
+        },
+        {
+          "degree": "BSc",
+          "field": "Physics",
+          "institution": "Tel Aviv University",
+          "graduationYear": 1986
+        }
+      ]
+    },
+    {
+      "name": "Kobi Shapira",
+      "rank": "MSc",
+      "status": "ACTIVE",
+      "role": "STUDENT",
+      "scholarship": 7000,
+      "academicInfo": [
+        {
+            "degree": "MSc",
+            "field": "Computational Biology",
+            "institution": "Tel Aviv University",
+            "graduationYear": 2023
+        },
+        {
+          "degree": "BSc",
+          "field": "Computer Science",
+          "institution": "Tel Aviv University",
+          "graduationYear": 2020
+        }
+      ]
+    },
+    {
+      "name": "Itamar Twersky",
+      "rank": "MSc",
+      "status": "ACTIVE",
+      "role": "STUDENT",
+      "scholarship": 5000,
+      "academicInfo": [
+        {
+          "degree": "MSc",
+          "field": "Computer Science",
+          "institution": "Tel Aviv University",
+          "graduationYear": 2023
+        },
+        {
+          "degree": "BSc",
+          "field": "Computer Science",
+          "institution": "Bar Ilan University",
+          "graduationYear": 2020
+        }
+      ]
+    },
+    {
+        "name": "Roni Cohen-Fultheim",
+        "rank": "PhD",
+        "status": "ACTIVE",
+        "role": "RESEARCHER",
+        "scholarship": 10000,
+        "academicInfo": [
+            {
+                "degree": "PhD",
+                "field": "Computer Science",
+                "institution": "Tel Aviv University",
+                "graduationYear": 2020
+            },
+            {
+                "degree": "MSc",
+                "field": "Computer Science",
+                "institution": "Tel Aviv University",
+                "graduationYear": 2018
+            },
+            {
+                "degree": "BSc",
+                "field": "Computer Science",
+                "institution": "Bar Ilan University",
+                "graduationYear": 2015
+            }
+        ]
+    },
+    {
+        "name": "Miriam Karmon",
+        "rank": "MSc",
+        "status": "ACTIVE",
+        "role": "STUDENT",
+        "scholarship": 7000,
+        "academicInfo": [
+            {
+                "degree": "MSc",
+                "field": "Computer Science",
+                "institution": "Tel Aviv University",
+                "graduationYear": 2023
+            },
+            {
+                "degree": "BSc",
+                "field": "Computer Science",
+                "institution": "Tel Aviv University",
+                "graduationYear": 2020
+            }
+        ]
+    }
+  ]
+}
+

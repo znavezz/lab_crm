@@ -290,8 +290,8 @@ describe('Authentication Tests', () => {
 
       expect(result?.user).toBeDefined();
       expect(result?.user?.id).toBe(user.id);
-      // When userRecord is null, memberId should not be set
-      expect(result?.user?.memberId).toBeUndefined();
+      // When userRecord is null, memberId is set to null
+      expect(result?.user?.memberId).toBeNull();
     });
 
     it('should handle session callback when extendedSession.user is null', async () => {

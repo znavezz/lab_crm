@@ -12,6 +12,7 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type EnumResolverSignature<T, AllowedValues = any> = { [key in keyof T]?: AllowedValues };
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
@@ -123,12 +124,15 @@ export type CreateExpenseInput = {
 
 export type CreateGrantInput = {
   budget: Scalars['Float']['input'];
-  deadline: Scalars['DateTime']['input'];
+  endDate: Scalars['DateTime']['input'];
   name: Scalars['String']['input'];
+  startDate: Scalars['DateTime']['input'];
 };
 
 export type CreateMemberInput = {
+  joinedDate?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
+  photoUrl?: InputMaybe<Scalars['String']['input']>;
   rank?: InputMaybe<MemberRank>;
   role?: InputMaybe<MemberRole>;
   scholarship?: InputMaybe<Scalars['Int']['input']>;
@@ -147,6 +151,7 @@ export type CreateNoteTaskInput = {
   grantId?: InputMaybe<Scalars['String']['input']>;
   memberId?: InputMaybe<Scalars['String']['input']>;
   projectId?: InputMaybe<Scalars['String']['input']>;
+  protocolId?: InputMaybe<Scalars['String']['input']>;
   publicationId?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
 };
@@ -156,6 +161,24 @@ export type CreateProjectInput = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   title: Scalars['String']['input'];
+};
+
+export type CreateProtocolInput = {
+  authorId?: InputMaybe<Scalars['String']['input']>;
+  category?: InputMaybe<ProtocolCategory>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  difficulty?: InputMaybe<ProtocolDifficulty>;
+  documentId?: InputMaybe<Scalars['String']['input']>;
+  equipment?: InputMaybe<Scalars['String']['input']>;
+  estimatedTime?: InputMaybe<Scalars['String']['input']>;
+  materials?: InputMaybe<Scalars['String']['input']>;
+  projectId?: InputMaybe<Scalars['String']['input']>;
+  safetyNotes?: InputMaybe<Scalars['String']['input']>;
+  steps?: InputMaybe<Scalars['String']['input']>;
+  tags?: InputMaybe<Scalars['String']['input']>;
+  title: Scalars['String']['input'];
+  version?: InputMaybe<Scalars['String']['input']>;
+  versionHistory?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreatePublicationInput = {
@@ -175,6 +198,7 @@ export type Document = {
   noteTasks: Array<NoteTask>;
   project?: Maybe<Project>;
   projectId?: Maybe<Scalars['String']['output']>;
+  protocol?: Maybe<Protocol>;
   updatedAt: Scalars['DateTime']['output'];
   url: Scalars['String']['output'];
 };
@@ -235,13 +259,14 @@ export type Grant = {
   __typename?: 'Grant';
   budget: Scalars['Float']['output'];
   createdAt: Scalars['DateTime']['output'];
-  deadline: Scalars['DateTime']['output'];
+  endDate: Scalars['DateTime']['output'];
   expenses: Array<Expense>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   noteTasks: Array<NoteTask>;
   projects: Array<Project>;
   remainingBudget: Scalars['Float']['output'];
+  startDate: Scalars['DateTime']['output'];
   totalSpent: Scalars['Float']['output'];
 };
 
@@ -254,9 +279,12 @@ export type Member = {
   equipments: Array<Equipment>;
   events: Array<Event>;
   id: Scalars['ID']['output'];
+  joinedDate?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   noteTasks: Array<NoteTask>;
+  photoUrl?: Maybe<Scalars['String']['output']>;
   projects: Array<Project>;
+  protocols: Array<Protocol>;
   publications: Array<Publication>;
   rank?: Maybe<MemberRank>;
   role?: Maybe<MemberRole>;
@@ -294,6 +322,7 @@ export type Mutation = {
   createMember: Member;
   createNoteTask: NoteTask;
   createProject: Project;
+  createProtocol: Protocol;
   createPublication: Publication;
   deleteAcademicInfo: Scalars['Boolean']['output'];
   deleteBooking: Scalars['Boolean']['output'];
@@ -306,6 +335,7 @@ export type Mutation = {
   deleteMember: Scalars['Boolean']['output'];
   deleteNoteTask: Scalars['Boolean']['output'];
   deleteProject: Scalars['Boolean']['output'];
+  deleteProtocol: Scalars['Boolean']['output'];
   deletePublication: Scalars['Boolean']['output'];
   removeCollaboratorFromProject: Project;
   removeEquipmentFromEvent: Event;
@@ -327,6 +357,7 @@ export type Mutation = {
   updateMember: Member;
   updateNoteTask: NoteTask;
   updateProject: Project;
+  updateProtocol: Protocol;
   updatePublication: Publication;
   updateUser: User;
 };
@@ -441,6 +472,11 @@ export type MutationCreateProjectArgs = {
 };
 
 
+export type MutationCreateProtocolArgs = {
+  input: CreateProtocolInput;
+};
+
+
 export type MutationCreatePublicationArgs = {
   input: CreatePublicationInput;
 };
@@ -497,6 +533,11 @@ export type MutationDeleteNoteTaskArgs = {
 
 
 export type MutationDeleteProjectArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteProtocolArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -625,6 +666,12 @@ export type MutationUpdateProjectArgs = {
 };
 
 
+export type MutationUpdateProtocolArgs = {
+  id: Scalars['ID']['input'];
+  input: UpdateProtocolInput;
+};
+
+
 export type MutationUpdatePublicationArgs = {
   id: Scalars['ID']['input'];
   input: UpdatePublicationInput;
@@ -659,6 +706,8 @@ export type NoteTask = {
   memberId?: Maybe<Scalars['String']['output']>;
   project?: Maybe<Project>;
   projectId?: Maybe<Scalars['String']['output']>;
+  protocol?: Maybe<Protocol>;
+  protocolId?: Maybe<Scalars['String']['output']>;
   publication?: Maybe<Publication>;
   publicationId?: Maybe<Scalars['String']['output']>;
   title?: Maybe<Scalars['String']['output']>;
@@ -680,12 +729,53 @@ export type Project = {
   id: Scalars['ID']['output'];
   members: Array<Member>;
   noteTasks: Array<NoteTask>;
+  protocols: Array<Protocol>;
   publications: Array<Publication>;
   startDate?: Maybe<Scalars['DateTime']['output']>;
   title: Scalars['String']['output'];
   totalInvestment: Scalars['Float']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
+
+export type Protocol = {
+  __typename?: 'Protocol';
+  author?: Maybe<Member>;
+  authorId?: Maybe<Scalars['String']['output']>;
+  category: ProtocolCategory;
+  createdAt: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  difficulty: ProtocolDifficulty;
+  document?: Maybe<Document>;
+  documentId?: Maybe<Scalars['String']['output']>;
+  downloads: Scalars['Int']['output'];
+  equipment?: Maybe<Scalars['String']['output']>;
+  estimatedTime?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  materials?: Maybe<Scalars['String']['output']>;
+  noteTasks: Array<NoteTask>;
+  project?: Maybe<Project>;
+  projectId?: Maybe<Scalars['String']['output']>;
+  safetyNotes?: Maybe<Scalars['String']['output']>;
+  steps?: Maybe<Scalars['String']['output']>;
+  tags?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+  version: Scalars['String']['output'];
+  versionHistory?: Maybe<Scalars['String']['output']>;
+};
+
+export enum ProtocolCategory {
+  Computational = 'COMPUTATIONAL',
+  General = 'GENERAL',
+  Safety = 'SAFETY',
+  WetLab = 'WET_LAB'
+}
+
+export enum ProtocolDifficulty {
+  Advanced = 'ADVANCED',
+  Beginner = 'BEGINNER',
+  Intermediate = 'INTERMEDIATE'
+}
 
 export type Publication = {
   __typename?: 'Publication';
@@ -726,6 +816,8 @@ export type Query = {
   noteTasks: Array<NoteTask>;
   project?: Maybe<Project>;
   projects: Array<Project>;
+  protocol?: Maybe<Protocol>;
+  protocols: Array<Protocol>;
   publication?: Maybe<Publication>;
   publications: Array<Publication>;
   user?: Maybe<User>;
@@ -784,6 +876,11 @@ export type QueryNoteTaskArgs = {
 
 
 export type QueryProjectArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryProtocolArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -853,12 +950,15 @@ export type UpdateExpenseInput = {
 
 export type UpdateGrantInput = {
   budget?: InputMaybe<Scalars['Float']['input']>;
-  deadline?: InputMaybe<Scalars['DateTime']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
 export type UpdateMemberInput = {
+  joinedDate?: InputMaybe<Scalars['DateTime']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+  photoUrl?: InputMaybe<Scalars['String']['input']>;
   rank?: InputMaybe<MemberRank>;
   role?: InputMaybe<MemberRole>;
   scholarship?: InputMaybe<Scalars['Int']['input']>;
@@ -866,9 +966,19 @@ export type UpdateMemberInput = {
 };
 
 export type UpdateNoteTaskInput = {
+  collaboratorId?: InputMaybe<Scalars['String']['input']>;
   completed?: InputMaybe<Scalars['Boolean']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
+  documentId?: InputMaybe<Scalars['String']['input']>;
   dueDate?: InputMaybe<Scalars['DateTime']['input']>;
+  equipmentId?: InputMaybe<Scalars['String']['input']>;
+  eventId?: InputMaybe<Scalars['String']['input']>;
+  expenseId?: InputMaybe<Scalars['String']['input']>;
+  grantId?: InputMaybe<Scalars['String']['input']>;
+  memberId?: InputMaybe<Scalars['String']['input']>;
+  projectId?: InputMaybe<Scalars['String']['input']>;
+  protocolId?: InputMaybe<Scalars['String']['input']>;
+  publicationId?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -877,6 +987,24 @@ export type UpdateProjectInput = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateProtocolInput = {
+  authorId?: InputMaybe<Scalars['String']['input']>;
+  category?: InputMaybe<ProtocolCategory>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  difficulty?: InputMaybe<ProtocolDifficulty>;
+  documentId?: InputMaybe<Scalars['String']['input']>;
+  equipment?: InputMaybe<Scalars['String']['input']>;
+  estimatedTime?: InputMaybe<Scalars['String']['input']>;
+  materials?: InputMaybe<Scalars['String']['input']>;
+  projectId?: InputMaybe<Scalars['String']['input']>;
+  safetyNotes?: InputMaybe<Scalars['String']['input']>;
+  steps?: InputMaybe<Scalars['String']['input']>;
+  tags?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
+  versionHistory?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdatePublicationInput = {
@@ -898,8 +1026,8 @@ export type User = {
   emailVerified?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   image?: Maybe<Scalars['String']['output']>;
-  member: Member;
-  memberId: Scalars['String']['output'];
+  member?: Maybe<Member>;
+  memberId?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -993,6 +1121,7 @@ export type ResolversTypes = ResolversObject<{
   CreateMemberInput: CreateMemberInput;
   CreateNoteTaskInput: CreateNoteTaskInput;
   CreateProjectInput: CreateProjectInput;
+  CreateProtocolInput: CreateProtocolInput;
   CreatePublicationInput: CreatePublicationInput;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   Document: ResolverTypeWrapper<Document>;
@@ -1011,6 +1140,9 @@ export type ResolversTypes = ResolversObject<{
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   NoteTask: ResolverTypeWrapper<NoteTask>;
   Project: ResolverTypeWrapper<Project>;
+  Protocol: ResolverTypeWrapper<Omit<Protocol, 'author' | 'document' | 'noteTasks' | 'project'> & { author?: Maybe<ResolversTypes['Member']>, document?: Maybe<ResolversTypes['Document']>, noteTasks: Array<ResolversTypes['NoteTask']>, project?: Maybe<ResolversTypes['Project']> }>;
+  ProtocolCategory: ProtocolCategory;
+  ProtocolDifficulty: ProtocolDifficulty;
   Publication: ResolverTypeWrapper<Publication>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
@@ -1025,6 +1157,7 @@ export type ResolversTypes = ResolversObject<{
   UpdateMemberInput: UpdateMemberInput;
   UpdateNoteTaskInput: UpdateNoteTaskInput;
   UpdateProjectInput: UpdateProjectInput;
+  UpdateProtocolInput: UpdateProtocolInput;
   UpdatePublicationInput: UpdatePublicationInput;
   UpdateUserInput: UpdateUserInput;
   User: ResolverTypeWrapper<User>;
@@ -1047,6 +1180,7 @@ export type ResolversParentTypes = ResolversObject<{
   CreateMemberInput: CreateMemberInput;
   CreateNoteTaskInput: CreateNoteTaskInput;
   CreateProjectInput: CreateProjectInput;
+  CreateProtocolInput: CreateProtocolInput;
   CreatePublicationInput: CreatePublicationInput;
   DateTime: Scalars['DateTime']['output'];
   Document: Document;
@@ -1061,6 +1195,7 @@ export type ResolversParentTypes = ResolversObject<{
   Mutation: Record<PropertyKey, never>;
   NoteTask: NoteTask;
   Project: Project;
+  Protocol: Omit<Protocol, 'author' | 'document' | 'noteTasks' | 'project'> & { author?: Maybe<ResolversParentTypes['Member']>, document?: Maybe<ResolversParentTypes['Document']>, noteTasks: Array<ResolversParentTypes['NoteTask']>, project?: Maybe<ResolversParentTypes['Project']> };
   Publication: Publication;
   Query: Record<PropertyKey, never>;
   String: Scalars['String']['output'];
@@ -1075,6 +1210,7 @@ export type ResolversParentTypes = ResolversObject<{
   UpdateMemberInput: UpdateMemberInput;
   UpdateNoteTaskInput: UpdateNoteTaskInput;
   UpdateProjectInput: UpdateProjectInput;
+  UpdateProtocolInput: UpdateProtocolInput;
   UpdatePublicationInput: UpdatePublicationInput;
   UpdateUserInput: UpdateUserInput;
   User: User;
@@ -1132,6 +1268,7 @@ export type DocumentResolvers<ContextType = GraphQLContext, ParentType extends R
   noteTasks?: Resolver<Array<ResolversTypes['NoteTask']>, ParentType, ContextType>;
   project?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType>;
   projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  protocol?: Resolver<Maybe<ResolversTypes['Protocol']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -1188,13 +1325,14 @@ export type ExpenseResolvers<ContextType = GraphQLContext, ParentType extends Re
 export type GrantResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Grant'] = ResolversParentTypes['Grant']> = ResolversObject<{
   budget?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  deadline?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   expenses?: Resolver<Array<ResolversTypes['Expense']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   noteTasks?: Resolver<Array<ResolversTypes['NoteTask']>, ParentType, ContextType>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType>;
   remainingBudget?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   totalSpent?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
 }>;
 
@@ -1206,9 +1344,12 @@ export type MemberResolvers<ContextType = GraphQLContext, ParentType extends Res
   equipments?: Resolver<Array<ResolversTypes['Equipment']>, ParentType, ContextType>;
   events?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  joinedDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   noteTasks?: Resolver<Array<ResolversTypes['NoteTask']>, ParentType, ContextType>;
+  photoUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType>;
+  protocols?: Resolver<Array<ResolversTypes['Protocol']>, ParentType, ContextType>;
   publications?: Resolver<Array<ResolversTypes['Publication']>, ParentType, ContextType>;
   rank?: Resolver<Maybe<ResolversTypes['MemberRank']>, ParentType, ContextType>;
   role?: Resolver<Maybe<ResolversTypes['MemberRole']>, ParentType, ContextType>;
@@ -1218,7 +1359,7 @@ export type MemberResolvers<ContextType = GraphQLContext, ParentType extends Res
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
 
-export type MemberRankResolvers = EnumResolverSignature<{ BSc?: any, DOCTOR?: any, MSc?: any, Mr?: any, Mrs?: any, POSTDOC?: any, PROFESSOR?: any }, ResolversTypes['MemberRank']>;
+export type MemberRankResolvers = EnumResolverSignature<{ BSc?: any, MSc?: any, Mr?: any, Mrs?: any, POSTDOC?: any, PROFESSOR?: any, PhD?: any }, ResolversTypes['MemberRank']>;
 
 export type MemberRoleResolvers = EnumResolverSignature<{ ADVISOR?: any, ALUMNI?: any, CONTRACTOR?: any, GUEST?: any, INTERN?: any, LAB_MANAGER?: any, OTHER?: any, PI?: any, RESEARCHER?: any, STUDENT?: any }, ResolversTypes['MemberRole']>;
 
@@ -1245,6 +1386,7 @@ export type MutationResolvers<ContextType = GraphQLContext, ParentType extends R
   createMember?: Resolver<ResolversTypes['Member'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createNoteTask?: Resolver<ResolversTypes['NoteTask'], ParentType, ContextType, RequireFields<MutationCreateNoteTaskArgs, 'input'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'input'>>;
+  createProtocol?: Resolver<ResolversTypes['Protocol'], ParentType, ContextType, RequireFields<MutationCreateProtocolArgs, 'input'>>;
   createPublication?: Resolver<ResolversTypes['Publication'], ParentType, ContextType, RequireFields<MutationCreatePublicationArgs, 'input'>>;
   deleteAcademicInfo?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteAcademicInfoArgs, 'id'>>;
   deleteBooking?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteBookingArgs, 'id'>>;
@@ -1257,6 +1399,7 @@ export type MutationResolvers<ContextType = GraphQLContext, ParentType extends R
   deleteMember?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMemberArgs, 'id'>>;
   deleteNoteTask?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteNoteTaskArgs, 'id'>>;
   deleteProject?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteProjectArgs, 'id'>>;
+  deleteProtocol?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteProtocolArgs, 'id'>>;
   deletePublication?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeletePublicationArgs, 'id'>>;
   removeCollaboratorFromProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationRemoveCollaboratorFromProjectArgs, 'collaboratorId' | 'projectId'>>;
   removeEquipmentFromEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEquipmentFromEventArgs, 'equipmentId' | 'eventId'>>;
@@ -1278,6 +1421,7 @@ export type MutationResolvers<ContextType = GraphQLContext, ParentType extends R
   updateMember?: Resolver<ResolversTypes['Member'], ParentType, ContextType, RequireFields<MutationUpdateMemberArgs, 'id' | 'input'>>;
   updateNoteTask?: Resolver<ResolversTypes['NoteTask'], ParentType, ContextType, RequireFields<MutationUpdateNoteTaskArgs, 'id' | 'input'>>;
   updateProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationUpdateProjectArgs, 'id' | 'input'>>;
+  updateProtocol?: Resolver<ResolversTypes['Protocol'], ParentType, ContextType, RequireFields<MutationUpdateProtocolArgs, 'id' | 'input'>>;
   updatePublication?: Resolver<ResolversTypes['Publication'], ParentType, ContextType, RequireFields<MutationUpdatePublicationArgs, 'id' | 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'id' | 'input'>>;
 }>;
@@ -1304,6 +1448,8 @@ export type NoteTaskResolvers<ContextType = GraphQLContext, ParentType extends R
   memberId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   project?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType>;
   projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  protocol?: Resolver<Maybe<ResolversTypes['Protocol']>, ParentType, ContextType>;
+  protocolId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   publication?: Resolver<Maybe<ResolversTypes['Publication']>, ParentType, ContextType>;
   publicationId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -1324,11 +1470,38 @@ export type ProjectResolvers<ContextType = GraphQLContext, ParentType extends Re
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   members?: Resolver<Array<ResolversTypes['Member']>, ParentType, ContextType>;
   noteTasks?: Resolver<Array<ResolversTypes['NoteTask']>, ParentType, ContextType>;
+  protocols?: Resolver<Array<ResolversTypes['Protocol']>, ParentType, ContextType>;
   publications?: Resolver<Array<ResolversTypes['Publication']>, ParentType, ContextType>;
   startDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   totalInvestment?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type ProtocolResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Protocol'] = ResolversParentTypes['Protocol']> = ResolversObject<{
+  author?: Resolver<Maybe<ResolversTypes['Member']>, ParentType, ContextType>;
+  authorId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  category?: Resolver<ResolversTypes['ProtocolCategory'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  difficulty?: Resolver<ResolversTypes['ProtocolDifficulty'], ParentType, ContextType>;
+  document?: Resolver<Maybe<ResolversTypes['Document']>, ParentType, ContextType>;
+  documentId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  downloads?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  equipment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  estimatedTime?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  materials?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  noteTasks?: Resolver<Array<ResolversTypes['NoteTask']>, ParentType, ContextType>;
+  project?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType>;
+  projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  safetyNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  steps?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  versionHistory?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type PublicationResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Publication'] = ResolversParentTypes['Publication']> = ResolversObject<{
@@ -1368,6 +1541,8 @@ export type QueryResolvers<ContextType = GraphQLContext, ParentType extends Reso
   noteTasks?: Resolver<Array<ResolversTypes['NoteTask']>, ParentType, ContextType>;
   project?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<QueryProjectArgs, 'id'>>;
   projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType>;
+  protocol?: Resolver<Maybe<ResolversTypes['Protocol']>, ParentType, ContextType, RequireFields<QueryProtocolArgs, 'id'>>;
+  protocols?: Resolver<Array<ResolversTypes['Protocol']>, ParentType, ContextType>;
   publication?: Resolver<Maybe<ResolversTypes['Publication']>, ParentType, ContextType, RequireFields<QueryPublicationArgs, 'id'>>;
   publications?: Resolver<Array<ResolversTypes['Publication']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
@@ -1380,8 +1555,8 @@ export type UserResolvers<ContextType = GraphQLContext, ParentType extends Resol
   emailVerified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  member?: Resolver<ResolversTypes['Member'], ParentType, ContextType>;
-  memberId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  member?: Resolver<Maybe<ResolversTypes['Member']>, ParentType, ContextType>;
+  memberId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
@@ -1404,6 +1579,7 @@ export type Resolvers<ContextType = GraphQLContext> = ResolversObject<{
   Mutation?: MutationResolvers<ContextType>;
   NoteTask?: NoteTaskResolvers<ContextType>;
   Project?: ProjectResolvers<ContextType>;
+  Protocol?: ProtocolResolvers<ContextType>;
   Publication?: PublicationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

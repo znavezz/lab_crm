@@ -1,12 +1,14 @@
 {
-  "prisma.include": [
-    "prisma/schema.prisma"
-  ],
-  "prisma.exclude": [
-    "**/node_modules/**",
-    "**/src/generated/**"
-  ],
-  "files.exclude": {
-    "**/src/generated/prisma/schema.prisma": true
-  }
+	"prisma.include": ["prisma/schema.prisma"],
+	"prisma.exclude": [
+		"**/node_modules/**",
+		"**/src/generated/**"
+	],
+	"files.exclude": {
+		"**/src/generated/prisma/schema.prisma": true
+	},
+	"css.customData": [
+		".vscode/css_custom_data.json"
+	],
+	"css.lint.unknownAtRules": "ignore"
 }

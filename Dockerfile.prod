@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install all dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy all source code
 COPY . .
@@ -21,7 +21,7 @@ RUN npm run build
 # Stage 2: "Runner"
 # This is the final, small image. It takes the built app
 # and installs *only* production dependencies.
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Set environment to production
@@ -33,7 +33,7 @@ COPY --from=builder /app/package-lock.json ./package-lock.json
 
 # Install *only* production dependencies
 # This will also install Prisma and download the correct query engine binaries
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copy the generated Prisma client from the builder
 # This is your `prisma/src/generated/prisma` folder

@@ -52,6 +52,11 @@ export const types = {
         where: { memberId: parent.id },
       });
     },
+    protocols: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
+      return await context.prisma.protocol.findMany({
+        where: { authorId: parent.id },
+      });
+    },
     noteTasks: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
       return await context.prisma.noteTask.findMany({
         where: { memberId: parent.id },
@@ -93,6 +98,11 @@ export const types = {
     },
     documents: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
       return await context.prisma.document.findMany({
+        where: { projectId: parent.id },
+      });
+    },
+    protocols: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
+      return await context.prisma.protocol.findMany({
         where: { projectId: parent.id },
       });
     },
@@ -298,9 +308,40 @@ export const types = {
         where: { id: parent.memberId },
       });
     },
+    protocol: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
+      return await context.prisma.protocol.findFirst({
+        where: { documentId: parent.id },
+      });
+    },
     noteTasks: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
       return await context.prisma.noteTask.findMany({
         where: { documentId: parent.id },
+      });
+    },
+  },
+  
+  Protocol: {
+    author: async (parent: { authorId: string | null }, _: unknown, context: GraphQLContext) => {
+      if (!parent.authorId) return null;
+      return await context.prisma.member.findUnique({
+        where: { id: parent.authorId },
+      });
+    },
+    project: async (parent: { projectId: string | null }, _: unknown, context: GraphQLContext) => {
+      if (!parent.projectId) return null;
+      return await context.prisma.project.findUnique({
+        where: { id: parent.projectId },
+      });
+    },
+    document: async (parent: { documentId: string | null }, _: unknown, context: GraphQLContext) => {
+      if (!parent.documentId) return null;
+      return await context.prisma.document.findUnique({
+        where: { id: parent.documentId },
+      });
+    },
+    noteTasks: async (parent: { id: string }, _: unknown, context: GraphQLContext) => {
+      return await context.prisma.noteTask.findMany({
+        where: { protocolId: parent.id },
       });
     },
   },

@@ -476,3 +476,7 @@ tests/*_TEST_RESULTS.md
 # Prisma generated files (if any exist)
 prisma/generated/
 prisma/schema/
+
+# Uploaded files (keep directory structure)
+public/uploads/*
+!public/uploads/.gitkeep

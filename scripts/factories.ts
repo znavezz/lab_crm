@@ -27,7 +27,8 @@ type ProjectCreateInput = {
 type GrantCreateInput = {
   name?: string;
   budget?: number;
-  deadline?: Date;
+  startDate?: Date;
+  endDate?: Date;
 };
 
 type EquipmentCreateInput = {
@@ -138,7 +139,8 @@ export class DataFactory {
     const defaults = {
       name: `Test Grant ${Math.random().toString(36).substring(7)}`,
       budget: 100000,
-      deadline: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      endDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000), // 11 months from now (total 1 year)
     };
 
     return await this.prisma.grant.create({
@@ -147,6 +149,10 @@ export class DataFactory {
   }
 
   // Equipment factory
+  // Automatically sets status based on member/project assignment:
+  // - If member OR project assigned → IN_USE
+  // - If neither → AVAILABLE
+  // - Only explicit MAINTENANCE status is allowed
   async createEquipment(overrides: EquipmentCreateInput = {}) {
     const defaults = {
       name: `Test Equipment ${Math.random().toString(36).substring(7)}`,
@@ -154,8 +160,27 @@ export class DataFactory {
       status: 'AVAILABLE' as EquipmentStatus,
     };
 
+    // Validate: Cannot have both member and project
+    if (overrides.memberId && overrides.projectId) {
+      throw new Error('Equipment cannot be assigned to both a member and a project.');
+    }
+
+    // Determine status automatically:
+    // - If status is explicitly set to MAINTENANCE → use MAINTENANCE
+    // - If member OR project is assigned → status is IN_USE
+    // - Otherwise → status is AVAILABLE
+    let status: EquipmentStatus;
+    
+    if (overrides.status === 'MAINTENANCE') {
+      status = 'MAINTENANCE';
+    } else if (overrides.memberId || overrides.projectId) {
+      status = 'IN_USE';
+    } else {
+      status = overrides.status || defaults.status;
+    }
+
     return await this.prisma.equipment.create({
-      data: { ...defaults, ...overrides },
+      data: { ...defaults, ...overrides, status },
     });
   }
 
@@ -349,6 +374,46 @@ export class DataFactory {
 
     return await this.prisma.academicInfo.create({
       data: { ...defaults, ...overrides },
+    });
+  }
+
+  // Protocol factory
+  async createProtocol(overrides: {
+    title?: string;
+    category?: 'WET_LAB' | 'COMPUTATIONAL' | 'SAFETY' | 'GENERAL';
+    authorId?: string;
+    projectId?: string;
+  } = {}) {
+    // Create author if not provided
+    if (!overrides.authorId) {
+      const member = await this.createMember();
+      overrides.authorId = member.id;
+    }
+
+    // Create project if not provided
+    if (!overrides.projectId) {
+      const project = await this.createProject();
+      overrides.projectId = project.id;
+    }
+
+    const defaults = {
+      title: `Test Protocol ${Math.random().toString(36).substring(7)}`,
+      category: 'GENERAL' as const,
+    };
+
+    const { authorId, projectId, ...restOverrides } = overrides;
+    
+    return await this.prisma.protocol.create({
+      data: {
+        ...defaults,
+        ...restOverrides,
+        author: authorId ? {
+          connect: { id: authorId },
+        } : undefined,
+        project: projectId ? {
+          connect: { id: projectId },
+        } : undefined,
+      },
     });
   }
 }

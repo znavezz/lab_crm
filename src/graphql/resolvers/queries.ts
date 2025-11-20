@@ -118,6 +118,19 @@ export const queries = {
     });
   },
   
+  // Protocol queries
+  protocols: async (_: unknown, __: unknown, context: GraphQLContext) => {
+    return await context.prisma.protocol.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  },
+  
+  protocol: async (_: unknown, { id }: { id: string }, context: GraphQLContext) => {
+    return await context.prisma.protocol.findUnique({
+      where: { id },
+    });
+  },
+  
   // Expense queries
   expenses: async (_: unknown, __: unknown, context: GraphQLContext) => {
     return await context.prisma.expense.findMany({

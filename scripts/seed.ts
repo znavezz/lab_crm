@@ -74,16 +74,33 @@ async function main() {
     await prisma.document.deleteMany();
     await prisma.publication.deleteMany();
     await prisma.academicInfo.deleteMany();
+    await prisma.protocol.deleteMany();
     
-    // Disconnect many-to-many relations
-    await prisma.$executeRaw`DELETE FROM "_EventToEquipment"`;
-    await prisma.$executeRaw`DELETE FROM "_EventToMember"`;
-    await prisma.$executeRaw`DELETE FROM "_EventToProject"`;
-    await prisma.$executeRaw`DELETE FROM "_ProjectMembers"`;
-    await prisma.$executeRaw`DELETE FROM "_ProjectToGrant"`;
-    await prisma.$executeRaw`DELETE FROM "_ProjectToPublication"`;
-    await prisma.$executeRaw`DELETE FROM "_ProjectToCollaborator"`;
-    await prisma.$executeRaw`DELETE FROM "_MemberToPublication"`;
+    // Disconnect many-to-many relations (ignore errors if tables don't exist)
+    try {
+      await prisma.$executeRaw`DELETE FROM "_EventToEquipment"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_EventToMember"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_EventToProject"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_ProjectMembers"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_ProjectToGrant"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_ProjectToPublication"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_ProjectToCollaborator"`;
+    } catch {}
+    try {
+      await prisma.$executeRaw`DELETE FROM "_MemberToPublication"`;
+    } catch {}
     
     await prisma.event.deleteMany();
     await prisma.equipment.deleteMany();
@@ -108,17 +125,20 @@ async function main() {
     
     console.log('✅ Seed completed successfully!\n');
     console.log('📊 Summary:');
-    console.log(`   Members: 5 (1 professor, 1 postdoc, 2 students, 1 lab manager)`);
-    console.log(`   Projects: 2`);
-    console.log(`   Grants: 2`);
-    console.log(`   Equipment: 4`);
-    console.log(`   Bookings: 2`);
-    console.log(`   Events: 1`);
-    console.log(`   Publications: 1`);
-    console.log(`   Collaborators: 1`);
-    console.log(`   Documents: 2`);
-    console.log(`   Expenses: 2`);
-    console.log(`   NoteTasks: 1\n`);
+    console.log(`   Members: 15 (1 professor, 5 postdocs, 7 students, 1 lab manager, 1 other)`);
+    console.log(`   - Active: 10 members`);
+    console.log(`   - Alumni: 5 members`);
+    console.log(`   Projects: 30 (spanning multiple years)`);
+    console.log(`   Grants: 18 (spanning ${new Date().getFullYear() - 5} to ${new Date().getFullYear() + 3})`);
+    console.log(`   Equipment: 35 (with correct status logic)`);
+    console.log(`   Publications: 45 (spanning multiple years)`);
+    console.log(`   Protocols: 25`);
+    console.log(`   Events: 30`);
+    console.log(`   Bookings: 20`);
+    console.log(`   Collaborators: 15`);
+    console.log(`   Documents: 20`);
+    console.log(`   Expenses: 40 (spanning multiple years)`);
+    console.log(`   NoteTasks: 15\n`);
     
     // Test computed fields
     console.log('🧪 Testing computed fields...');

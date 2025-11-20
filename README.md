@@ -14,6 +14,7 @@ This is a [Next.js](https://nextjs.org) project built with a modern, type-safe s
 * **ORM:** [Prisma](https://www.prisma.io/)
 * **Database:** [PostgreSQL](https://www.postgresql.org/)
 * **Auth:** [NextAuth.js (Auth.js)](https://authjs.dev/)
+* **UI Components:** [shadcn/ui](https://ui.shadcn.com/) with Radix UI primitives
 
 ---
 
@@ -38,8 +39,9 @@ You must have [Node.js](https://nodejs.org/en/) and [PostgreSQL](https://www.pos
     ```
 2.  Install NPM packages:
     ```bash
-    npm install
+    npm install --legacy-peer-deps
     ```
+    **Note:** The `--legacy-peer-deps` flag is required due to some peer dependency conflicts in the dependency tree.
 
 #### 3. Database Setup
 
@@ -108,6 +110,8 @@ To get the project running for the first time, follow these steps in order:
     ```
 
 Your application is now running at **`http://localhost:3000`** with hot-reloading. The database is accessible on your host machine at **`localhost:5433`**.
+
+**Note:** The Dockerfile uses Node 20 and includes `--legacy-peer-deps` flag for npm install to handle peer dependency conflicts. The `.next` directory is created with proper permissions to avoid build manifest errors.
 
 #### 3. Accessing the Database
 You can access the database using the Prisma Studio. Run this command from your project folder:
@@ -243,6 +247,71 @@ export const queries = {
 
 ---
 
+## 🔧 Troubleshooting
+
+### Build Errors
+
+#### Module not found: Can't resolve '@yaacovcr/transform'
+
+This error occurs when building with Apollo Server. The `@yaacovcr/transform` package is an optional dependency required by Apollo Server 5.x for legacy incremental delivery protocol support.
+
+**Solution:** The package is already included in `package.json`. If you encounter this error:
+
+1. Ensure the package is installed:
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+
+2. The `next.config.ts` file is configured to mark this as an external dependency for server-side builds, so it won't be bundled by webpack but will be available at runtime.
+
+3. For Docker builds, ensure your Dockerfile includes `--legacy-peer-deps` flag (already configured in the provided Dockerfiles).
+
+#### TypeScript Errors: Cannot find module '@/components/ui/button'
+
+This error can occur if the Button component isn't properly typed. The Button component uses `React.forwardRef` for proper TypeScript type resolution.
+
+**Solution:** The component is already configured correctly. If you see this error:
+- Restart your TypeScript server in your IDE
+- Clear the `.next` directory: `rm -rf .next`
+- Rebuild: `npm run build`
+
+### Docker Build Issues
+
+#### Permission Errors with .next Directory
+
+The Dockerfile includes a step to create the `.next` directory with proper permissions:
+```dockerfile
+RUN mkdir -p /app/.next && chmod -R 777 /app/.next
+```
+
+This prevents build manifest errors in Docker containers.
+
+#### Peer Dependency Warnings
+
+The project uses `--legacy-peer-deps` flag for npm install to handle peer dependency conflicts. This is normal and expected.
+
+### Development Setup Issues
+
+#### Database Connection Errors
+
+- **Docker:** Ensure containers are running: `docker compose up -d`
+- **Local:** Verify PostgreSQL is running and `DATABASE_URL` in `.env` is correct
+- Check that the database exists: `psql -U your_user -d lab_crm`
+
+#### Prisma Client Not Generated
+
+If you see Prisma Client errors:
+```bash
+npx prisma generate
+```
+
+For Docker:
+```bash
+docker compose exec app npx prisma generate
+```
+
+---
+
 ## 🧪 Testing
 
 The project includes a comprehensive test suite with **100+ tests** covering database models, relationships, factory methods, and GraphQL resolvers.
@@ -274,4 +343,16 @@ For detailed testing documentation, see:
 - [tests/README.md](./tests/README.md) - Quick reference
 - [tests/TESTING_GUIDE.md](./tests/TESTING_GUIDE.md) - Comprehensive guide
 - [tests/DOCKER_TESTING.md](./tests/DOCKER_TESTING.md) - Docker-specific instructions
+
+---
+
+## 📝 Changelog
+
+For a detailed list of changes, bug fixes, and updates, see [CHANGELOG.md](./CHANGELOG.md).
+
+Recent updates include:
+- Fixed Button component TypeScript errors
+- Resolved Apollo Server build errors
+- Updated Dockerfile configurations
+- Enhanced Next.js webpack configuration
 
