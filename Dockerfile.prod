@@ -21,7 +21,7 @@ RUN npm run build
 # Stage 2: "Runner"
 # This is the final, small image. It takes the built app
 # and installs *only* production dependencies.
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Set environment to production
