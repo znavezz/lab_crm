@@ -16,9 +16,20 @@
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:backend": "vitest run tests/**/*.test.ts",
+    "test:component": "vitest run src/**/*.test.tsx",
+    "test:component:ui": "vitest --ui src/**/*.test.tsx",
     "test:docker": "vitest run",
     "test:docker:ui": "vitest --ui",
+    "test:docker:component": "vitest run --include 'src/**/*.test.tsx'",
+    "test:docker:e2e": "playwright test",
+    "test:docker:all": "npm run test:docker && npm run test:docker:component",
     "test:docker:setup": "docker-compose exec db psql -U myuser -d postgres -c \"CREATE DATABASE test_lab_crm;\" || true",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "npm run test:run && npm run test:e2e",
     "seed:docker:reset": "docker-compose exec app sh -c 'npm run seed:reset'",
     "studio": "npx prisma studio"
   },
@@ -92,16 +103,23 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.9",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/ui": "^2.0.0",
+    "jsdom": "^27.2.0",
     "nodemailer": "^6.9.7",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5",
-    "vitest": "^2.0.0",
-    "@vitest/ui": "^2.0.0"
+    "vitest": "^2.0.0"
   }
 }
