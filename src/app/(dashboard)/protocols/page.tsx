@@ -388,8 +388,8 @@ export default function ProtocolsPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
                 />
-              </div>
-              
+        </div>
+
               {/* Category filter tabs - Fully interactive during loading */}
               <Tabs value={categoryFilter} onValueChange={(v) => setcategoryFilter(v as typeof categoryFilter)} className="w-full">
                 <TabsList className="w-full grid grid-cols-4 h-auto">
@@ -404,10 +404,10 @@ export default function ProtocolsPage() {
           <CardContent className="p-3 sm:p-6">
             {/* Protocol list skeletons - Vertical list layout */}
             <div className="space-y-3 sm:space-y-4">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <ProtocolCardSkeleton key={i} />
-              ))}
-            </div>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <ProtocolCardSkeleton key={i} />
+          ))}
+        </div>
           </CardContent>
         </Card>
       </div>
@@ -423,7 +423,6 @@ export default function ProtocolsPage() {
   }
 
   const protocols = data?.protocols || []
-  const members = membersData?.members || []
 
   const filteredProtocols = protocols.filter((protocol: Protocol) => {
     const matchesSearch = protocol.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
