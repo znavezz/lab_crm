@@ -168,15 +168,17 @@ export default function ActivitiesPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {/* Page header */}
+        {/* Page header - Static title */}
         <div className="space-y-2">
-          <Skeleton className="h-8 sm:h-9 w-32" /> {/* Title */}
+          <Skeleton className="h-8 sm:h-9 w-32" /> {/* "Recent Activity" title */}
         </div>
 
-        {/* Activity feed */}
+        {/* Activity feed - Chronological list of recent lab activities */}
         <Card>
           <CardContent className="p-6">
             <div className="space-y-4">
+              {/* Activity items - Each shows type icon, message, and relative time */}
+              {/* Types: member, project, publication, protocol, equipment */}
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <ListItemSkeleton key={i} />
               ))}

@@ -250,90 +250,134 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-8">
-        {/* Page header - "Dashboard" title and description */}
+        {/* Page header - Static title and description */}
         <div>
-          <Skeleton className="h-9 w-48" /> {/* "Dashboard" title */}
-          <Skeleton className="h-5 w-96 mt-2" /> {/* Description text */}
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Overview of your lab&apos;s activities and resources
+          </p>
         </div>
 
-        {/* Stats cards - Clickable cards linking to: Active Members, Active Projects, Publications, Active Grants */}
+        {/* Stats cards - Static labels and icons, dynamic values */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="paint-card">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" /> {/* Card title (e.g. "Active Members") */}
-                <Skeleton className="h-4 w-4" /> {/* Icon (Users, Folder, FileText, Banknote) */}
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-12" /> {/* Metric value (large number) */}
-                <Skeleton className="h-3 w-20 mt-1" /> {/* Subtext (e.g. "X total") */}
-              </CardContent>
-            </Card>
-          ))}
+          {[
+            { title: 'Active Members', icon: UsersIcon, href: '/members' },
+            { title: 'Active Projects', icon: FolderIcon, href: '/projects' },
+            { title: 'Publications', icon: FileTextIcon, href: '/publications' },
+            { title: 'Active Grants', icon: BanknoteIcon, href: '/grants' },
+          ].map((stat) => {
+            const Icon = stat.icon
+            return (
+              <Link key={stat.title} href={stat.href}>
+                <Card className="paint-card cursor-pointer">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-12" /> {/* Dynamic count */}
+                    <Skeleton className="h-3 w-20 mt-1" /> {/* Dynamic "X total" subtext */}
+                  </CardContent>
+                </Card>
+              </Link>
+            )
+          })}
         </div>
 
         {/* Main Content Grid - Recent Activities (4 cols) & Upcoming Events (3 cols) in 7-column layout */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          {/* Recent Activities - Shows latest lab updates with "View All Activities" button */}
+          {/* Recent Activities - Static structure with dynamic content */}
           <Card className="col-span-4">
             <CardHeader>
-              <Skeleton className="h-6 w-40" /> {/* "Recent Activities" title */}
-              <Skeleton className="h-4 w-56 mt-2" /> {/* "Latest updates from your lab" description */}
+              <CardTitle>Recent Activities</CardTitle>
+              <CardDescription>Latest updates from your lab</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Activity items - icon + message + timestamp */}
+                {/* Activity items - Dynamic list of recent lab updates */}
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex items-start gap-4 p-2">
-                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" /> {/* Activity icon */}
+                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" /> {/* Activity type icon */}
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-full" /> {/* Activity message */}
-                      <Skeleton className="h-3 w-24" /> {/* Timestamp (e.g. "2 hours ago") */}
+                      <Skeleton className="h-3 w-24" /> {/* Relative timestamp */}
                     </div>
                   </div>
                 ))}
               </div>
-              <Skeleton className="h-8 w-full mt-4" /> {/* "View All Activities" button */}
+              {/* Static, functional button during loading */}
+              <Button variant="outline" className="w-full mt-4" asChild>
+                <Link href="/activities">
+                  View All Activities
+                  <ArrowRightIcon className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </CardContent>
           </Card>
 
-          {/* Upcoming Events - Shows scheduled events and grant deadlines with "View Calendar" button */}
+          {/* Upcoming Events - Static structure with dynamic content */}
           <Card className="col-span-3">
             <CardHeader>
-              <Skeleton className="h-6 w-40" /> {/* "Upcoming Events" title */}
-              <Skeleton className="h-4 w-56 mt-2" /> {/* "Scheduled activities and deadlines" description */}
+              <CardTitle>Upcoming Events</CardTitle>
+              <CardDescription>Scheduled activities and deadlines</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {/* Event items - calendar icon + title + date + type badge */}
+                {/* Event items - Dynamic list of upcoming events and grant deadlines */}
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-start gap-4 p-2">
                     <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" /> {/* Calendar icon */}
                     <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-full" /> {/* Event title */}
-                      <Skeleton className="h-3 w-24" /> {/* Date (e.g. "01/12/2024") */}
+                      <Skeleton className="h-4 w-full" /> {/* Event/deadline title */}
+                      <Skeleton className="h-3 w-24" /> {/* Event date */}
                       <Skeleton className="h-5 w-16 mt-1" /> {/* Type badge (event/deadline) */}
                     </div>
                   </div>
                 ))}
               </div>
-              <Skeleton className="h-8 w-full mt-4" /> {/* "View Calendar" button */}
+              {/* Static, functional button during loading */}
+              <Button variant="outline" className="w-full mt-4" asChild>
+                <Link href="/events">
+                  View Calendar
+                  <ArrowRightIcon className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Quick Actions - Navigation buttons for: Manage Members, View Projects, Equipment, Analytics */}
+        {/* Quick Actions - Fully static and functional navigation buttons */}
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-32" /> {/* "Quick Actions" title */}
-            <Skeleton className="h-4 w-48 mt-2" /> {/* "Common tasks and navigation" description */}
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common tasks and navigation</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {/* Action buttons - each with icon and label in vertical layout */}
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-24 w-full" />
-              ))}
+              <Button variant="outline" className="h-auto flex-col py-4" asChild>
+                <Link href="/members">
+                  <UsersIcon className="mb-2 h-6 w-6" />
+                  <span>Manage Members</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto flex-col py-4" asChild>
+                <Link href="/projects">
+                  <FolderIcon className="mb-2 h-6 w-6" />
+                  <span>View Projects</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto flex-col py-4" asChild>
+                <Link href="/equipment">
+                  <BeakerIcon className="mb-2 h-6 w-6" />
+                  <span>Equipment</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto flex-col py-4" asChild>
+                <Link href="/analytics">
+                  <TrendingUpIcon className="mb-2 h-6 w-6" />
+                  <span>Analytics</span>
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
