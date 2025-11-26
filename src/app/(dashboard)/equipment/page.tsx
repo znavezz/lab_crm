@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SearchIcon, PlusIcon, BeakerIcon } from 'lucide-react'
+import { SearchIcon, PlusIcon } from 'lucide-react'
 import type { 
   Equipment, 
   Booking, 
@@ -210,33 +210,34 @@ export default function EquipmentPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header */}
+        {/* Page header - Title, description, and "Add Equipment" button */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-8 sm:h-9 w-48" /> {/* Title */}
-            <Skeleton className="h-4 w-80" /> {/* Description */}
+            <Skeleton className="h-8 sm:h-9 w-48" /> {/* "Lab Equipment" title */}
+            <Skeleton className="h-4 w-80" /> {/* Description text */}
           </div>
-          <Skeleton className="h-10 w-32 sm:w-36 shrink-0" /> {/* Add Button */}
+          <Skeleton className="h-10 w-32 sm:w-36 shrink-0" /> {/* "Add Equipment" button */}
         </div>
 
-        {/* Stats cards */}
+        {/* Stats cards - Total Equipment, Available, In Use, Maintenance */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Main content card */}
+        {/* Main content card - Search, tabs, and equipment grid */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
-              <SearchBarSkeleton />
-              <TabsSkeleton count={4} />
+              <SearchBarSkeleton /> {/* "Search equipment..." input */}
+              <TabsSkeleton count={4} /> {/* All, Available, In Use, Maintenance tabs */}
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+            {/* Equipment grid skeleton - 2 columns max to match actual UI */}
+            <div className="grid gap-4 md:grid-cols-2">
+              {[1, 2, 3, 4].map((i) => (
                 <EquipmentCardSkeleton key={i} />
               ))}
             </div>
@@ -564,9 +565,6 @@ export default function EquipmentPage() {
               >
                   <CardHeader>
                     <div className="flex items-start gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2">
-                        <BeakerIcon className="h-5 w-5 text-primary" />
-                      </div>
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -615,11 +613,25 @@ export default function EquipmentPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {item.serialNumber && (
-                      <div className="text-sm text-muted-foreground">
-                        <span className="font-mono text-xs">Serial: {item.serialNumber}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between pt-2">
+                      {item.serialNumber ? (
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-mono text-xs">Serial: {item.serialNumber}</span>
+                        </div>
+                      ) : (
+                        <div />
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/equipment/${item.id}`)
+                        }}
+                      >
+                        Book
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )
