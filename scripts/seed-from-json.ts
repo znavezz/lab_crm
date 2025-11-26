@@ -108,9 +108,10 @@ async function main() {
     for (const table of relationTables) {
       try {
         await prisma.$executeRawUnsafe(`DELETE FROM "${table}"`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Ignore errors if table doesn't exist (error code 42P01)
-        const errorCode = error?.meta?.code || error?.code;
+        const err = error as { meta?: { code?: string }; code?: string };
+        const errorCode = err?.meta?.code || err?.code;
         if (errorCode !== '42P01' && errorCode !== 'P2010') {
           throw error;
         }

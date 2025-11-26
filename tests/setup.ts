@@ -98,13 +98,14 @@ export async function cleanTestDatabase() {
   for (const table of junctionTables) {
     try {
       await testPrisma.$executeRawUnsafe(`DELETE FROM "${table}"`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Ignore errors if table doesn't exist (e.g., no data has been created yet)
       // Check both error code and message for "does not exist"
+      const err = error as { code?: string; message?: string };
       const isTableNotFound = 
-        error?.code === '42P01' || 
-        error?.code === 'P2025' ||
-        (typeof error?.message === 'string' && error.message.includes('does not exist'));
+        err?.code === '42P01' || 
+        err?.code === 'P2025' ||
+        (typeof err?.message === 'string' && err.message.includes('does not exist'));
       
       if (!isTableNotFound) {
         // Re-throw if it's not a "relation does not exist" error

@@ -3,7 +3,7 @@ import { MemberStatus } from '@/generated/prisma';
 import { MemberRole } from '@/generated/prisma';
 import { EquipmentStatus } from '@/generated/prisma';
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import { Member, Project, Equipment, Booking, Event, Grant, Publication, Collaborator, Document, Expense, NoteTask, AcademicInfo, User } from '@/generated/prisma';
+import { Member as PrismaMember, Project as PrismaProject, Equipment as PrismaEquipment, Booking as PrismaBooking, Event as PrismaEvent, Grant as PrismaGrant, Publication as PrismaPublication, Collaborator as PrismaCollaborator, Document as PrismaDocument, Expense as PrismaExpense, NoteTask as PrismaNoteTask, AcademicInfo as PrismaAcademicInfo, User as PrismaUser } from '@/generated/prisma';
 import { GraphQLContext } from '@/graphql/context';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -1106,10 +1106,10 @@ export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
-  AcademicInfo: ResolverTypeWrapper<AcademicInfo>;
-  Booking: ResolverTypeWrapper<Booking>;
+  AcademicInfo: ResolverTypeWrapper<PrismaAcademicInfo>;
+  Booking: ResolverTypeWrapper<PrismaBooking>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
-  Collaborator: ResolverTypeWrapper<Collaborator>;
+  Collaborator: ResolverTypeWrapper<PrismaCollaborator>;
   CreateAcademicInfoInput: CreateAcademicInfoInput;
   CreateBookingInput: CreateBookingInput;
   CreateCollaboratorInput: CreateCollaboratorInput;
@@ -1124,26 +1124,26 @@ export type ResolversTypes = ResolversObject<{
   CreateProtocolInput: CreateProtocolInput;
   CreatePublicationInput: CreatePublicationInput;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
-  Document: ResolverTypeWrapper<Document>;
-  Equipment: ResolverTypeWrapper<Equipment>;
+  Document: ResolverTypeWrapper<PrismaDocument>;
+  Equipment: ResolverTypeWrapper<PrismaEquipment>;
   EquipmentStatus: EquipmentStatus;
-  Event: ResolverTypeWrapper<Event>;
-  Expense: ResolverTypeWrapper<Expense>;
+  Event: ResolverTypeWrapper<PrismaEvent>;
+  Expense: ResolverTypeWrapper<PrismaExpense>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
-  Grant: ResolverTypeWrapper<Grant>;
+  Grant: ResolverTypeWrapper<PrismaGrant>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
-  Member: ResolverTypeWrapper<Member>;
+  Member: ResolverTypeWrapper<PrismaMember>;
   MemberRank: MemberRank;
   MemberRole: MemberRole;
   MemberStatus: MemberStatus;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
-  NoteTask: ResolverTypeWrapper<NoteTask>;
-  Project: ResolverTypeWrapper<Project>;
+  NoteTask: ResolverTypeWrapper<PrismaNoteTask>;
+  Project: ResolverTypeWrapper<PrismaProject>;
   Protocol: ResolverTypeWrapper<Omit<Protocol, 'author' | 'document' | 'noteTasks' | 'project'> & { author?: Maybe<ResolversTypes['Member']>, document?: Maybe<ResolversTypes['Document']>, noteTasks: Array<ResolversTypes['NoteTask']>, project?: Maybe<ResolversTypes['Project']> }>;
   ProtocolCategory: ProtocolCategory;
   ProtocolDifficulty: ProtocolDifficulty;
-  Publication: ResolverTypeWrapper<Publication>;
+  Publication: ResolverTypeWrapper<PrismaPublication>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UpdateAcademicInfoInput: UpdateAcademicInfoInput;
@@ -1160,15 +1160,15 @@ export type ResolversTypes = ResolversObject<{
   UpdateProtocolInput: UpdateProtocolInput;
   UpdatePublicationInput: UpdatePublicationInput;
   UpdateUserInput: UpdateUserInput;
-  User: ResolverTypeWrapper<User>;
+  User: ResolverTypeWrapper<PrismaUser>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  AcademicInfo: AcademicInfo;
-  Booking: Booking;
+  AcademicInfo: PrismaAcademicInfo;
+  Booking: PrismaBooking;
   Boolean: Scalars['Boolean']['output'];
-  Collaborator: Collaborator;
+  Collaborator: PrismaCollaborator;
   CreateAcademicInfoInput: CreateAcademicInfoInput;
   CreateBookingInput: CreateBookingInput;
   CreateCollaboratorInput: CreateCollaboratorInput;
@@ -1183,20 +1183,20 @@ export type ResolversParentTypes = ResolversObject<{
   CreateProtocolInput: CreateProtocolInput;
   CreatePublicationInput: CreatePublicationInput;
   DateTime: Scalars['DateTime']['output'];
-  Document: Document;
-  Equipment: Equipment;
-  Event: Event;
-  Expense: Expense;
+  Document: PrismaDocument;
+  Equipment: PrismaEquipment;
+  Event: PrismaEvent;
+  Expense: PrismaExpense;
   Float: Scalars['Float']['output'];
-  Grant: Grant;
+  Grant: PrismaGrant;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
-  Member: Member;
+  Member: PrismaMember;
   Mutation: Record<PropertyKey, never>;
-  NoteTask: NoteTask;
-  Project: Project;
+  NoteTask: PrismaNoteTask;
+  Project: PrismaProject;
   Protocol: Omit<Protocol, 'author' | 'document' | 'noteTasks' | 'project'> & { author?: Maybe<ResolversParentTypes['Member']>, document?: Maybe<ResolversParentTypes['Document']>, noteTasks: Array<ResolversParentTypes['NoteTask']>, project?: Maybe<ResolversParentTypes['Project']> };
-  Publication: Publication;
+  Publication: PrismaPublication;
   Query: Record<PropertyKey, never>;
   String: Scalars['String']['output'];
   UpdateAcademicInfoInput: UpdateAcademicInfoInput;
@@ -1213,7 +1213,7 @@ export type ResolversParentTypes = ResolversObject<{
   UpdateProtocolInput: UpdateProtocolInput;
   UpdatePublicationInput: UpdatePublicationInput;
   UpdateUserInput: UpdateUserInput;
-  User: User;
+  User: PrismaUser;
 }>;
 
 export type AcademicInfoResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['AcademicInfo'] = ResolversParentTypes['AcademicInfo']> = ResolversObject<{
