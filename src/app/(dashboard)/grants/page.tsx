@@ -205,31 +205,178 @@ export default function GrantsPage() {
     }
   }
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    createGrant({
+      variables: {
+        input: {
+          name: formData.name,
+          budget: parseFloat(formData.budget),
+          startDate: new Date(formData.startDate).toISOString(),
+          endDate: new Date(formData.endDate).toISOString(),
+        },
+      },
+    })
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header - Static title and description, dynamic button */}
+        {/* Page header - Static title, description, and fully functional "Add Grant" button */}
         <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-8 sm:h-9 w-56" /> {/* "Grants & Funding" title */}
-            <Skeleton className="h-4 w-72" /> {/* "Track research funding and grant applications" description */}
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+              Track research funding and grant applications
+            </p>
           </div>
-          <Skeleton className="h-10 w-24 sm:w-32 shrink-0" /> {/* "Add Grant" button */}
+          {/* "Add Grant" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 shrink-0">
+                <PlusIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Grant</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add New Grant</DialogTitle>
+                  <DialogDescription>
+                    Add a new grant or funding application to track.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Grant Name</Label>
+                    <Input
+                      ref={nameRef}
+                      id="name"
+                      value={formData.name}
+                      onChange={handleNameChange}
+                      placeholder="NSF Research Grant 2024"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="budget">Budget ($)</Label>
+                      <Input
+                        ref={budgetRef}
+                        id="budget"
+                        type="number"
+                        value={formData.budget}
+                        onChange={handleBudgetChange}
+                        placeholder="250000"
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        ref={startDateRef}
+                        id="startDate"
+                        type="date"
+                        value={formData.startDate}
+                        onChange={handleStartDateChange}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <Input
+                        ref={endDateRef}
+                        id="endDate"
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Adding...' : 'Add Grant'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Stats cards - Static labels (Total Grants, Active Grants, Active Funding, Pending) with dynamic values */}
+        {/* Stats cards - Static labels with dynamic values */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <StatsCardSkeleton key={i} />
-          ))}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Grants</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active Grants</CardDescription>
+              <CardTitle className="text-3xl text-chart-2">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active Funding</CardDescription>
+              <CardTitle className="text-2xl text-accent">
+                <Skeleton className="h-7 w-24" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Pending</CardDescription>
+              <CardTitle className="text-3xl text-chart-4">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Main content - Grant list with search and status filter tabs */}
+        {/* Main content - Grant list with functional search and filter tabs */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
-              <SearchBarSkeleton /> {/* "Search grants..." input with search icon */}
-              <TabsSkeleton count={4} /> {/* Status tabs: Pending, Active, Completed, All */}
+              {/* Search input - Fully functional during loading */}
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search grants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              {/* Status filter tabs - Fully interactive during loading */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)} className="w-full">
+                <TabsList className="w-full grid grid-cols-4 h-auto">
+                  <TabsTrigger value="PENDING" className="text-xs sm:text-sm px-2">Pending</TabsTrigger>
+                  <TabsTrigger value="ACTIVE" className="text-xs sm:text-sm px-2">Active</TabsTrigger>
+                  <TabsTrigger value="COMPLETED" className="text-xs sm:text-sm px-2">Completed</TabsTrigger>
+                  <TabsTrigger value="ALL" className="text-xs sm:text-sm px-2">All</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6">
@@ -270,29 +417,6 @@ export default function GrantsPage() {
     active: grants.filter((g: Grant) => getGrantStatus(g) === 'ACTIVE').length,
     completed: grants.filter((g: Grant) => getGrantStatus(g) === 'COMPLETED').length,
     totalFunding: grants.reduce((sum: number, g: Grant) => sum + (g.budget || 0), 0),
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    createGrant({
-      variables: {
-        input: {
-          name: formData.name,
-          budget: parseFloat(formData.budget),
-          startDate: new Date(formData.startDate).toISOString(),
-          endDate: new Date(formData.endDate).toISOString(),
-        },
-      },
-    })
   }
 
   return (
