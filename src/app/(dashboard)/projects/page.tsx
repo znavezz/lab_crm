@@ -260,17 +260,76 @@ export default function ProjectsPage() {
 
         {/* Main content card - Search, tabs, and project carousel */}
         <Card>
-          <CardHeader className="p-3 sm:p-6">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <SearchBarSkeleton /> {/* "Search projects..." input */}
-              <TabsSkeleton count={4} /> {/* Active, Planning, Done, All tabs */}
+          <CardHeader>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="relative flex-1 max-w-sm">
+                <Skeleton className="h-10 w-full" /> {/* "Search projects..." input */}
+              </div>
+              <Skeleton className="h-9 w-76" /> {/* Active, Planning, Done, All tabs */}
             </div>
           </CardHeader>
-          <CardContent className="p-3 sm:p-6">
-            <div className="space-y-3 sm:space-y-4">
-              {/* Project carousel cards with status bar, progress, members, grants */}
-              {[1, 2, 3].map((i) => (
-                <ProjectCardSkeleton key={i} />
+          <CardContent className="overflow-visible">
+            {/* Carousel skeleton - horizontal scrolling project cards */}
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="w-[300px] flex-shrink-0">
+                  <div className="flex flex-col rounded-xl border-2 border-border h-[320px] overflow-hidden">
+                    {/* Status bar at top */}
+                    <Skeleton className="h-1.5 w-full" />
+                    
+                    {/* Card content */}
+                    <div className="flex flex-col flex-1 p-5 justify-between">
+                      {/* Top section - main content */}
+                      <div className="space-y-2">
+                        {/* Title and status badge */}
+                        <div className="space-y-2">
+                          <Skeleton className="h-6 w-5/6" />
+                          <Skeleton className="h-5 w-16" />
+                        </div>
+                        
+                        {/* Progress bar */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Skeleton className="h-3 w-16" />
+                            <Skeleton className="h-3 w-8" />
+                          </div>
+                          <Skeleton className="h-2 w-full" />
+                        </div>
+                        
+                        {/* Description - 2 lines preview */}
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-3 w-full" />
+                          <Skeleton className="h-3 w-4/5" />
+                        </div>
+                        
+                        {/* Member avatars */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2">
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                          </div>
+                          <Skeleton className="h-3 w-20 ml-auto" />
+                        </div>
+                        
+                        {/* Grants badges - vertical layout: 2 short at top, 1 medium below, 1 long below */}
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex gap-1.5">
+                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-5 w-16" />
+                          </div>
+                          <Skeleton className="h-5 w-24" />
+                          <Skeleton className="h-5 w-28" />
+                        </div>
+                      </div>
+                      
+                      {/* Bottom section - Dates fixed at bottom (single line) */}
+                      <div className="flex items-center gap-3 pt-2 border-t mt-auto">
+                        <Skeleton className="h-4 w-48" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </CardContent>
@@ -502,96 +561,107 @@ export default function ProjectsPage() {
                 return (
                   <CarouselCard key={project.id} href={`/projects/${project.id}`}>
                     <div className="w-[300px] flex-shrink-0">
-                      <div className="flex flex-col rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 relative z-10">
-                        {/* Status Indicator Bar */}
+                      <div className="flex flex-col rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2 relative z-10 h-[360px] overflow-hidden">
+                        {/* Status Indicator Bar - stays fixed on hover */}
                         <div className={cn(
-                          "h-1.5 w-full rounded-t-xl",
+                          "h-1.5 w-full",
                           project.status === 'ACTIVE' ? 'bg-chart-2' :
                           project.status === 'COMPLETED' ? 'bg-chart-3' :
                           'bg-muted'
                         )} />
                         
-                        {/* Content */}
-                        <div className="flex flex-col flex-1 p-5 space-y-4">
-                          {/* Title and Status */}
+                        {/* Content - flex-1 to push dates to bottom, with hover effect */}
+                        <div className="flex flex-col flex-1 p-5 justify-between group-hover:bg-accent/30 transition-colors duration-300">
+                          {/* Top section - all content except dates */}
                           <div className="space-y-2">
-                            <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                              {project.title}
-                            </h3>
-                            <Badge className={cn(statusColor, 'text-xs')}>
-                              {statusLabels[project.status] || project.status}
-                            </Badge>
-                          </div>
-                          
-                          {/* Progress Bar */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Progress</span>
-                              <span className="font-medium">{progress}%</span>
+                            {/* Title and Status */}
+                            <div className="space-y-2">
+                              <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                                {project.title}
+                              </h3>
+                              <Badge className={cn(statusColor, 'text-xs')}>
+                                {statusLabels[project.status] || project.status}
+                              </Badge>
                             </div>
-                            <Progress value={progress} className="h-2" />
-                          </div>
-                          
-                          {/* Description Preview */}
-                          {project.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-2 group-hover:line-clamp-none transition-all">
-                              {project.description}
-                            </p>
-                          )}
-                          
-                          {/* Member Avatars */}
-                          {memberAvatars.length > 0 && (
-                            <div className="flex items-center gap-2">
-                              <div className="flex -space-x-2">
-                                {memberAvatars.map((member: Member) => {
-                                  const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
-                                  return (
-                                    <Avatar
-                                      key={member.id}
-                                      className="h-8 w-8 border-2 border-background"
-                                      title={member.name}
-                                    >
-                                      <AvatarFallback className="bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground text-xs transition-colors">
-                                        {initials}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  )
-                                })}
+                            
+                            {/* Progress Bar */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>Progress</span>
+                                <span className="font-medium">{progress}%</span>
                               </div>
-                              {project.members && project.members.length > 4 && (
-                                <span className="text-xs text-muted-foreground ml-1">
-                                  +{project.members.length - 4}
-                                </span>
-                              )}
-                              <span className="text-xs text-muted-foreground ml-auto">
-                                {project.members?.length || 0} member{(project.members?.length || 0) !== 1 ? 's' : ''}
-                              </span>
+                              <Progress value={progress} className="h-2" />
                             </div>
-                          )}
-                          
-                          {/* Grants */}
-                          {project.grants && project.grants.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {project.grants.slice(0, 2).map((grant: Grant) => (
-                                <Badge key={grant.id} variant="outline" className="text-xs">
-                                  {grant.name}
-                                </Badge>
-                              ))}
-                              {project.grants.length > 2 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{project.grants.length - 2}
-                                </Badge>
+                            
+                            {/* Description Preview - always show space */}
+                            <p className="text-sm text-muted-foreground line-clamp-2 group-hover:line-clamp-none transition-all min-h-[40px]">
+                              {project.description || '\u00A0'}
+                            </p>
+                            
+                            {/* Member Avatars - always show space */}
+                            <div className="flex items-center gap-2 min-h-[32px]">
+                              {memberAvatars.length > 0 ? (
+                                <>
+                                  <div className="flex -space-x-2">
+                                    {memberAvatars.map((member: Member) => {
+                                      const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
+                                      return (
+                                        <Avatar
+                                          key={member.id}
+                                          className="h-8 w-8 border-2 border-background"
+                                          title={member.name}
+                                        >
+                                          <AvatarFallback className="bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground text-xs transition-colors">
+                                            {initials}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      )
+                                    })}
+                                  </div>
+                                  {project.members && project.members.length > 4 && (
+                                    <span className="text-xs text-muted-foreground ml-1">
+                                      +{project.members.length - 4}
+                                    </span>
+                                  )}
+                                  <span className="text-xs text-muted-foreground ml-auto">
+                                    {project.members?.length || 0} member{(project.members?.length || 0) !== 1 ? 's' : ''}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No members assigned</span>
                               )}
                             </div>
-                          )}
+                            
+                            {/* Grants - show up to 3 grants, then +N if more */}
+                            <div className="flex flex-wrap gap-1.5 min-h-[20px]">
+                              {project.grants && project.grants.length > 0 ? (
+                                <>
+                                  {project.grants.slice(0, 3).map((grant: Grant) => (
+                                    <Badge key={grant.id} variant="outline" className="text-xs">
+                                      {grant.name}
+                                    </Badge>
+                                  ))}
+                                  {project.grants.length > 3 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{project.grants.length - 3}
+                                    </Badge>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No funding sources</span>
+                              )}
+                            </div>
+                          </div>
                           
-                          {/* Dates */}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t">
-                            {project.startDate && (
+                          {/* Bottom section - Dates fixed at bottom */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t mt-auto">
+                            {project.startDate ? (
                               <div className="flex items-center gap-1.5">
                                 <CalendarIcon className="h-3.5 w-3.5" />
                                 <span>{new Date(project.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                               </div>
+                            ) : (
+                              <span>No start date</span>
                             )}
                             {project.endDate && (
                               <div className="flex items-center gap-1.5">
