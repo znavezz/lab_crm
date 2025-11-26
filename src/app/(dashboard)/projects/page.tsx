@@ -159,6 +159,8 @@ export default function ProjectsPage() {
     startDate: '',
     endDate: '',
     selectedGrants: [] as string[],
+    status: 'ACTIVE',
+    progress: '0',
   })
 
   const { data, loading, error, refetch } = useQuery<ProjectsQueryData>(GET_PROJECTS)
@@ -167,7 +169,7 @@ export default function ProjectsPage() {
     onCompleted: (data) => {
       toast.success('Project created successfully')
       setIsDialogOpen(false)
-      setFormData({ title: '', description: '', startDate: '', endDate: '', selectedGrants: [] })
+      setFormData({ title: '', description: '', startDate: '', endDate: '', selectedGrants: [], status: 'ACTIVE', progress: '0' })
       refetch()
       router.push(`/projects/${data.createProject.id}`)
     },
@@ -241,33 +243,239 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 sm:space-y-6">
-        {/* Page header - Static title and description, dynamic button */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-8 sm:h-9 w-48" /> {/* "Research Projects" title */}
-            <Skeleton className="h-4 w-80" /> {/* "Track and manage ongoing research initiatives" description */}
+      <div className="space-y-6">
+        {/* Page header - Static title, description, and fully functional "New Project" button */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Research Projects</h1>
+            <p className="text-muted-foreground mt-1">
+              Track and manage ongoing research initiatives
+            </p>
           </div>
-          <Skeleton className="h-10 w-28 sm:w-36 shrink-0" /> {/* "New Project" button */}
+          {/* "New Project" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <PlusIcon className="h-4 w-4" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Create New Project</DialogTitle>
+                  <DialogDescription>
+                    Add a new research project to the lab.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Project Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Cancer Genomics Analysis Pipeline"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Brief description of the research project..."
+                      rows={4}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="endDate">End Date (Optional)</Label>
+                      <Input
+                        id="endDate"
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-3">
+                    <Label>Funding Source (Optional)</Label>
+                    <Popover open={grantPopoverOpen} onOpenChange={setGrantPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={grantPopoverOpen}
+                          className="justify-between"
+                        >
+                          {formData.selectedGrants.length > 0
+                            ? `${formData.selectedGrants.length} grant(s) selected`
+                            : "Select grants..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[500px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search grants..." />
+                          <CommandList>
+                            <CommandEmpty>No grants found.</CommandEmpty>
+                            <CommandGroup>
+                              {grants.map((grant: Grant) => {
+                                const isSelected = formData.selectedGrants.includes(grant.id)
+                                return (
+                                  <CommandItem
+                                    key={grant.id}
+                                    value={grant.name}
+                                    onSelect={() => {
+                                      handleGrantToggle(grant.id)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        isSelected ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {grant.name}
+                                  </CommandItem>
+                                )
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {formData.selectedGrants.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {formData.selectedGrants.map((grantId) => {
+                          const grant = grants.find((g: Grant) => g.id === grantId)
+                          if (!grant) return null
+                          return (
+                            <Badge key={grantId} variant="secondary" className="gap-1">
+                              {grant.name}
+                              <button
+                                type="button"
+                                onClick={() => handleGrantToggle(grantId)}
+                                className="ml-1 rounded-full hover:bg-secondary-foreground/20"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="status">Project Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="PLANNING">Planning</SelectItem>
+                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="progress">Initial Progress (%)</Label>
+                    <Input
+                      id="progress"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.progress}
+                      onChange={(e) => setFormData({ ...formData, progress: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Creating...' : 'Create Project'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Stats cards - Static labels (Total Projects, Active, Planning, Completed) with dynamic counts */}
+        {/* Stats cards - Static labels with dynamic counts */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <StatsCardSkeleton key={i} />
-          ))}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Projects</CardDescription>
+              <CardTitle className="text-2xl sm:text-3xl">
+                <Skeleton className="h-8 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active</CardDescription>
+              <CardTitle className="text-2xl sm:text-3xl text-chart-2">
+                <Skeleton className="h-8 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Planning</CardDescription>
+              <CardTitle className="text-2xl sm:text-3xl text-muted-foreground">
+                <Skeleton className="h-8 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Completed</CardDescription>
+              <CardTitle className="text-2xl sm:text-3xl text-chart-3">
+                <Skeleton className="h-8 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Main content - Project carousel with search and status filter tabs */}
+        {/* Main content - Project carousel with functional search and filter tabs */}
         <Card>
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              {/* Search input - "Search projects..." */}
+              {/* Search input - Fully functional during loading */}
               <div className="relative flex-1 max-w-sm">
-                <Skeleton className="h-9 w-full" />
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
               </div>
-              {/* Status tabs - Active, Planning, Done, All */}
-              <Skeleton className="h-9 w-76" />
+              
+              {/* Status filter tabs - Fully interactive during loading */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                <TabsList className="grid grid-cols-4 w-full sm:w-auto">
+                  <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+                  <TabsTrigger value="PLANNING">Planning</TabsTrigger>
+                  <TabsTrigger value="COMPLETED">Done</TabsTrigger>
+                  <TabsTrigger value="ALL">All</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </CardHeader>
           <CardContent className="overflow-visible -mx-2 mt-2">
