@@ -242,32 +242,33 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header */}
+        {/* Page header - Title, description, and "New Project" button */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-8 sm:h-9 w-48" /> {/* Title */}
-            <Skeleton className="h-4 w-80" /> {/* Description */}
+            <Skeleton className="h-8 sm:h-9 w-48" /> {/* "Research Projects" title */}
+            <Skeleton className="h-4 w-80" /> {/* Description text */}
           </div>
-          <Skeleton className="h-10 w-28 sm:w-36 shrink-0" /> {/* Add Button */}
+          <Skeleton className="h-10 w-28 sm:w-36 shrink-0" /> {/* "New Project" button */}
         </div>
 
-        {/* Stats cards */}
+        {/* Stats cards - Total Projects, Active, Planning, Completed */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Main content card */}
+        {/* Main content card - Search, tabs, and project carousel */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
-              <SearchBarSkeleton />
-              <TabsSkeleton count={4} />
+              <SearchBarSkeleton /> {/* "Search projects..." input */}
+              <TabsSkeleton count={4} /> {/* Active, Planning, Done, All tabs */}
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6">
             <div className="space-y-3 sm:space-y-4">
+              {/* Project carousel cards with status bar, progress, members, grants */}
               {[1, 2, 3].map((i) => (
                 <ProjectCardSkeleton key={i} />
               ))}

@@ -161,32 +161,58 @@ export default function MembersPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 sm:space-y-6">
-        {/* Page header */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
-            <Skeleton className="h-4 w-80" /> {/* Description */}
+      <div className="space-y-6">
+        {/* Page header - Title, description, and "Add Member" button */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <Skeleton className="h-9 w-64" /> {/* "Lab Members" title */}
+            <Skeleton className="h-5 w-80" /> {/* Description text */}
           </div>
-          <Skeleton className="h-10 w-32 sm:w-36 shrink-0" /> {/* Add Button */}
+          <Skeleton className="h-10 w-32" /> {/* "Add Member" button */}
         </div>
 
-        {/* Stats cards */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
+        {/* Stats cards - Total Members, Active Members, Alumni (only 3 cards) */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Search bar */}
-        <SearchBarSkeleton />
-
-        {/* Member cards grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <MemberCardSkeleton key={i} />
-          ))}
-        </div>
+        {/* Carousel Card - Horizontal scrolling member cards with search and tabs */}
+        <Card>
+          <CardHeader className="pb-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="relative flex-1 max-w-sm">
+                <Skeleton className="h-9 w-full" /> {/* "Search members..." input */}
+              </div>
+              <Skeleton className="h-9 w-40" /> {/* Active, Alumni, All tabs */}
+            </div>
+          </CardHeader>
+          <CardContent className="overflow-visible">
+            {/* Carousel skeleton - horizontal scrolling member cards */}
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border w-[200px] min-h-[280px] flex-shrink-0">
+                  {/* Member avatar with status indicator */}
+                  <div className="relative">
+                    <Skeleton className="h-24 w-24 rounded-full" /> {/* Avatar */}
+                    <Skeleton className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full" /> {/* Status dot */}
+                  </div>
+                  {/* Member info - name, role, status, rank, scholarship */}
+                  <div className="text-center space-y-2 w-full flex-1 flex flex-col">
+                    <Skeleton className="h-5 w-32 mx-auto" /> {/* Name */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Skeleton className="h-5 w-20" /> {/* Role badge */}
+                      <Skeleton className="h-5 w-16" /> {/* Status badge */}
+                    </div>
+                    <Skeleton className="h-4 w-24 mx-auto" /> {/* Rank */}
+                    <Skeleton className="h-4 w-16 mx-auto" /> {/* Scholarship */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -382,7 +408,7 @@ export default function MembersPage() {
                 const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
                 return (
                   <CarouselCard key={member.id} href={`/members/${member.id}`}>
-                    <div className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[200px] group cursor-pointer transform hover:scale-105 hover:-translate-y-2 relative z-10">
+                    <div className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[200px] min-h-[280px] group cursor-pointer transform hover:scale-105 hover:-translate-y-2 relative z-10">
                       <div className="relative">
                         <Avatar className="h-24 w-24 ring-2 ring-background ring-offset-2 ring-offset-background group-hover:ring-primary/50 transition-all duration-300 group-hover:scale-110">
                           <AvatarImage 
@@ -407,7 +433,7 @@ export default function MembersPage() {
                           </div>
                         )}
                       </div>
-                      <div className="text-center space-y-2 w-full">
+                      <div className="text-center space-y-2 w-full flex-1 flex flex-col">
                         <h3 className="font-semibold text-base group-hover:text-primary transition-colors truncate w-full">
                           {member.name}
                         </h3>
@@ -426,16 +452,12 @@ export default function MembersPage() {
                             </Badge>
                           )}
                         </div>
-                        {member.rank && (
-                          <p className="text-xs text-muted-foreground truncate w-full">
-                            {member.rank}
-                          </p>
-                        )}
-                        {member.scholarship && (
-                          <p className="text-xs text-muted-foreground">
-                            ${member.scholarship}
-                          </p>
-                        )}
+                        <p className="text-xs text-muted-foreground truncate w-full min-h-[16px]">
+                          {member.rank || '\u00A0'}
+                        </p>
+                        <p className="text-xs text-muted-foreground min-h-[16px]">
+                          {member.scholarship ? `$${member.scholarship}` : '\u00A0'}
+                        </p>
                       </div>
                     </div>
                   </CarouselCard>
