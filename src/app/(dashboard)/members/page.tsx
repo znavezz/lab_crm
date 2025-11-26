@@ -162,51 +162,192 @@ export default function MembersPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        {/* Page header - Title, description, and "Add Member" button */}
+        {/* Page header - Static title, description, and fully functional "Add Member" button */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <Skeleton className="h-9 w-64" /> {/* "Lab Members" title */}
-            <Skeleton className="h-5 w-80" /> {/* Description text */}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Lab Members</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your research team and collaborators
+            </p>
           </div>
-          <Skeleton className="h-10 w-32" /> {/* "Add Member" button */}
+          {/* "Add Member" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <PlusIcon className="h-4 w-4" />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add New Member</DialogTitle>
+                  <DialogDescription>
+                    Add a new team member to the lab. Fill in their details below.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Dr. Jane Smith"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="rank">Rank (Optional)</Label>
+                    <Input
+                      id="rank"
+                      value={formData.rank}
+                      onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
+                      placeholder="e.g., PhD, MSc, BSc"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="role">Role</Label>
+                    <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PI">Principal Investigator</SelectItem>
+                        <SelectItem value="POSTDOC">Postdoc</SelectItem>
+                        <SelectItem value="STUDENT">Student</SelectItem>
+                        <SelectItem value="RESEARCHER">Researcher</SelectItem>
+                        <SelectItem value="LAB_MANAGER">Lab Manager</SelectItem>
+                        <SelectItem value="INTERN">Intern</SelectItem>
+                        <SelectItem value="CONTRACTOR">Contractor</SelectItem>
+                        <SelectItem value="GUEST">Guest</SelectItem>
+                        <SelectItem value="OTHER">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="INACTIVE">Inactive</SelectItem>
+                        <SelectItem value="ALUMNI">Alumni</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="scholarship">Scholarship/Funding (Optional)</Label>
+                    <Input
+                      id="scholarship"
+                      value={formData.scholarship}
+                      onChange={(e) => setFormData({ ...formData, scholarship: e.target.value })}
+                      placeholder="Enter amount"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="joinedDate">Joined Date (Optional)</Label>
+                    <Input
+                      id="joinedDate"
+                      type="date"
+                      value={formData.joinedDate}
+                      onChange={(e) => setFormData({ ...formData, joinedDate: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Leave empty to use today's date as the joined date.
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Adding...' : 'Add Member'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Stats cards - Total Members, Active Members, Alumni (only 3 cards) */}
+        {/* Stats cards - Static labels with dynamic counts */}
         <div className="grid gap-4 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <StatsCardSkeleton key={i} />
-          ))}
+          {/* Total Members stat */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Members</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" /> {/* Dynamic count */}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          {/* Active Members stat */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active Members</CardDescription>
+              <CardTitle className="text-3xl text-chart-2">
+                <Skeleton className="h-9 w-12" /> {/* Dynamic count */}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          {/* Alumni stat */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Alumni</CardDescription>
+              <CardTitle className="text-3xl text-muted-foreground">
+                <Skeleton className="h-9 w-12" /> {/* Dynamic count */}
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Carousel Card - Horizontal scrolling member cards with search and tabs */}
+        {/* Main content - Carousel of member cards with functional search and filter tabs */}
         <Card>
-          <CardHeader className="pb-6">
+          <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              {/* Search input - Fully functional during loading */}
               <div className="relative flex-1 max-w-sm">
-                <Skeleton className="h-9 w-full" /> {/* "Search members..." input */}
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search members..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
               </div>
-              <Skeleton className="h-9 w-40" /> {/* Active, Alumni, All tabs */}
+              
+              {/* Status filter tabs - Fully interactive during loading */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'ALL' | 'ACTIVE' | 'INACTIVE' | 'ALUMNI')}>
+                <TabsList>
+                  <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+                  <TabsTrigger value="ALUMNI">Alumni</TabsTrigger>
+                  <TabsTrigger value="ALL">All</TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </CardHeader>
-          <CardContent className="overflow-visible">
-            {/* Carousel skeleton - horizontal scrolling member cards */}
-            <div className="flex gap-4 overflow-x-auto pb-4">
+          <CardContent className="overflow-visible -mx-2 mt-2">
+            {/* Member carousel skeleton - Horizontal scrolling cards (200px wide, min 280px tall) */}
+            <div className="flex gap-4 overflow-x-auto px-1 py-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border w-[200px] min-h-[280px] flex-shrink-0">
-                  {/* Member avatar with status indicator */}
+                  {/* Member avatar with status indicator dot */}
                   <div className="relative">
-                    <Skeleton className="h-24 w-24 rounded-full" /> {/* Avatar */}
-                    <Skeleton className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full" /> {/* Status dot */}
+                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <Skeleton className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full" />
                   </div>
-                  {/* Member info - name, role, status, rank, scholarship */}
+                  {/* Member details - Centered layout */}
                   <div className="text-center space-y-2 w-full flex-1 flex flex-col">
-                    <Skeleton className="h-5 w-32 mx-auto" /> {/* Name */}
+                    <Skeleton className="h-5 w-32 mx-auto" /> {/* Member name */}
                     <div className="flex flex-col items-center gap-1.5">
-                      <Skeleton className="h-5 w-20" /> {/* Role badge */}
-                      <Skeleton className="h-5 w-16" /> {/* Status badge */}
+                      <Skeleton className="h-5 w-20" /> {/* Role badge (PI, Postdoc, etc.) */}
+                      <Skeleton className="h-5 w-16" /> {/* Status badge (Active, Alumni) */}
                     </div>
-                    <Skeleton className="h-4 w-24 mx-auto" /> {/* Rank */}
-                    <Skeleton className="h-4 w-16 mx-auto" /> {/* Scholarship */}
+                    <Skeleton className="h-4 w-24 mx-auto" /> {/* Academic rank (PhD, MSc, etc.) */}
+                    <Skeleton className="h-4 w-16 mx-auto" /> {/* Scholarship amount */}
                   </div>
                 </div>
               ))}
@@ -401,7 +542,7 @@ export default function MembersPage() {
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent className="overflow-visible">
+        <CardContent className="overflow-visible -mx-2 mt-2">
           {filteredMembers.length > 0 ? (
             <Carousel gap="md">
               {filteredMembers.map((member: MemberWithPhoto) => {

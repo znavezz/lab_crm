@@ -174,27 +174,28 @@ export default function ProtocolsPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header */}
+        {/* Page header - Static title and description */}
         <div className="space-y-2">
-          <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
-          <Skeleton className="h-4 w-96" /> {/* Description */}
+          <Skeleton className="h-8 sm:h-9 w-64" /> {/* "Lab Protocols" title */}
+          <Skeleton className="h-4 w-96" /> {/* "Standard operating procedures and methodologies" description */}
         </div>
 
-        {/* Stats cards */}
+        {/* Stats cards - Static labels (Total Protocols, Wet Lab, Computational) with dynamic counts */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Search and Tabs */}
+        {/* Search and category filter tabs */}
         <div className="space-y-4">
-          <SearchBarSkeleton />
-          <TabsSkeleton count={3} />
+          <SearchBarSkeleton /> {/* "Search protocols..." input with search icon */}
+          <TabsSkeleton count={3} /> {/* Category tabs: All, Wet Lab, Computational */}
         </div>
 
-        {/* Protocol cards */}
+        {/* Protocol grid - 3 columns (sm:2, lg:3) showing protocol cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Each card shows: title, version, author, difficulty badge, estimated time, tags */}
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <ProtocolCardSkeleton key={i} />
           ))}

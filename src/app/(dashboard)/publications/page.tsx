@@ -136,70 +136,71 @@ export default function PublicationsPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header */}
+        {/* Page header - Static title and description, dynamic button */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-2">
-            <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
-            <Skeleton className="h-4 w-80" /> {/* Description */}
+            <Skeleton className="h-8 sm:h-9 w-64" /> {/* "Publications" title */}
+            <Skeleton className="h-4 w-80" /> {/* "Lab research outputs and scholarly articles" description */}
           </div>
           <Skeleton className="h-10 w-32 shrink-0" /> {/* "Add Publication" button */}
         </div>
 
-        {/* Stats cards */}
+        {/* Stats cards - Static labels (Total Publications, Published, With DOI, This Year) with dynamic counts */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Search bar and carousel */}
+        {/* Main content - Publication carousel with search */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
+              {/* Search input - "Search publications..." */}
               <div className="relative flex-1">
-                <Skeleton className="h-10 w-full" /> {/* Search input */}
+                <Skeleton className="h-10 w-full" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6 overflow-visible -mx-2 mt-2">
-            {/* Carousel skeleton - horizontal scrolling publication cards */}
+            {/* Publication carousel skeleton - Horizontal scrolling cards (280px wide, 380px tall) */}
             <div className="flex gap-4 overflow-x-auto px-1 py-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="w-[280px] flex-shrink-0">
                   <div className="flex flex-col rounded-xl border-2 border-border overflow-hidden h-[380px]">
-                    {/* Visual Header - Fixed height */}
+                    {/* Gradient header with FileText icon and year badge (132px tall, fixed) */}
                     <Skeleton className="h-32 w-full shrink-0" />
                     
-                    {/* Content - Fills remaining space */}
+                    {/* Card content - Remaining 248px (380 - 132 = 248) */}
                     <div className="flex flex-col h-[248px] p-5">
-                      {/* Top section - grows to fill space */}
+                      {/* Top section - Title and authors (grows to fill available space) */}
                       <div className="flex-1 overflow-hidden">
                         <div className="space-y-2.5">
-                          {/* Title */}
+                          {/* Publication title - 3 lines with line-clamp */}
                           <div className="space-y-1.5">
                             <Skeleton className="h-4 w-full" />
                             <Skeleton className="h-4 w-5/6" />
                             <Skeleton className="h-4 w-4/5" />
                           </div>
                           
-                          {/* Authors section */}
+                          {/* Authors section - "Authors (X)" label + up to 3 author badges + "+N" */}
                           <div className="space-y-1.5">
-                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-3 w-20" /> {/* "Authors (X)" label */}
                             <div className="flex flex-wrap gap-1.5">
-                              <Skeleton className="h-5 w-16" />
-                              <Skeleton className="h-5 w-20" />
-                              <Skeleton className="h-5 w-14" />
+                              <Skeleton className="h-5 w-16" /> {/* Author badge 1 */}
+                              <Skeleton className="h-5 w-20" /> {/* Author badge 2 */}
+                              <Skeleton className="h-5 w-14" /> {/* Author badge 3 or "+N" */}
                             </div>
                           </div>
                         </div>
                       </div>
                       
-                      {/* Bottom section - Metadata (fixed at bottom) */}
+                      {/* Bottom section - Metadata (fixed at bottom with border separator) */}
                       <div className="space-y-2 pt-3 border-t">
-                        <Skeleton className="h-3 w-40" /> {/* Publication date */}
+                        <Skeleton className="h-3 w-40" /> {/* "Published: DD Mon YYYY" date */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Skeleton className="h-5 w-12" />
-                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-5 w-12" /> {/* DOI badge */}
+                          <Skeleton className="h-3 w-16" /> {/* "X projects" count */}
                         </div>
                       </div>
                     </div>

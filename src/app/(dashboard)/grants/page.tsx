@@ -208,33 +208,34 @@ export default function GrantsPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header - Title, description, and "Add Grant" button */}
+        {/* Page header - Static title and description, dynamic button */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-8 sm:h-9 w-56" /> {/* "Grants & Funding" title */}
-            <Skeleton className="h-4 w-72" /> {/* Description text */}
+            <Skeleton className="h-4 w-72" /> {/* "Track research funding and grant applications" description */}
           </div>
           <Skeleton className="h-10 w-24 sm:w-32 shrink-0" /> {/* "Add Grant" button */}
         </div>
 
-        {/* Stats cards - Total Grants, Active Grants, Active Funding, Pending */}
+        {/* Stats cards - Static labels (Total Grants, Active Grants, Active Funding, Pending) with dynamic values */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Main content card - Search, tabs, and grant list */}
+        {/* Main content - Grant list with search and status filter tabs */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
-              <SearchBarSkeleton /> {/* "Search grants..." input */}
-              <TabsSkeleton count={4} /> {/* Pending, Active, Completed, All tabs */}
+              <SearchBarSkeleton /> {/* "Search grants..." input with search icon */}
+              <TabsSkeleton count={4} /> {/* Status tabs: Pending, Active, Completed, All */}
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6">
             <div className="space-y-3 sm:space-y-4">
-              {/* Grant cards with progress bars, budget info, and dates */}
+              {/* Grant card skeletons - Vertical list layout */}
+              {/* Each card shows: title, status, budget, progress bar, date range, associated projects */}
               {[1, 2, 3].map((i) => (
                 <GrantCardSkeleton key={i} />
               ))}

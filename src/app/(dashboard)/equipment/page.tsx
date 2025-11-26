@@ -210,32 +210,32 @@ export default function EquipmentPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header - Title, description, and "Add Equipment" button */}
+        {/* Page header - Static title and description, dynamic button */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-8 sm:h-9 w-48" /> {/* "Lab Equipment" title */}
-            <Skeleton className="h-4 w-80" /> {/* Description text */}
+            <Skeleton className="h-4 w-80" /> {/* "Manage laboratory instruments and devices" description */}
           </div>
           <Skeleton className="h-10 w-32 sm:w-36 shrink-0" /> {/* "Add Equipment" button */}
         </div>
 
-        {/* Stats cards - Total Equipment, Available, In Use, Maintenance */}
+        {/* Stats cards - Static labels (Total Equipment, Available, In Use, Maintenance) with dynamic counts */}
         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Main content card - Search, tabs, and equipment grid */}
+        {/* Main content - Equipment grid with search and status filter tabs */}
         <Card>
           <CardHeader className="p-3 sm:p-6">
             <div className="flex flex-col gap-3 sm:gap-4">
-              <SearchBarSkeleton /> {/* "Search equipment..." input */}
-              <TabsSkeleton count={4} /> {/* All, Available, In Use, Maintenance tabs */}
+              <SearchBarSkeleton /> {/* "Search equipment..." input with search icon */}
+              <TabsSkeleton count={4} /> {/* Status tabs: All, Available, In Use, Maintenance */}
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-6">
-            {/* Equipment grid skeleton - 2 columns max to match actual UI */}
+            {/* Equipment grid - 2 columns max (md:grid-cols-2) to match actual UI */}
             <div className="grid gap-4 md:grid-cols-2">
               {[1, 2, 3, 4].map((i) => (
                 <EquipmentCardSkeleton key={i} />

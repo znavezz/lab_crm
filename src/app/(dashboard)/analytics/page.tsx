@@ -191,31 +191,31 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page header */}
+          {/* Page header - Static title */}
           <div className="space-y-2 mb-8">
-            <Skeleton className="h-10 w-64" /> {/* Title */}
+            <Skeleton className="h-10 w-64" /> {/* "Lab Analytics & Insights" title */}
           </div>
 
-          {/* Tabs */}
+          {/* Category tabs - Overview, Publications, Projects, Team, Budget */}
           <div className="mb-6">
             <TabsSkeleton count={5} />
           </div>
 
-          {/* Stats grid */}
+          {/* Stats cards - Dynamic metrics (4 cards in responsive grid) */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             {[1, 2, 3, 4].map((i) => (
               <StatsCardSkeleton key={i} />
             ))}
           </div>
 
-          {/* Charts */}
+          {/* Chart skeletons - Various data visualizations */}
           <div className="space-y-8">
-            <ChartSkeleton height="h-80" />
+            <ChartSkeleton height="h-80" /> {/* Main chart (bar/line) */}
             <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
-              <ChartSkeleton height="h-64" />
-              <ChartSkeleton height="h-64" />
+              <ChartSkeleton height="h-64" /> {/* Secondary chart 1 (pie/bar) */}
+              <ChartSkeleton height="h-64" /> {/* Secondary chart 2 (pie/bar) */}
             </div>
-            <ChartSkeleton height="h-80" />
+            <ChartSkeleton height="h-80" /> {/* Bottom chart (timeline/distribution) */}
           </div>
         </div>
       </div>

@@ -138,31 +138,37 @@ export function ProjectCardSkeleton() {
 /**
  * EquipmentCardSkeleton - Matches equipment grid cards
  * Used in: equipment page
+ * Layout: 2-column grid (md:grid-cols-2)
+ * 
+ * Card structure:
+ * - Header: Equipment name, description, status badge, and optional "In Use By" badge
+ * - Content: Serial number on left, "Book" button on right
  */
 export function EquipmentCardSkeleton() {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-start gap-3">
-          {/* Icon placeholder - removed to match actual cards without icon */}
+          {/* No icon - removed to avoid redundancy (all equipment showed same icon) */}
           <div className="flex-1 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <div className="space-y-2 flex-1">
-                <Skeleton className="h-6 w-3/4" /> {/* Name */}
-                <Skeleton className="h-4 w-5/6" /> {/* Description */}
+                <Skeleton className="h-6 w-3/4" /> {/* Equipment name */}
+                <Skeleton className="h-4 w-5/6" /> {/* Equipment description */}
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Skeleton className="h-5 w-20" /> {/* Status badge */}
-              <Skeleton className="h-5 w-32" /> {/* Optional: In Use By badge */}
+              <Skeleton className="h-5 w-20" /> {/* Status badge (Available/In Use/Maintenance) */}
+              <Skeleton className="h-5 w-32" /> {/* Optional: "In Use By [member]" badge */}
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Bottom row: Serial number and action button */}
         <div className="flex items-center justify-between pt-2">
           <Skeleton className="h-4 w-40" /> {/* Serial number */}
-          <Skeleton className="h-8 w-20" /> {/* View button */}
+          <Skeleton className="h-8 w-20" /> {/* "Book" button (navigates to booking page) */}
         </div>
       </CardContent>
     </Card>

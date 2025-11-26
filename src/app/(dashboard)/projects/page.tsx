@@ -242,90 +242,92 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header - Title, description, and "New Project" button */}
+        {/* Page header - Static title and description, dynamic button */}
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-8 sm:h-9 w-48" /> {/* "Research Projects" title */}
-            <Skeleton className="h-4 w-80" /> {/* Description text */}
+            <Skeleton className="h-4 w-80" /> {/* "Track and manage ongoing research initiatives" description */}
           </div>
           <Skeleton className="h-10 w-28 sm:w-36 shrink-0" /> {/* "New Project" button */}
         </div>
 
-        {/* Stats cards - Total Projects, Active, Planning, Completed */}
+        {/* Stats cards - Static labels (Total Projects, Active, Planning, Completed) with dynamic counts */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Main content card - Search, tabs, and project carousel */}
+        {/* Main content - Project carousel with search and status filter tabs */}
         <Card>
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              {/* Search input - "Search projects..." */}
               <div className="relative flex-1 max-w-sm">
-                <Skeleton className="h-9 w-full" /> {/* "Search projects..." input */}
+                <Skeleton className="h-9 w-full" />
               </div>
-              <Skeleton className="h-9 w-76" /> {/* Active, Planning, Done, All tabs */}
+              {/* Status tabs - Active, Planning, Done, All */}
+              <Skeleton className="h-9 w-76" />
             </div>
           </CardHeader>
           <CardContent className="overflow-visible -mx-2 mt-2">
-            {/* Carousel skeleton - horizontal scrolling project cards */}
+            {/* Project carousel skeleton - Horizontal scrolling cards (300px wide, 360px tall) */}
             <div className="flex gap-4 overflow-x-auto px-1 py-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="w-[300px] flex-shrink-0">
                   <div className="flex flex-col rounded-xl border-2 border-border h-[360px] overflow-hidden">
-                    {/* Status bar at top */}
+                    {/* Color-coded status indicator bar (green=Active, blue=Completed, gray=Planning) */}
                     <Skeleton className="h-1.5 w-full" />
                     
-                    {/* Card content */}
+                    {/* Card content - Flexbox with space-between to push dates to bottom */}
                     <div className="flex flex-col flex-1 p-5 justify-between">
-                      {/* Top section - main content */}
+                      {/* Top section - All project details */}
                       <div className="space-y-2">
-                        {/* Title and status badge */}
+                        {/* Project title and status badge */}
                         <div className="space-y-2">
-                          <Skeleton className="h-6 w-5/6" />
-                          <Skeleton className="h-5 w-16" />
+                          <Skeleton className="h-6 w-5/6" /> {/* Project title (line-clamp-2) */}
+                          <Skeleton className="h-5 w-16" /> {/* Status badge (Active/Planning/Completed) */}
                         </div>
                         
-                        {/* Progress bar */}
+                        {/* Progress bar with label and percentage */}
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <Skeleton className="h-3 w-16" />
-                            <Skeleton className="h-3 w-8" />
+                            <Skeleton className="h-3 w-16" /> {/* "Progress" label */}
+                            <Skeleton className="h-3 w-8" /> {/* Percentage "XX%" */}
                           </div>
-                          <Skeleton className="h-2 w-full" />
+                          <Skeleton className="h-2 w-full" /> {/* Progress bar */}
                         </div>
                         
-                        {/* Description - 2 lines preview */}
+                        {/* Project description - 2 lines with line-clamp */}
                         <div className="space-y-1.5">
                           <Skeleton className="h-3 w-full" />
                           <Skeleton className="h-3 w-4/5" />
                         </div>
                         
-                        {/* Member avatars */}
+                        {/* Team member avatars - Overlapping circles with count */}
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-2">
                             <Skeleton className="h-8 w-8 rounded-full" />
                             <Skeleton className="h-8 w-8 rounded-full" />
                             <Skeleton className="h-8 w-8 rounded-full" />
                           </div>
-                          <Skeleton className="h-3 w-20 ml-auto" />
+                          <Skeleton className="h-3 w-20 ml-auto" /> {/* "X members" count */}
                         </div>
                         
-                        {/* Grants badges - vertical layout: 2 short at top, 1 medium below, 1 long below */}
+                        {/* Associated grants - Up to 3 badges shown, then +N indicator */}
                         <div className="flex flex-col gap-1.5">
                           <div className="flex gap-1.5">
-                            <Skeleton className="h-5 w-16" />
-                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-5 w-16" /> {/* Grant badge 1 */}
+                            <Skeleton className="h-5 w-16" /> {/* Grant badge 2 */}
                           </div>
-                          <Skeleton className="h-5 w-24" />
-                          <Skeleton className="h-5 w-28" />
+                          <Skeleton className="h-5 w-24" /> {/* Grant badge 3 */}
+                          <Skeleton className="h-5 w-28" /> {/* "+N more" or Grant badge 4 */}
                         </div>
                       </div>
                       
-                      {/* Bottom section - Dates fixed at bottom (single line) */}
+                      {/* Bottom section - Start/End dates (fixed at bottom with border separator) */}
                       <div className="flex items-center gap-3 pt-2 border-t mt-auto">
-                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-4 w-48" /> {/* "DD/MM/YYYY → DD/MM/YYYY" date range */}
                       </div>
                     </div>
                   </div>
