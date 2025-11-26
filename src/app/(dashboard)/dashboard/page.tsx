@@ -250,84 +250,87 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-8">
-        {/* Page header */}
+        {/* Page header - "Dashboard" title and description */}
         <div>
-          <Skeleton className="h-9 w-48" />
-          <Skeleton className="h-5 w-96 mt-2" />
+          <Skeleton className="h-9 w-48" /> {/* "Dashboard" title */}
+          <Skeleton className="h-5 w-96 mt-2" /> {/* Description text */}
         </div>
 
-        {/* Stats cards - matching actual card structure */}
+        {/* Stats cards - Clickable cards linking to: Active Members, Active Projects, Publications, Active Grants */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="paint-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-24" /> {/* Card title (e.g. "Active Members") */}
+                <Skeleton className="h-4 w-4" /> {/* Icon (Users, Folder, FileText, Banknote) */}
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-12" />
-                <Skeleton className="h-3 w-20 mt-1" />
+                <Skeleton className="h-8 w-12" /> {/* Metric value (large number) */}
+                <Skeleton className="h-3 w-20 mt-1" /> {/* Subtext (e.g. "X total") */}
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Main Content Grid - Recent Activities & Upcoming Events */}
+        {/* Main Content Grid - Recent Activities (4 cols) & Upcoming Events (3 cols) in 7-column layout */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          {/* Recent Activities */}
+          {/* Recent Activities - Shows latest lab updates with "View All Activities" button */}
           <Card className="col-span-4">
             <CardHeader>
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-56 mt-2" />
+              <Skeleton className="h-6 w-40" /> {/* "Recent Activities" title */}
+              <Skeleton className="h-4 w-56 mt-2" /> {/* "Latest updates from your lab" description */}
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Activity items - icon + message + timestamp */}
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex items-start gap-4 p-2">
-                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" /> {/* Activity icon */}
                     <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-full" /> {/* Activity message */}
+                      <Skeleton className="h-3 w-24" /> {/* Timestamp (e.g. "2 hours ago") */}
                     </div>
                   </div>
                 ))}
               </div>
-              <Skeleton className="h-8 w-full mt-4" />
+              <Skeleton className="h-8 w-full mt-4" /> {/* "View All Activities" button */}
             </CardContent>
           </Card>
 
-          {/* Upcoming Events */}
+          {/* Upcoming Events - Shows scheduled events and grant deadlines with "View Calendar" button */}
           <Card className="col-span-3">
             <CardHeader>
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-56 mt-2" />
+              <Skeleton className="h-6 w-40" /> {/* "Upcoming Events" title */}
+              <Skeleton className="h-4 w-56 mt-2" /> {/* "Scheduled activities and deadlines" description */}
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Event items - calendar icon + title + date + type badge */}
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-start gap-4 p-2">
-                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" /> {/* Calendar icon */}
                     <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-3 w-24" />
-                      <Skeleton className="h-5 w-16 mt-1" />
+                      <Skeleton className="h-4 w-full" /> {/* Event title */}
+                      <Skeleton className="h-3 w-24" /> {/* Date (e.g. "01/12/2024") */}
+                      <Skeleton className="h-5 w-16 mt-1" /> {/* Type badge (event/deadline) */}
                     </div>
                   </div>
                 ))}
               </div>
-              <Skeleton className="h-8 w-full mt-4" />
+              <Skeleton className="h-8 w-full mt-4" /> {/* "View Calendar" button */}
             </CardContent>
           </Card>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Navigation buttons for: Manage Members, View Projects, Equipment, Analytics */}
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-4 w-48 mt-2" />
+            <Skeleton className="h-6 w-32" /> {/* "Quick Actions" title */}
+            <Skeleton className="h-4 w-48 mt-2" /> {/* "Common tasks and navigation" description */}
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Action buttons - each with icon and label in vertical layout */}
               {[1, 2, 3, 4].map((i) => (
                 <Skeleton key={i} className="h-24 w-full" />
               ))}
