@@ -263,17 +263,17 @@ export default function ProjectsPage() {
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="relative flex-1 max-w-sm">
-                <Skeleton className="h-10 w-full" /> {/* "Search projects..." input */}
+                <Skeleton className="h-9 w-full" /> {/* "Search projects..." input */}
               </div>
               <Skeleton className="h-9 w-76" /> {/* Active, Planning, Done, All tabs */}
             </div>
           </CardHeader>
-          <CardContent className="overflow-visible">
+          <CardContent className="overflow-visible -mx-2 mt-2">
             {/* Carousel skeleton - horizontal scrolling project cards */}
-            <div className="flex gap-4 overflow-x-auto pb-4">
+            <div className="flex gap-4 overflow-x-auto px-1 py-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="w-[300px] flex-shrink-0">
-                  <div className="flex flex-col rounded-xl border-2 border-border h-[320px] overflow-hidden">
+                  <div className="flex flex-col rounded-xl border-2 border-border h-[360px] overflow-hidden">
                     {/* Status bar at top */}
                     <Skeleton className="h-1.5 w-full" />
                     
@@ -550,7 +550,7 @@ export default function ProjectsPage() {
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent className="overflow-visible">
+        <CardContent className="overflow-visible -mx-2 mt-2">
           {filteredProjects.length > 0 ? (
             <Carousel gap="md">
               {filteredProjects.map((project: ProjectWithStatus) => {
