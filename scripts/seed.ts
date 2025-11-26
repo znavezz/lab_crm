@@ -125,20 +125,25 @@ async function main() {
     
     console.log('✅ Seed completed successfully!\n');
     console.log('📊 Summary:');
-    console.log(`   Members: 15 (1 professor, 5 postdocs, 7 students, 1 lab manager, 1 other)`);
-    console.log(`   - Active: 10 members`);
-    console.log(`   - Alumni: 5 members`);
-    console.log(`   Projects: 30 (spanning multiple years)`);
-    console.log(`   Grants: 18 (spanning ${new Date().getFullYear() - 5} to ${new Date().getFullYear() + 3})`);
-    console.log(`   Equipment: 35 (with correct status logic)`);
-    console.log(`   Publications: 45 (spanning multiple years)`);
-    console.log(`   Protocols: 25`);
-    console.log(`   Events: 30`);
-    console.log(`   Bookings: 20`);
-    console.log(`   Collaborators: 15`);
-    console.log(`   Documents: 20`);
-    console.log(`   Expenses: 40 (spanning multiple years)`);
-    console.log(`   NoteTasks: 15\n`);
+    console.log(`   Members: 20 total`);
+    console.log(`   - 1 Professor (PI)`);
+    console.log(`   - 5 Active Postdocs + 3 Alumni Postdocs`);
+    console.log(`   - 3 Active PhD Students + 2 Alumni PhD Students`);
+    console.log(`   - 3 Active MSc Students + 2 Alumni MSc Students`);
+    console.log(`   - 1 Active BSc Student`);
+    console.log(`   - 1 Lab Manager`);
+    console.log(`   Status: 13 Active, 7 Alumni`);
+    console.log(`\n   Projects: 30 (spanning multiple years with real member assignments)`);
+    console.log(`   Grants: 18 (13 past/current, 5 future/pending - spanning ${new Date().getFullYear() - 5} to ${new Date().getFullYear() + 5})`);
+    console.log(`   Equipment: 35 (with correct status logic and assignments)`);
+    console.log(`   Publications: 45 (with proper author relationships)`);
+    console.log(`   Protocols: 25 (linked to authors and projects)`);
+    console.log(`   Events: 30 (with attendees and projects)`);
+    console.log(`   Bookings: 20 (equipment reservations)`);
+    console.log(`   Collaborators: 15 (external researchers)`);
+    console.log(`   Documents: 20 (CVs and project documents)`);
+    console.log(`   Expenses: 40 (linked to projects and grants)`);
+    console.log(`   NoteTasks: 15 (project tasks)\n`);
     
     // Test computed fields
     console.log('🧪 Testing computed fields...');

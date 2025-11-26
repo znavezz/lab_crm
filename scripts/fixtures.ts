@@ -24,56 +24,172 @@ export class TestFixtures {
     const now = new Date();
     const currentYear = now.getFullYear();
     
-    // ========== CREATE 15 MEMBERS ==========
+    // ========== CREATE 20 MEMBERS ==========
     const members = await this.prisma.$transaction(async (tx) => {
       const memberData = [
-        // PI
-        { name: 'Dr. Sarah Cohen', rank: 'PROFESSOR', status: 'ACTIVE', role: 'PI', joinedYear: currentYear - 10, scholarship: null },
-        // Postdocs (3 active, 2 alumni)
-        { name: 'Dr. Michael Levy', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 2, scholarship: 50000 },
-        { name: 'Dr. Yael Ben-David', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 1, scholarship: 52000 },
-        { name: 'Dr. Tomer Weiss', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 3, scholarship: 48000 },
-        { name: 'Dr. Erez Levanon', rank: 'POSTDOC', status: 'ALUMNI', role: 'RESEARCHER', joinedYear: currentYear - 5, scholarship: 50000 },
-        { name: 'Dr. Noa Shapira', rank: 'POSTDOC', status: 'ALUMNI', role: 'RESEARCHER', joinedYear: currentYear - 4, scholarship: 50000 },
-        // Students (4 active, 3 alumni)
-        { name: 'David Ben-Ami', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 30000 },
-        { name: 'Rachel Mizrahi', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 30000 },
-        { name: 'Amit Cohen', rank: 'PhD', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 2, scholarship: 35000 },
-        { name: 'Shira Levi', rank: 'BSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 25000 },
-        { name: 'Mr. David Gorelik', rank: 'PhD', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 4, scholarship: 35000 },
-        { name: 'Anna Rosen', rank: 'MSc', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 3, scholarship: 30000 },
-        { name: 'Daniel Katz', rank: 'MSc', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 5, scholarship: 30000 },
-        // Lab Manager
-        { name: 'Yael Avraham', rank: 'MSc', status: 'ACTIVE', role: 'LAB_MANAGER', joinedYear: currentYear - 3, scholarship: null },
+        // PI (1)
+        { name: 'Prof. Sarah Cohen', rank: 'PROFESSOR', status: 'ACTIVE', role: 'PI', joinedYear: currentYear - 12, scholarship: null,
+          degrees: [
+            { degree: 'PhD', field: 'Molecular Biology', institution: 'Weizmann Institute', year: currentYear - 25 },
+            { degree: 'MSc', field: 'Biochemistry', institution: 'Hebrew University', year: currentYear - 28 },
+            { degree: 'BSc', field: 'Biology', institution: 'Tel Aviv University', year: currentYear - 30 }
+          ]
+        },
+        // Postdocs (5 active, 3 alumni = 8 total)
+        { name: 'Dr. Michael Levy', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 2, scholarship: 50000,
+          degrees: [
+            { degree: 'PhD', field: 'Bioinformatics', institution: 'Technion', year: currentYear - 3 },
+            { degree: 'MSc', field: 'Computer Science', institution: 'Tel Aviv University', year: currentYear - 6 }
+          ]
+        },
+        { name: 'Dr. Yael Ben-David', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 1, scholarship: 52000,
+          degrees: [
+            { degree: 'PhD', field: 'Computational Biology', institution: 'Hebrew University', year: currentYear - 2 },
+            { degree: 'BSc', field: 'Mathematics', institution: 'Weizmann Institute', year: currentYear - 7 }
+          ]
+        },
+        { name: 'Dr. Tomer Weiss', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 3, scholarship: 48000,
+          degrees: [
+            { degree: 'PhD', field: 'Genetics', institution: 'Ben-Gurion University', year: currentYear - 4 },
+            { degree: 'MSc', field: 'Molecular Biology', institution: 'Tel Aviv University', year: currentYear - 7 }
+          ]
+        },
+        { name: 'Dr. Maya Goldstein', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear - 1, scholarship: 51000,
+          degrees: [
+            { degree: 'PhD', field: 'Biostatistics', institution: 'Hebrew University', year: currentYear - 2 },
+            { degree: 'MSc', field: 'Statistics', institution: 'Tel Aviv University', year: currentYear - 5 }
+          ]
+        },
+        { name: 'Dr. Oren Katz', rank: 'POSTDOC', status: 'ACTIVE', role: 'RESEARCHER', joinedYear: currentYear, scholarship: 49000,
+          degrees: [
+            { degree: 'PhD', field: 'Systems Biology', institution: 'Weizmann Institute', year: currentYear - 1 },
+            { degree: 'BSc', field: 'Biotechnology', institution: 'Technion', year: currentYear - 6 }
+          ]
+        },
+        { name: 'Dr. Erez Levanon', rank: 'POSTDOC', status: 'ALUMNI', role: 'RESEARCHER', joinedYear: currentYear - 6, scholarship: 50000,
+          degrees: [
+            { degree: 'PhD', field: 'Computational Biology', institution: 'Tel Aviv University', year: currentYear - 7 },
+            { degree: 'MSc', field: 'Computer Science', institution: 'Tel Aviv University', year: currentYear - 10 }
+          ]
+        },
+        { name: 'Dr. Noa Shapira', rank: 'POSTDOC', status: 'ALUMNI', role: 'RESEARCHER', joinedYear: currentYear - 5, scholarship: 50000,
+          degrees: [
+            { degree: 'PhD', field: 'Structural Biology', institution: 'Weizmann Institute', year: currentYear - 6 }
+          ]
+        },
+        { name: 'Dr. Tal Friedman', rank: 'POSTDOC', status: 'ALUMNI', role: 'RESEARCHER', joinedYear: currentYear - 7, scholarship: 48000,
+          degrees: [
+            { degree: 'PhD', field: 'Immunology', institution: 'Hebrew University', year: currentYear - 8 }
+          ]
+        },
+        // PhD Students (3 active, 2 alumni = 5 total)
+        { name: 'Amit Cohen', rank: 'PhD', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 3, scholarship: 38000,
+          degrees: [
+            { degree: 'MSc', field: 'Computational Biology', institution: 'Tel Aviv University', year: currentYear - 4 },
+            { degree: 'BSc', field: 'Computer Science', institution: 'Hebrew University', year: currentYear - 6 }
+          ]
+        },
+        { name: 'Nir Goldberg', rank: 'PhD', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 2, scholarship: 36000,
+          degrees: [
+            { degree: 'MSc', field: 'Bioinformatics', institution: 'Bar Ilan University', year: currentYear - 3 },
+            { degree: 'BSc', field: 'Biology', institution: 'Ben-Gurion University', year: currentYear - 5 }
+          ]
+        },
+        { name: 'Tamar Rosenberg', rank: 'PhD', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 35000,
+          degrees: [
+            { degree: 'MSc', field: 'Molecular Biology', institution: 'Weizmann Institute', year: currentYear - 2 }
+          ]
+        },
+        { name: 'Mr. David Gorelik', rank: 'PhD', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 6, scholarship: 35000,
+          degrees: [
+            { degree: 'MSc', field: 'Computational Biology', institution: 'Bar Ilan University', year: currentYear - 7 },
+            { degree: 'BSc', field: 'Biology', institution: 'Ariel University', year: currentYear - 9 }
+          ]
+        },
+        { name: 'Lior Stein', rank: 'PhD', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 7, scholarship: 34000,
+          degrees: [
+            { degree: 'MSc', field: 'Genetics', institution: 'Hebrew University', year: currentYear - 8 }
+          ]
+        },
+        // MSc Students (3 active, 2 alumni = 5 total)
+        { name: 'David Ben-Ami', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 30000,
+          degrees: [
+            { degree: 'BSc', field: 'Biology', institution: 'Tel Aviv University', year: currentYear - 2 }
+          ]
+        },
+        { name: 'Rachel Mizrahi', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 30000,
+          degrees: [
+            { degree: 'BSc', field: 'Biochemistry', institution: 'Hebrew University', year: currentYear - 2 }
+          ]
+        },
+        { name: 'Kobi Shapira', rank: 'MSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 2, scholarship: 31000,
+          degrees: [
+            { degree: 'BSc', field: 'Computer Science', institution: 'Tel Aviv University', year: currentYear - 3 }
+          ]
+        },
+        { name: 'Anna Rosen', rank: 'MSc', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 4, scholarship: 30000,
+          degrees: [
+            { degree: 'BSc', field: 'Biotechnology', institution: 'Technion', year: currentYear - 5 }
+          ]
+        },
+        { name: 'Daniel Katz', rank: 'MSc', status: 'ALUMNI', role: 'STUDENT', joinedYear: currentYear - 5, scholarship: 30000,
+          degrees: [
+            { degree: 'BSc', field: 'Bioinformatics', institution: 'Ben-Gurion University', year: currentYear - 6 }
+          ]
+        },
+        // BSc Students (1 active)
+        { name: 'Shira Levi', rank: 'BSc', status: 'ACTIVE', role: 'STUDENT', joinedYear: currentYear - 1, scholarship: 25000,
+          degrees: []
+        },
+        // Lab Manager (1)
+        { name: 'Yael Avraham', rank: 'MSc', status: 'ACTIVE', role: 'LAB_MANAGER', joinedYear: currentYear - 4, scholarship: null,
+          degrees: [
+            { degree: 'MSc', field: 'Biotechnology', institution: 'Tel Aviv University', year: currentYear - 5 },
+            { degree: 'BSc', field: 'Chemistry', institution: 'Hebrew University', year: currentYear - 7 }
+          ]
+        },
       ];
 
       const createdMembers = [];
       for (const data of memberData) {
-      const member = await tx.member.create({
-        data: {
-          name: data.name,
-          rank: data.rank as MemberRank,
-          status: data.status as MemberStatus,
-          role: data.role as MemberRole,
-          scholarship: data.scholarship,
-          joinedDate: new Date(`${data.joinedYear}-${data.role === 'PI' ? '01' : '09'}-01`),
-        },
-      });
+        const member = await tx.member.create({
+          data: {
+            name: data.name,
+            rank: data.rank as MemberRank,
+            status: data.status as MemberStatus,
+            role: data.role as MemberRole,
+            scholarship: data.scholarship,
+            joinedDate: new Date(`${data.joinedYear}-${data.role === 'PI' ? '01' : '09'}-01`),
+          },
+        });
         createdMembers.push(member);
 
-        // Add academic info for most members
-        if (data.rank !== 'PROFESSOR') {
+        // Add academic info
+        if (data.degrees && data.degrees.length > 0) {
+          for (const deg of data.degrees) {
+            await tx.academicInfo.create({
+              data: {
+                memberId: member.id,
+                degree: deg.degree,
+                field: deg.field,
+                institution: deg.institution,
+                graduationYear: deg.year,
+              },
+            });
+          }
+        } else if (data.rank !== 'BSc') {
+          // Fallback for members without explicit degree data
           const institutions = ['Tel Aviv University', 'Hebrew University', 'Weizmann Institute', 'Ben-Gurion University', 'Technion'];
           const fields = ['Bioinformatics', 'Molecular Biology', 'Biochemistry', 'Genetics', 'Computational Biology'];
           await tx.academicInfo.create({
-        data: {
+            data: {
               memberId: member.id,
               degree: data.rank === 'POSTDOC' ? 'PhD' : data.rank,
               field: fields[Math.floor(Math.random() * fields.length)],
               institution: institutions[Math.floor(Math.random() * institutions.length)],
               graduationYear: data.joinedYear - (data.rank === 'POSTDOC' ? 2 : 1),
-        },
-      });
+            },
+          });
         }
       }
 
@@ -124,6 +240,7 @@ export class TestFixtures {
     }
 
     // ========== CREATE 18 GRANTS ==========
+    // Mix of past, current, and future grants to show PENDING, ACTIVE, and COMPLETED statuses
     const grantNames = [
       'ISF Research Grant', 'ERC Starting Grant', 'BIRAX Research Grant',
       'NIH Biomedical Research Fund', 'NSF Research Grant', 'Horizon Europe Grant',
@@ -135,15 +252,24 @@ export class TestFixtures {
 
     const grants = [];
     for (let i = 0; i < 18; i++) {
-      const yearOffset = Math.floor(i / 3);
-      const grantYear = currentYear - yearOffset;
+      let grantYear;
+      
+      // Last 5 grants (indices 13-17) are FUTURE grants (PENDING status)
+      if (i >= 13) {
+        grantYear = currentYear + (i - 12); // 2026, 2027, 2028, 2029, 2030
+      } else {
+        // First 13 grants are past/current (mix of ACTIVE and COMPLETED)
+        const yearOffset = Math.floor(i / 3);
+        grantYear = currentYear - yearOffset;
+      }
+      
       const grant = await this.prisma.grant.create({
         data: {
           name: `${grantNames[i]} ${grantYear}`,
           budget: 200000 + Math.floor(Math.random() * 800000), // $200k - $1M
           startDate: new Date(`${grantYear}-01-01`),
           endDate: new Date(`${grantYear + 2}-12-31`), // 3-year grant
-          createdAt: new Date(`${grantYear}-${Math.floor(Math.random() * 12) + 1}-15`),
+          createdAt: new Date(`${Math.min(grantYear, currentYear)}-${Math.floor(Math.random() * 12) + 1}-15`),
         },
       });
       grants.push(grant);

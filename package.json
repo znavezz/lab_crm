@@ -9,9 +9,10 @@
     "lint": "eslint .",
     "db:reset": "npx prisma migrate reset --force",
     "db:seed": "npx tsx scripts/seed.ts",
+    "db:seed:reset": "npx tsx scripts/seed.ts --reset",
+    "db:seed:minimal": "npx tsx scripts/seed.ts --minimal",
     "db:seed:json": "npx tsx scripts/seed-from-json.ts",
-    "db:seed:reset": "npx tsx scripts/seed-from-json.ts --reset",
-    "db:seed:dummy": "npx tsx scripts/seed-dummy-data.ts",
+    "db:seed:json:reset": "npx tsx scripts/seed-from-json.ts --reset",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
@@ -30,7 +31,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:all": "npm run test:run && npm run test:e2e",
-    "seed:docker:reset": "docker-compose exec app sh -c 'npm run seed:reset'",
+    "seed:docker:reset": "docker-compose exec app sh -c 'npm run db:seed:reset'",
     "studio": "npx prisma studio"
   },
   "dependencies": {
