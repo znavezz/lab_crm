@@ -29,7 +29,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { SearchIcon, PlusIcon, FileTextIcon, Check, ChevronsUpDown, X, ExternalLinkIcon } from 'lucide-react'
+import { SearchIcon, PlusIcon, FileTextIcon, Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Carousel, CarouselCard } from '@/components/ui/carousel'
 
@@ -137,27 +137,78 @@ export default function PublicationsPage() {
     return (
       <div className="space-y-4 sm:space-y-6">
         {/* Page header */}
-        <div className="space-y-2">
-          <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
-          <Skeleton className="h-4 w-96" /> {/* Description */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
+            <Skeleton className="h-4 w-80" /> {/* Description */}
+          </div>
+          <Skeleton className="h-10 w-32 shrink-0" /> {/* "Add Publication" button */}
         </div>
 
         {/* Stats cards */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
             <StatsCardSkeleton key={i} />
           ))}
         </div>
 
-        {/* Search bar */}
-        <SearchBarSkeleton />
-
-        {/* Publication cards */}
-        <div className="space-y-4">
-          {[1, 2, 3, 4].map((i) => (
-            <PublicationCardSkeleton key={i} />
-          ))}
-        </div>
+        {/* Search bar and carousel */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="relative flex-1">
+                <Skeleton className="h-10 w-full" /> {/* Search input */}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6 overflow-visible -mx-2 mt-2">
+            {/* Carousel skeleton - horizontal scrolling publication cards */}
+            <div className="flex gap-4 overflow-x-auto px-1 py-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="w-[280px] flex-shrink-0">
+                  <div className="flex flex-col rounded-xl border-2 border-border overflow-hidden h-[380px]">
+                    {/* Visual Header - Fixed height */}
+                    <Skeleton className="h-32 w-full shrink-0" />
+                    
+                    {/* Content - Fills remaining space */}
+                    <div className="flex flex-col h-[248px] p-5">
+                      {/* Top section - grows to fill space */}
+                      <div className="flex-1 overflow-hidden">
+                        <div className="space-y-2.5">
+                          {/* Title */}
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-5/6" />
+                            <Skeleton className="h-4 w-4/5" />
+                          </div>
+                          
+                          {/* Authors section */}
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-3 w-20" />
+                            <div className="flex flex-wrap gap-1.5">
+                              <Skeleton className="h-5 w-16" />
+                              <Skeleton className="h-5 w-20" />
+                              <Skeleton className="h-5 w-14" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Bottom section - Metadata (fixed at bottom) */}
+                      <div className="space-y-2 pt-3 border-t">
+                        <Skeleton className="h-3 w-40" /> {/* Publication date */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Skeleton className="h-5 w-12" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -402,16 +453,16 @@ export default function PublicationsPage() {
             
           </div>
         </CardHeader>
-        <CardContent className="p-3 sm:p-6 overflow-visible">
+        <CardContent className="p-3 sm:p-6 overflow-visible -mx-2 mt-2">
           {filteredPublications.length > 0 ? (
             <Carousel gap="md">
               {filteredPublications.map((pub: Publication) => {
                 const publishedYear = pub.published ? new Date(pub.published).getFullYear() : null
                 return (
                   <CarouselCard key={pub.id} href={`/publications/${pub.id}`}>
-                    <div className="flex flex-col h-full rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[280px] group cursor-pointer overflow-hidden transform hover:scale-105 hover:-translate-y-2 relative z-10">
-                      {/* Visual Header */}
-                      <div className="relative h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-background flex items-center justify-center">
+                    <div className="flex flex-col rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[280px] h-[380px] group cursor-pointer overflow-hidden transform hover:scale-105 hover:-translate-y-2 relative z-10">
+                      {/* Visual Header - Fixed height */}
+                      <div className="relative h-32 shrink-0 bg-gradient-to-br from-primary/20 via-primary/10 to-background flex items-center justify-center">
                         <FileTextIcon className="h-16 w-16 text-primary/30 group-hover:text-primary/50 transition-colors" />
                         {publishedYear && (
                           <div className="absolute top-3 right-3">
@@ -422,61 +473,69 @@ export default function PublicationsPage() {
                         )}
                       </div>
                       
-                      {/* Content */}
-                      <div className="flex flex-col flex-1 p-4 space-y-3">
-                        <h3 className="font-semibold text-base leading-tight line-clamp-3 group-hover:text-primary transition-colors">
-                          {pub.title}
-                        </h3>
-                        
-                        {/* Authors */}
-                        {pub.members && pub.members.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                              Authors ({pub.members.length})
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {pub.members.slice(0, 3).map((m: PublicationMember) => (
-                                <Badge 
-                                  key={m.id}
-                                  variant="secondary" 
-                                  className="text-xs hover:bg-secondary/80 transition-colors"
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    window.location.href = `/members/${m.id}`
-                                  }}
-                                >
-                                  {m.name}
-                                </Badge>
-                              ))}
-                              {pub.members.length > 3 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{pub.members.length - 3}
-                                </Badge>
-                              )}
-                            </div>
+                      {/* Content - Fills remaining space */}
+                      <div className="flex flex-col h-[248px] p-5">
+                        {/* Top section - grows to fill space */}
+                        <div className="flex-1 overflow-hidden">
+                          <div className="space-y-2.5">
+                            <h3 className="font-semibold text-base leading-tight line-clamp-3 group-hover:text-primary transition-colors">
+                              {pub.title}
+                            </h3>
+                            
+                            {/* Authors */}
+                            {pub.members && pub.members.length > 0 && (
+                              <div className="space-y-1.5">
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                  Authors ({pub.members.length})
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {pub.members.slice(0, 3).map((m: PublicationMember) => (
+                                    <Badge 
+                                      key={m.id}
+                                      variant="secondary" 
+                                      className="text-xs hover:bg-secondary/80 transition-colors"
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        window.location.href = `/members/${m.id}`
+                                      }}
+                                    >
+                                      {m.name}
+                                    </Badge>
+                                  ))}
+                                  {pub.members.length > 3 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{pub.members.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        
-                        {/* Metadata */}
-                        <div className="flex items-center gap-2 flex-wrap mt-auto">
-                          {pub.doi && (
-                            <Badge variant="outline" className="text-xs font-mono">
-                              DOI
-                            </Badge>
-                          )}
-                          {pub.projects && pub.projects.length > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                              {pub.projects.length} project{pub.projects.length !== 1 ? 's' : ''}
-                            </span>
-                          )}
                         </div>
                         
-                        {/* Hover Overlay */}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2">
-                          <div className="flex items-center gap-2 text-sm text-primary font-medium">
-                            <span>View Details</span>
-                            <ExternalLinkIcon className="h-4 w-4" />
+                        {/* Bottom section - Metadata (fixed at bottom) */}
+                        <div className="space-y-2 pt-3 border-t">
+                          {pub.published && (
+                            <div className="text-xs text-muted-foreground">
+                              Published: {new Date(pub.published).toLocaleDateString('en-GB', { 
+                                day: '2-digit', 
+                                month: 'short', 
+                                year: 'numeric' 
+                              })}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {pub.doi && (
+                              <Badge variant="outline" className="text-xs font-mono">
+                                DOI
+                              </Badge>
+                            )}
+                            {pub.projects && pub.projects.length > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                {pub.projects.length} project{pub.projects.length !== 1 ? 's' : ''}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
