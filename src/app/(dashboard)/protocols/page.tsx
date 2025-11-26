@@ -171,35 +171,245 @@ export default function ProtocolsPage() {
     },
   })
 
+  const members = membersData?.members || []
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    createProtocol({
+      variables: {
+        input: {
+          title: formData.title,
+          description: formData.description || undefined,
+          category: formData.category,
+          version: formData.version,
+          estimatedTime: formData.estimatedTime || undefined,
+          difficulty: formData.difficulty,
+          tags: formData.tags || undefined,
+          authorId: formData.authorId || undefined,
+        },
+      },
+    })
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Page header - Static title and description */}
-        <div className="space-y-2">
-          <Skeleton className="h-8 sm:h-9 w-64" /> {/* "Lab Protocols" title */}
-          <Skeleton className="h-4 w-96" /> {/* "Standard operating procedures and methodologies" description */}
+        {/* Page header - Static title, description, and fully functional "New Protocol" button */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Lab Protocols</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+              Standard operating procedures and experimental protocols
+            </p>
+          </div>
+          {/* "New Protocol" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 shrink-0">
+                <PlusIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">New Protocol</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add New Protocol</DialogTitle>
+                  <DialogDescription>
+                    Create a new lab protocol or SOP.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Protocol Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="RNA Extraction Protocol"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select
+                        value={formData.category}
+                        onValueChange={(value) => setFormData({ ...formData, category: value as ProtocolCategory })}
+                      >
+                        <SelectTrigger id="category">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="WET_LAB">Wet Lab</SelectItem>
+                          <SelectItem value="COMPUTATIONAL">Computational</SelectItem>
+                          <SelectItem value="SAFETY">Safety</SelectItem>
+                          <SelectItem value="GENERAL">General</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="version">Version</Label>
+                      <Input
+                        id="version"
+                        value={formData.version}
+                        onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+                        placeholder="1.0"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Brief description of the protocol..."
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="estimatedTime">Estimated Time</Label>
+                      <Input
+                        id="estimatedTime"
+                        value={formData.estimatedTime}
+                        onChange={(e) => setFormData({ ...formData, estimatedTime: e.target.value })}
+                        placeholder="2-3 hours"
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="difficulty">Difficulty</Label>
+                      <Select
+                        value={formData.difficulty}
+                        onValueChange={(value) => setFormData({ ...formData, difficulty: value as ProtocolDifficulty })}
+                      >
+                        <SelectTrigger id="difficulty">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="BEGINNER">Beginner</SelectItem>
+                          <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                          <SelectItem value="ADVANCED">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="tags">Tags (comma-separated)</Label>
+                    <Input
+                      id="tags"
+                      value={formData.tags}
+                      onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                      placeholder="RNA, Extraction, PCR"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="authorId">Author (Optional)</Label>
+                    <Select
+                      value={formData.authorId || "none"}
+                      onValueChange={(value) => setFormData({ ...formData, authorId: value === "none" ? "" : value })}
+                    >
+                      <SelectTrigger id="authorId">
+                        <SelectValue placeholder="Select author" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {members.map((member: Member) => (
+                          <SelectItem key={member.id} value={member.id}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Creating...' : 'Create Protocol'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Stats cards - Static labels (Total Protocols, Wet Lab, Computational) with dynamic counts */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <StatsCardSkeleton key={i} />
-          ))}
+        {/* Stats cards - Static labels with dynamic counts */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Protocols</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Wet Lab</CardDescription>
+              <CardTitle className="text-3xl text-primary">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Computational</CardDescription>
+              <CardTitle className="text-3xl text-accent">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Downloads</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
         </div>
 
-        {/* Search and category filter tabs */}
-        <div className="space-y-4">
-          <SearchBarSkeleton /> {/* "Search protocols..." input with search icon */}
-          <TabsSkeleton count={3} /> {/* Category tabs: All, Wet Lab, Computational */}
-        </div>
-
-        {/* Protocol grid - 3 columns (sm:2, lg:3) showing protocol cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Each card shows: title, version, author, difficulty badge, estimated time, tags */}
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <ProtocolCardSkeleton key={i} />
-          ))}
-        </div>
+        {/* Main content - Protocol list with functional search and category tabs */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {/* Search input - Fully functional during loading */}
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search protocols..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              {/* Category filter tabs - Fully interactive during loading */}
+              <Tabs value={categoryFilter} onValueChange={(v) => setcategoryFilter(v as typeof categoryFilter)} className="w-full">
+                <TabsList className="w-full grid grid-cols-4 h-auto">
+                  <TabsTrigger value="ALL" className="text-xs sm:text-sm px-2">All</TabsTrigger>
+                  <TabsTrigger value="WET_LAB" className="text-xs sm:text-sm px-2">Wet Lab</TabsTrigger>
+                  <TabsTrigger value="COMPUTATIONAL" className="text-xs sm:text-sm px-2">Comp.</TabsTrigger>
+                  <TabsTrigger value="SAFETY" className="text-xs sm:text-sm px-2">Safety</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6">
+            {/* Protocol list skeletons - Vertical list layout */}
+            <div className="space-y-3 sm:space-y-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <ProtocolCardSkeleton key={i} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -231,24 +441,6 @@ export default function ProtocolsPage() {
     wetLab: protocols.filter((p: Protocol) => p.category === 'WET_LAB').length,
     computational: protocols.filter((p: Protocol) => p.category === 'COMPUTATIONAL').length,
     totalDownloads: protocols.reduce((sum: number, p: Protocol) => sum + (p.downloads || 0), 0),
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    createProtocol({
-      variables: {
-        input: {
-          title: formData.title,
-          description: formData.description || undefined,
-          category: formData.category,
-          version: formData.version,
-          estimatedTime: formData.estimatedTime || undefined,
-          difficulty: formData.difficulty,
-          tags: formData.tags || undefined,
-          authorId: formData.authorId || undefined,
-        },
-      },
-    })
   }
 
   return (
