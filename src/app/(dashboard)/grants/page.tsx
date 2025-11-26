@@ -33,21 +33,23 @@ import {
 import { SearchIcon, PlusIcon, DollarSignIcon, CalendarIcon } from 'lucide-react'
 
 // Type definitions for GraphQL query responses
-interface GrantsQueryData {
-  grants: Array<{
+interface Grant {
+  id: string
+  name: string
+  budget: number
+  startDate: string
+  endDate: string
+  totalSpent: number
+  remainingBudget: number
+  projects: Array<{
     id: string
-    name: string
-    budget: number
-    startDate: string
-    endDate: string
-    totalSpent: number
-    remainingBudget: number
-    projects: Array<{
-      id: string
-      title: string
-    }>
-    createdAt: string
+    title: string
   }>
+  createdAt: string
+}
+
+interface GrantsQueryData {
+  grants: Grant[]
 }
 
 interface CreateGrantMutationData {
@@ -87,29 +89,41 @@ const CREATE_GRANT = gql`
   }
 `
 
-function getGrantStatus(grant: { endDate: string; remainingBudget: number; budget: number }): 'ACTIVE' | 'COMPLETED' {
+type GrantStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED'
+
+function getGrantStatus(grant: Grant): GrantStatus {
   const now = new Date()
+  const startDate = new Date(grant.startDate)
   const endDate = new Date(grant.endDate)
   const budgetUsed = grant.budget - grant.remainingBudget
   const budgetPercentage = grant.budget > 0 ? (budgetUsed / grant.budget) * 100 : 0
 
+  // Grant hasn't started yet
+  if (startDate > now) return 'PENDING'
+  
+  // Grant has ended or budget is fully spent
   if (endDate < now || budgetPercentage >= 100) return 'COMPLETED'
+  
+  // Grant is currently active
   return 'ACTIVE'
 }
 
-function getGrantProgress(grant: { remainingBudget: number; budget: number }): number {
+function getGrantProgress(grant: Grant): number {
   const budgetUsed = grant.budget - grant.remainingBudget
   return grant.budget > 0 ? Math.min(100, Math.round((budgetUsed / grant.budget) * 100)) : 0
 }
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<GrantStatus, string> = {
+  PENDING: 'bg-yellow-500 text-white',
   ACTIVE: 'bg-chart-2 text-white',
   COMPLETED: 'bg-chart-3 text-white',
 }
 
+type StatusFilter = 'ALL' | GrantStatus
+
 export default function GrantsPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'COMPLETED'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   // Refs for auto-focus functionality
@@ -214,7 +228,7 @@ export default function GrantsPage() {
 
   const grants = data?.grants || []
 
-  const filteredGrants = grants.filter((grant: any) => {
+  const filteredGrants = grants.filter((grant: Grant) => {
     const matchesSearch = grant.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
     const status = getGrantStatus(grant)
     const matchesStatus = statusFilter === 'ALL' || status === statusFilter
@@ -224,10 +238,10 @@ export default function GrantsPage() {
 
   const stats = {
     total: grants.length,
-    active: grants.filter((g: any) => getGrantStatus(g) === 'ACTIVE').length,
-    totalFunding: grants.reduce((sum: number, g: any) => sum + (g.budget || 0), 0),
-    completed: grants.filter((g: any) => getGrantStatus(g) === 'COMPLETED').length,
-    pending: 0, // Placeholder for pending grants if needed in the future
+    pending: grants.filter((g: Grant) => getGrantStatus(g) === 'PENDING').length,
+    active: grants.filter((g: Grant) => getGrantStatus(g) === 'ACTIVE').length,
+    completed: grants.filter((g: Grant) => getGrantStatus(g) === 'COMPLETED').length,
+    totalFunding: grants.reduce((sum: number, g: Grant) => sum + (g.budget || 0), 0),
   }
 
   const formatCurrency = (amount: number) => {
@@ -379,8 +393,9 @@ export default function GrantsPage() {
               />
             </div>
             
-            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 h-auto">
+            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)} className="w-full">
+              <TabsList className="w-full grid grid-cols-4 h-auto">
+                <TabsTrigger value="PENDING" className="text-xs sm:text-sm px-2">Pending</TabsTrigger>
                 <TabsTrigger value="ACTIVE" className="text-xs sm:text-sm px-2">Active</TabsTrigger>
                 <TabsTrigger value="COMPLETED" className="text-xs sm:text-sm px-2">Completed</TabsTrigger>
                 <TabsTrigger value="ALL" className="text-xs sm:text-sm px-2">All</TabsTrigger>
@@ -390,7 +405,7 @@ export default function GrantsPage() {
         </CardHeader>
         <CardContent className="p-3 sm:p-6">
           <div className="space-y-3 sm:space-y-4">
-            {filteredGrants.map((grant: any) => {
+            {filteredGrants.map((grant: Grant) => {
               const status = getGrantStatus(grant)
               const progress = getGrantProgress(grant)
               

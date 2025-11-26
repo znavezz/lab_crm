@@ -31,6 +31,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SearchIcon, PlusIcon, BeakerIcon } from 'lucide-react'
+import type { 
+  Equipment, 
+  Booking, 
+  Member, 
+  Project,
+  EquipmentsQueryData,
+  MembersQueryData,
+  ProjectsQueryData,
+  CreateEquipmentMutationData
+} from '@/types/graphql-queries'
 
 const GET_EQUIPMENTS = gql`
   query GetEquipments {
@@ -93,63 +103,6 @@ const CREATE_EQUIPMENT = gql`
   }
 `
 
-interface EquipmentProject {
-  id: string
-  title: string
-}
-
-interface EquipmentMember {
-  id: string
-  name: string
-}
-
-interface Booking {
-  id: string
-  startTime: string
-  endTime: string
-  equipmentId: string
-  member: {
-    id: string
-    name: string
-  }
-}
-
-interface Equipment {
-  id: string
-  name: string
-  description: string | null
-  serialNumber: string | null
-  status: string
-  projectId: string | null
-  project: EquipmentProject | null
-  memberId: string | null
-  member: EquipmentMember | null
-  createdAt: string
-}
-
-interface GetEquipmentsData {
-  equipments: Equipment[]
-  bookings: Booking[]
-}
-
-interface Member {
-  id: string
-  name: string
-}
-
-interface Project {
-  id: string
-  title: string
-}
-
-interface GetMembersData {
-  members: Member[]
-}
-
-interface GetProjectsData {
-  projects: Project[]
-}
-
 const statusColors: Record<string, string> = {
   AVAILABLE: 'bg-chart-2 text-white',
   IN_USE: 'bg-chart-4 text-white',
@@ -184,10 +137,10 @@ export default function EquipmentPage() {
     projectId: undefined as string | undefined,
   })
 
-  const { data, loading, error, refetch } = useQuery<GetEquipmentsData>(GET_EQUIPMENTS)
-  const { data: membersData } = useQuery<GetMembersData>(GET_MEMBERS)
-  const { data: projectsData } = useQuery<GetProjectsData>(GET_PROJECTS)
-  const [createEquipment, { loading: creating }] = useMutation(CREATE_EQUIPMENT, {
+  const { data, loading, error, refetch } = useQuery<EquipmentsQueryData>(GET_EQUIPMENTS)
+  const { data: membersData } = useQuery<MembersQueryData>(GET_MEMBERS)
+  const { data: projectsData } = useQuery<ProjectsQueryData>(GET_PROJECTS)
+  const [createEquipment, { loading: creating }] = useMutation<CreateEquipmentMutationData>(CREATE_EQUIPMENT, {
     onCompleted: () => {
       toast.success('Equipment created successfully')
       setIsDialogOpen(false)
@@ -286,7 +239,7 @@ export default function EquipmentPage() {
     const now = new Date()
     const hasPermanentAssignment = (item.member || item.project) && item.status !== 'MAINTENANCE'
     // Filter bookings for this equipment
-    const equipmentBookings = data?.bookings?.filter((booking) => (booking as any).equipmentId === item.id) || []
+    const equipmentBookings = data?.bookings?.filter((booking: Booking) => booking.equipmentId === item.id) || []
     const hasActiveBooking = equipmentBookings.some(booking => {
       const startTime = new Date(booking.startTime)
       const endTime = new Date(booking.endTime)
@@ -304,7 +257,7 @@ export default function EquipmentPage() {
     const now = new Date()
     const hasPermanentAssignment = (e.member || e.project) && e.status !== 'MAINTENANCE'
     // Filter bookings for this equipment
-    const equipmentBookings = data?.bookings?.filter((booking) => (booking as any).equipmentId === e.id) || []
+    const equipmentBookings = data?.bookings?.filter((booking: Booking) => booking.equipmentId === e.id) || []
     const hasActiveBooking = equipmentBookings.some(booking => {
       const startTime = new Date(booking.startTime)
       const endTime = new Date(booking.endTime)
@@ -566,7 +519,7 @@ export default function EquipmentPage() {
               const now = new Date()
               const hasPermanentAssignment = (item.member || item.project) && item.status !== 'MAINTENANCE'
               // Filter bookings for this equipment
-              const equipmentBookings = data?.bookings?.filter((booking) => (booking as any).equipmentId === item.id) || []
+              const equipmentBookings = data?.bookings?.filter((booking: Booking) => booking.equipmentId === item.id) || []
               const hasActiveBooking = equipmentBookings.some(booking => {
                 const startTime = new Date(booking.startTime)
                 const endTime = new Date(booking.endTime)

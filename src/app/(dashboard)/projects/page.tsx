@@ -48,45 +48,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { SearchIcon, PlusIcon, CalendarIcon, UsersIcon, Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Project } from '@/generated/graphql/resolvers-types'
-
-// Type definitions for GraphQL query responses
-interface ProjectQueryData {
-  projects: Array<{
-    id: string
-    title: string
-    description?: string | null
-    startDate?: string | null
-    endDate?: string | null
-    members: Array<{
-      id: string
-      name: string
-    }>
-    grants: Array<{
-      id: string
-      name: string
-    }>
-    totalInvestment: number
-    createdAt: string
-  }>
-}
-
-interface GrantsQueryData {
-  grants: Array<{
-    id: string
-    name: string
-    budget: number
-    totalSpent: number
-    remainingBudget: number
-  }>
-}
-
-interface CreateProjectMutationData {
-  createProject: {
-    id: string
-    title: string
-  }
-}
+import type { 
+  Project, 
+  Grant, 
+  Member,
+  ProjectStatus,
+  StatusFilter,
+  ProjectsQueryData,
+  GrantsQueryData,
+  CreateProjectMutationData,
+  ProjectWithStatus
+} from '@/types/graphql-queries'
 
 const GET_PROJECTS = gql`
   query GetProjects {
@@ -132,7 +104,7 @@ const CREATE_PROJECT = gql`
 `
 
 // Helper function to calculate project status based on dates
-function getProjectStatus(project: { startDate?: string | null; endDate?: string | null }): 'PLANNING' | 'ACTIVE' | 'COMPLETED' {
+function getProjectStatus(project: Project): ProjectStatus {
   const now = new Date()
   const startDate = project.startDate ? new Date(project.startDate) : null
   const endDate = project.endDate ? new Date(project.endDate) : null
@@ -144,7 +116,7 @@ function getProjectStatus(project: { startDate?: string | null; endDate?: string
 }
 
 // Helper function to calculate progress based on dates
-function getProjectProgress(project: { startDate?: string | null; endDate?: string | null }): number {
+function getProjectProgress(project: Project): number {
   const startDate = project.startDate ? new Date(project.startDate) : null
   const endDate = project.endDate ? new Date(project.endDate) : null
   const now = new Date()
@@ -162,13 +134,13 @@ function getProjectProgress(project: { startDate?: string | null; endDate?: stri
   return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)))
 }
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<ProjectStatus, string> = {
   PLANNING: 'bg-muted text-muted-foreground',
   ACTIVE: 'bg-chart-2 text-white',
   COMPLETED: 'bg-chart-3 text-white',
 }
 
-const statusLabels: Record<string, string> = {
+const statusLabels: Record<ProjectStatus, string> = {
   PLANNING: 'Planning',
   ACTIVE: 'Active',
   COMPLETED: 'Completed',
@@ -177,7 +149,7 @@ const statusLabels: Record<string, string> = {
 export default function ProjectsPage() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'PLANNING' | 'COMPLETED'>('ACTIVE')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ACTIVE')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [grantPopoverOpen, setGrantPopoverOpen] = useState(false)
   const [formData, setFormData] = useState({
@@ -207,13 +179,13 @@ export default function ProjectsPage() {
   const grants = grantsData?.grants || []
 
   // Calculate project status and progress for each project
-  const projectsWithStatus = projects.map((project: any) => ({
+  const projectsWithStatus: ProjectWithStatus[] = projects.map((project: Project) => ({
     ...project,
     status: getProjectStatus(project),
     progress: getProjectProgress(project),
   }))
 
-  const filteredProjects = projectsWithStatus.filter((project: any) => {
+  const filteredProjects = projectsWithStatus.filter((project: ProjectWithStatus) => {
     const matchesSearch = 
       project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -225,9 +197,9 @@ export default function ProjectsPage() {
 
   const stats = {
     total: projects.length,
-    active: projectsWithStatus.filter((p: any) => p.status === 'ACTIVE').length,
-    planning: projectsWithStatus.filter((p: any) => p.status === 'PLANNING').length,
-    completed: projectsWithStatus.filter((p: any) => p.status === 'COMPLETED').length,
+    active: projectsWithStatus.filter((p: ProjectWithStatus) => p.status === 'ACTIVE').length,
+    planning: projectsWithStatus.filter((p: ProjectWithStatus) => p.status === 'PLANNING').length,
+    completed: projectsWithStatus.filter((p: ProjectWithStatus) => p.status === 'COMPLETED').length,
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -375,7 +347,7 @@ export default function ProjectsPage() {
                         <CommandList>
                           <CommandEmpty>No grants found.</CommandEmpty>
                           <CommandGroup>
-                            {grants.map((grant: any) => {
+                            {grants.map((grant: Grant) => {
                               const isSelected = formData.selectedGrants.includes(grant.id)
                               return (
                                 <CommandItem
@@ -410,7 +382,7 @@ export default function ProjectsPage() {
                   {formData.selectedGrants.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {formData.selectedGrants.map((grantId) => {
-                        const grant = grants.find((g: any) => g.id === grantId)
+                        const grant = grants.find((g: Grant) => g.id === grantId)
                         if (!grant) return null
                         return (
                           <Badge key={grantId} variant="secondary" className="gap-1">
@@ -482,7 +454,7 @@ export default function ProjectsPage() {
               />
             </div>
             
-            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
               <TabsList className="grid grid-cols-4 w-full sm:w-auto">
                 <TabsTrigger value="ACTIVE">Active</TabsTrigger>
                 <TabsTrigger value="PLANNING">Planning</TabsTrigger>
@@ -495,7 +467,7 @@ export default function ProjectsPage() {
         <CardContent className="overflow-visible">
           {filteredProjects.length > 0 ? (
             <Carousel gap="md">
-              {filteredProjects.map((project: any) => {
+              {filteredProjects.map((project: ProjectWithStatus) => {
                 const statusColor = statusColors[project.status] || 'bg-muted text-muted-foreground'
                 const progress = project.progress || 0
                 const memberAvatars = project.members?.slice(0, 4) || []
@@ -544,7 +516,7 @@ export default function ProjectsPage() {
                           {memberAvatars.length > 0 && (
                             <div className="flex items-center gap-2">
                               <div className="flex -space-x-2">
-                                {memberAvatars.map((member: any, idx: number) => {
+                                {memberAvatars.map((member: Member) => {
                                   const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
                                   return (
                                     <Avatar
@@ -573,7 +545,7 @@ export default function ProjectsPage() {
                           {/* Grants */}
                           {project.grants && project.grants.length > 0 && (
                             <div className="flex flex-wrap gap-1.5">
-                              {project.grants.slice(0, 2).map((grant: any) => (
+                              {project.grants.slice(0, 2).map((grant: Grant) => (
                                 <Badge key={grant.id} variant="outline" className="text-xs">
                                   {grant.name}
                                 </Badge>

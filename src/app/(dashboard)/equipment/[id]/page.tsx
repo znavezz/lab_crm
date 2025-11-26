@@ -14,6 +14,16 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeftIcon, BeakerIcon, HashIcon, UserIcon, CalendarIcon, AlertTriangleIcon } from 'lucide-react'
+import type {
+  Equipment,
+  Booking,
+  Member,
+  Project,
+  Event,
+  BookingDataQuery,
+  CreateBookingMutationData,
+  UpdateEquipmentMutationData
+} from '@/types/graphql-queries'
 
 const GET_EQUIPMENT = gql`
   query GetEquipment($id: ID!) {
@@ -84,40 +94,8 @@ const UPDATE_EQUIPMENT = gql`
   }
 `
 
-interface EquipmentProject {
-  id: string
-  title: string
-}
-
-interface EquipmentMember {
-  id: string
-  name: string
-}
-
-interface EquipmentDetail {
-  id: string
-  name: string
-  description: string | null
-  serialNumber: string | null
-  status: string
-  project: EquipmentProject | null
-  member: EquipmentMember | null
-  createdAt: string
-}
-
-interface Booking {
-  id: string
-  startTime: string
-  endTime: string
-  equipmentId: string
-  member: {
-    id: string
-    name: string
-  }
-}
-
 interface GetEquipmentData {
-  equipment: EquipmentDetail
+  equipment: Equipment
   bookings: Booking[]
 }
 
@@ -146,9 +124,9 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
     variables: { id },
   })
 
-  const { data: bookingData } = useQuery(GET_BOOKING_DATA) as { data?: { members?: any[], projects?: any[], events?: any[] } }
-  const [createBooking] = useMutation(CREATE_BOOKING)
-  const [updateEquipment] = useMutation(UPDATE_EQUIPMENT)
+  const { data: bookingData } = useQuery<BookingDataQuery>(GET_BOOKING_DATA)
+  const [createBooking] = useMutation<CreateBookingMutationData>(CREATE_BOOKING)
+  const [updateEquipment] = useMutation<UpdateEquipmentMutationData>(UPDATE_EQUIPMENT)
 
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false)
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
@@ -455,7 +433,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                           <SelectValue placeholder="Select a member" />
                         </SelectTrigger>
                         <SelectContent>
-                          {bookingData?.members?.map((member: any) => (
+                          {bookingData?.members?.map((member: Member) => (
                             <SelectItem key={member.id} value={member.id}>
                               {member.name}
                             </SelectItem>
@@ -480,7 +458,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          {(bookingData?.projects || []).map((project: any) => (
+                          {(bookingData?.projects || []).map((project: Project) => (
                             <SelectItem key={project.id} value={project.id}>
                               {project.title}
                             </SelectItem>
@@ -499,7 +477,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          {(bookingData?.events || []).map((event: any) => (
+                          {(bookingData?.events || []).map((event: Event) => (
                             <SelectItem key={event.id} value={event.id}>
                               {event.title}
                             </SelectItem>

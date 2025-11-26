@@ -16,6 +16,7 @@ const GET_ANALYTICS_DATA = gql`
     publications {
       id
       published
+      doi
       createdAt
       members {
         id
@@ -98,6 +99,7 @@ interface PublicationProject {
 interface AnalyticsPublication {
   id: string
   published: string | null
+  doi?: string | null
   createdAt: string
   members: PublicationMember[]
   projects: PublicationProject[]
@@ -588,7 +590,7 @@ export default function AnalyticsPage() {
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">With DOI</p>
                     <p className="text-3xl font-bold">
-                      {publications.filter((p: AnalyticsPublication) => (p as any).doi).length}
+                      {publications.filter((p: AnalyticsPublication) => p.doi).length}
                     </p>
                   </div>
                   <div className="space-y-2">
