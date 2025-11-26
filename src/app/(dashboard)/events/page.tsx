@@ -122,21 +122,85 @@ export default function EventsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4 sm:space-y-6">
-        {/* Page header */}
-        <div className="space-y-2">
-          <Skeleton className="h-8 sm:h-9 w-32" /> {/* Title */}
+      <div className="space-y-6">
+        {/* Page header - Back button, title, and description */}
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon">
+              <ArrowLeftIcon className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Events & Calendar</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage lab events and view calendar
+            </p>
+          </div>
         </div>
 
-        {/* Search bar */}
-        <SearchBarSkeleton />
+        {/* Tabs - Lab Events and Google Calendar */}
+        <Tabs defaultValue="events" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="events">Lab Events</TabsTrigger>
+            <TabsTrigger value="calendar">Google Calendar</TabsTrigger>
+          </TabsList>
 
-        {/* Event cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <EventCardSkeleton key={i} />
-          ))}
-        </div>
+          <TabsContent value="events" className="space-y-4">
+            {/* Two-column layout - Upcoming Events and Past Events */}
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Upcoming Events Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Upcoming Events</CardTitle>
+                  <CardDescription>
+                    <Skeleton className="h-4 w-24" /> {/* "X scheduled" count */}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 rounded-lg border space-y-2">
+                        <Skeleton className="h-5 w-3/4" /> {/* Event title */}
+                        <Skeleton className="h-4 w-full" /> {/* Description line 1 */}
+                        <Skeleton className="h-4 w-2/3" /> {/* Description line 2 */}
+                        <div className="flex items-center gap-4 mt-2">
+                          <Skeleton className="h-3 w-32" /> {/* Date and time */}
+                          <Skeleton className="h-3 w-20" /> {/* Location */}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Skeleton className="h-5 w-20" /> {/* Attendees badge */}
+                          <Skeleton className="h-5 w-20" /> {/* Projects badge */}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Past Events Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Past Events</CardTitle>
+                  <CardDescription>
+                    <Skeleton className="h-4 w-24" /> {/* "X completed" count */}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 rounded-lg border space-y-2 opacity-75">
+                        <Skeleton className="h-5 w-3/4" /> {/* Event title */}
+                        <div className="flex items-center gap-4 mt-2">
+                          <Skeleton className="h-3 w-32" /> {/* Date */}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     )
   }
