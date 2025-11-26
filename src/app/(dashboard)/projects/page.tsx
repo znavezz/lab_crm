@@ -711,25 +711,25 @@ export default function ProjectsPage() {
       </div>
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <Card>
+        <Card className="stat-card-blue">
           <CardHeader className="pb-3">
             <CardDescription>Total Projects</CardDescription>
             <CardTitle className="text-2xl sm:text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-green">
           <CardHeader className="pb-3">
             <CardDescription>Active</CardDescription>
             <CardTitle className="text-2xl sm:text-3xl text-chart-2">{stats.active}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-amber">
           <CardHeader className="pb-3">
             <CardDescription>Planning</CardDescription>
-            <CardTitle className="text-2xl sm:text-3xl text-muted-foreground">{stats.planning}</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl text-chart-4">{stats.planning}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-purple">
           <CardHeader className="pb-3">
             <CardDescription>Completed</CardDescription>
             <CardTitle className="text-2xl sm:text-3xl text-chart-3">{stats.completed}</CardTitle>

@@ -474,11 +474,13 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
+        {stats.map((stat, index) => {
           const Icon = stat.icon
+          const colorClasses = ['stat-card-green', 'stat-card-blue', 'stat-card-purple', 'stat-card-amber']
+          const colorClass = colorClasses[index % colorClasses.length]
           return (
             <Link key={stat.title} href={stat.href}>
-              <Card className="paint-card cursor-pointer">
+              <Card className={cn("paint-card cursor-pointer", colorClass)}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                   <Icon className="h-4 w-4 text-muted-foreground" />
