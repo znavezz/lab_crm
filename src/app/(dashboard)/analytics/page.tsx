@@ -7,6 +7,7 @@ import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, TabsSkeleton, ChartSkeleton } from '@/components/skeletons'
 import { Badge } from '@/components/ui/badge'
 import { Bar, BarChart, Line, LineChart, Pie, PieChart, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -190,8 +191,32 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <Skeleton className="h-10 w-64 mb-8" />
-          <Skeleton className="h-96" />
+          {/* Page header */}
+          <div className="space-y-2 mb-8">
+            <Skeleton className="h-10 w-64" /> {/* Title */}
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-6">
+            <TabsSkeleton count={5} />
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <StatsCardSkeleton key={i} />
+            ))}
+          </div>
+
+          {/* Charts */}
+          <div className="space-y-8">
+            <ChartSkeleton height="h-80" />
+            <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+              <ChartSkeleton height="h-64" />
+              <ChartSkeleton height="h-64" />
+            </div>
+            <ChartSkeleton height="h-80" />
+          </div>
         </div>
       </div>
     )

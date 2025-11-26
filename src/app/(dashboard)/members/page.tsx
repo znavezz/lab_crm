@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, MemberCardSkeleton } from '@/components/skeletons'
 import { SearchIcon, PlusIcon, MailIcon, PhoneIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Member } from '@/generated/graphql/resolvers-types'
@@ -160,14 +161,32 @@ export default function MembersPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
+            <Skeleton className="h-4 w-80" /> {/* Description */}
+          </div>
+          <Skeleton className="h-10 w-32 sm:w-36 shrink-0" /> {/* Add Button */}
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Stats cards */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <StatsCardSkeleton key={i} />
+          ))}
+        </div>
+
+        {/* Search bar */}
+        <SearchBarSkeleton />
+
+        {/* Member cards grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <MemberCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, UsersIcon, DollarSignIcon } from 'lucide-react'
 
 const GET_PROJECT = gql`
@@ -118,11 +119,46 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Back button */}
         <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+        
+        {/* Project header */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-20 w-full mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Details grid */}
         <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-64" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3, 4].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

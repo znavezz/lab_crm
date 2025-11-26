@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, TabsSkeleton, GrantCardSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -206,14 +207,39 @@ export default function GrantsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-8 sm:h-9 w-56" /> {/* Title */}
+            <Skeleton className="h-4 w-72" /> {/* Description */}
+          </div>
+          <Skeleton className="h-10 w-24 sm:w-32 shrink-0" /> {/* Add Button */}
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Stats cards */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <StatsCardSkeleton key={i} />
+          ))}
+        </div>
+
+        {/* Main content card */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <SearchBarSkeleton />
+              <TabsSkeleton count={4} />
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
+              {[1, 2, 3].map((i) => (
+                <GrantCardSkeleton key={i} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

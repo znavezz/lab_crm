@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, PublicationCardSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -134,14 +135,29 @@ export default function PublicationsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 sm:h-9 w-64" /> {/* Title */}
+          <Skeleton className="h-4 w-96" /> {/* Description */}
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Stats cards */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <StatsCardSkeleton key={i} />
+          ))}
+        </div>
+
+        {/* Search bar */}
+        <SearchBarSkeleton />
+
+        {/* Publication cards */}
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <PublicationCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }

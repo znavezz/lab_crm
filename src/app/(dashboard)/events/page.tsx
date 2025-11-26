@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import { EventCardSkeleton, SearchBarSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -121,9 +122,21 @@ export default function EventsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 sm:h-9 w-32" /> {/* Title */}
+        </div>
+
+        {/* Search bar */}
+        <SearchBarSkeleton />
+
+        {/* Event cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <EventCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }

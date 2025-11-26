@@ -46,6 +46,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, TabsSkeleton, ProjectCardSkeleton } from '@/components/skeletons'
 import { SearchIcon, PlusIcon, CalendarIcon, UsersIcon, Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { 
@@ -160,7 +161,7 @@ export default function ProjectsPage() {
     selectedGrants: [] as string[],
   })
 
-  const { data, loading, error, refetch } = useQuery<ProjectQueryData>(GET_PROJECTS)
+  const { data, loading, error, refetch } = useQuery<ProjectsQueryData>(GET_PROJECTS)
   const { data: grantsData } = useQuery<GrantsQueryData>(GET_GRANTS)
   const [createProject, { loading: creating }] = useMutation<CreateProjectMutationData>(CREATE_PROJECT, {
     onCompleted: (data) => {
@@ -240,14 +241,39 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-8 sm:h-9 w-48" /> {/* Title */}
+            <Skeleton className="h-4 w-80" /> {/* Description */}
+          </div>
+          <Skeleton className="h-10 w-28 sm:w-36 shrink-0" /> {/* Add Button */}
+        </div>
+
+        {/* Stats cards */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-24" />
+            <StatsCardSkeleton key={i} />
           ))}
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Main content card */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <SearchBarSkeleton />
+              <TabsSkeleton count={4} />
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
+              {[1, 2, 3].map((i) => (
+                <ProjectCardSkeleton key={i} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

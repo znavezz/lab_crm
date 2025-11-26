@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BeakerIcon, TrendingUpIcon, AlertCircleIcon, CalendarIcon, ArrowRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, ChartSkeleton, ListItemSkeleton } from '@/components/skeletons'
 
 const GET_DASHBOARD_STATS = gql`
   query GetDashboardStats {
@@ -249,15 +250,90 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-8">
+        {/* Page header */}
         <div>
-          <Skeleton className="h-9 w-48 mb-2" />
-          <Skeleton className="h-5 w-96" />
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-5 w-96 mt-2" />
         </div>
+
+        {/* Stats cards - matching actual card structure */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-24" />
+            <Card key={i} className="paint-card">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-12" />
+                <Skeleton className="h-3 w-20 mt-1" />
+              </CardContent>
+            </Card>
           ))}
         </div>
+
+        {/* Main Content Grid - Recent Activities & Upcoming Events */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          {/* Recent Activities */}
+          <Card className="col-span-4">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-56 mt-2" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-start gap-4 p-2">
+                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Skeleton className="h-8 w-full mt-4" />
+            </CardContent>
+          </Card>
+
+          {/* Upcoming Events */}
+          <Card className="col-span-3">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-56 mt-2" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-start gap-4 p-2">
+                    <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-5 w-16 mt-1" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Skeleton className="h-8 w-full mt-4" />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
