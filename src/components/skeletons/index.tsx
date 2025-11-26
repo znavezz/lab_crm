@@ -143,24 +143,26 @@ export function EquipmentCardSkeleton() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2 flex-1">
-            <Skeleton className="h-6 w-3/4" /> {/* Name */}
-            <Skeleton className="h-4 w-1/2" /> {/* Type */}
-            <div className="flex items-center gap-2">
+        <div className="flex items-start gap-3">
+          {/* Icon placeholder - removed to match actual cards without icon */}
+          <div className="flex-1 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-6 w-3/4" /> {/* Name */}
+                <Skeleton className="h-4 w-5/6" /> {/* Description */}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
               <Skeleton className="h-5 w-20" /> {/* Status badge */}
+              <Skeleton className="h-5 w-32" /> {/* Optional: In Use By badge */}
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-        </div>
         <div className="flex items-center justify-between pt-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-4 w-40" /> {/* Serial number */}
+          <Skeleton className="h-8 w-20" /> {/* View button */}
         </div>
       </CardContent>
     </Card>
