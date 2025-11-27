@@ -163,7 +163,7 @@ export default function MembersPage() {
     return (
       <div className="space-y-6">
         {/* Page header - Static title, description, and fully functional "Add Member" button */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Lab Members</h1>
             <p className="text-muted-foreground mt-1">
@@ -368,7 +368,7 @@ export default function MembersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Lab Members</h1>
           <p className="text-muted-foreground mt-1">
@@ -500,22 +500,22 @@ export default function MembersPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Members</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active Members</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.active}</CardTitle>
+            <CardTitle className="text-3xl">{stats.active}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Alumni</CardDescription>
-            <CardTitle className="text-3xl text-muted-foreground">{stats.alumni}</CardTitle>
+            <CardTitle className="text-3xl">{stats.alumni}</CardTitle>
           </CardHeader>
         </Card>
       </div>
