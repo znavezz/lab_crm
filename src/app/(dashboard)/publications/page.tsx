@@ -165,7 +165,7 @@ export default function PublicationsPage() {
     return (
       <div className="space-y-4 sm:space-y-6">
         {/* Page header - Static title, description, and fully functional "Add Publication" button */}
-        <div className="flex items-center justify-between gap-2">
+        <div className="page-header flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Publications</h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
@@ -441,7 +441,7 @@ export default function PublicationsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between gap-2">
+      <div className="page-header flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Publications</h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
@@ -584,25 +584,25 @@ export default function PublicationsPage() {
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Publications</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Published</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.published}</CardTitle>
+            <CardTitle className="text-3xl">{stats.published}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>With DOI</CardDescription>
-            <CardTitle className="text-3xl text-accent">{publications.filter((p: Publication) => p.doi).length}</CardTitle>
+            <CardTitle className="text-3xl">{publications.filter((p: Publication) => p.doi).length}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>This Year</CardDescription>
             <CardTitle className="text-3xl">{stats.thisYear}</CardTitle>
