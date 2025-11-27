@@ -245,7 +245,7 @@ export default function ProjectsPage() {
     return (
       <div className="space-y-6">
         {/* Page header - Static title, description, and fully functional "New Project" button */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Research Projects</h1>
             <p className="text-muted-foreground mt-1">
@@ -558,7 +558,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Research Projects</h1>
           <p className="text-muted-foreground mt-1">
@@ -711,28 +711,28 @@ export default function ProjectsPage() {
       </div>
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <Card className="stat-card-blue">
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Projects</CardDescription>
             <CardTitle className="text-2xl sm:text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="stat-card-green">
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active</CardDescription>
-            <CardTitle className="text-2xl sm:text-3xl text-chart-2">{stats.active}</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl">{stats.active}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="stat-card-amber">
+        <Card className="stat-card-warning">
           <CardHeader className="pb-3">
             <CardDescription>Planning</CardDescription>
-            <CardTitle className="text-2xl sm:text-3xl text-chart-4">{stats.planning}</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl">{stats.planning}</CardTitle>
           </CardHeader>
         </Card>
-        <Card className="stat-card-purple">
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Completed</CardDescription>
-            <CardTitle className="text-2xl sm:text-3xl text-chart-3">{stats.completed}</CardTitle>
+            <CardTitle className="text-2xl sm:text-3xl">{stats.completed}</CardTitle>
           </CardHeader>
         </Card>
       </div>
