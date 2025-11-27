@@ -420,15 +420,15 @@ export default function GrantsPage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
-            Track research funding and grant applications
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="page-header flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+              Track research funding and grant applications
+            </p>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 shrink-0">
               <PlusIcon className="h-4 w-4" />
@@ -506,28 +506,28 @@ export default function GrantsPage() {
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Grants</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active Grants</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.active}</CardTitle>
+            <CardTitle className="text-3xl">{stats.active}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active Funding</CardDescription>
-            <CardTitle className="text-2xl text-accent">{formatCurrency(stats.totalFunding)}</CardTitle>
+            <CardTitle className="text-2xl">{formatCurrency(stats.totalFunding)}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-warning">
           <CardHeader className="pb-3">
             <CardDescription>Pending</CardDescription>
-            <CardTitle className="text-3xl text-chart-4">{stats.pending}</CardTitle>
+            <CardTitle className="text-3xl">{stats.pending}</CardTitle>
           </CardHeader>
         </Card>
       </div>
