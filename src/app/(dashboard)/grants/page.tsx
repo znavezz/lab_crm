@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, TabsSkeleton, GrantCardSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -204,16 +205,190 @@ export default function GrantsPage() {
     }
   }
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    createGrant({
+      variables: {
+        input: {
+          name: formData.name,
+          budget: parseFloat(formData.budget),
+          startDate: new Date(formData.startDate).toISOString(),
+          endDate: new Date(formData.endDate).toISOString(),
+        },
+      },
+    })
+  }
+
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header - Static title, description, and fully functional "Add Grant" button */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+              Track research funding and grant applications
+            </p>
+          </div>
+          {/* "Add Grant" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 shrink-0">
+                <PlusIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Grant</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add New Grant</DialogTitle>
+                  <DialogDescription>
+                    Add a new grant or funding application to track.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Grant Name</Label>
+                    <Input
+                      ref={nameRef}
+                      id="name"
+                      value={formData.name}
+                      onChange={handleNameChange}
+                      placeholder="NSF Research Grant 2024"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="budget">Budget ($)</Label>
+                      <Input
+                        ref={budgetRef}
+                        id="budget"
+                        type="number"
+                        value={formData.budget}
+                        onChange={handleBudgetChange}
+                        placeholder="250000"
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        ref={startDateRef}
+                        id="startDate"
+                        type="date"
+                        value={formData.startDate}
+                        onChange={handleStartDateChange}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <Input
+                        ref={endDateRef}
+                        id="endDate"
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Adding...' : 'Add Grant'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Stats cards - Static labels with dynamic values */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Grants</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active Grants</CardDescription>
+              <CardTitle className="text-3xl text-chart-2">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active Funding</CardDescription>
+              <CardTitle className="text-2xl text-accent">
+                <Skeleton className="h-7 w-24" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Pending</CardDescription>
+              <CardTitle className="text-3xl text-chart-4">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Main content - Grant list with functional search and filter tabs */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {/* Search input - Fully functional during loading */}
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search grants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              {/* Status filter tabs - Fully interactive during loading */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)} className="w-full">
+                <TabsList className="w-full grid grid-cols-4 h-auto">
+                  <TabsTrigger value="PENDING" className="text-xs sm:text-sm px-2">Pending</TabsTrigger>
+                  <TabsTrigger value="ACTIVE" className="text-xs sm:text-sm px-2">Active</TabsTrigger>
+                  <TabsTrigger value="COMPLETED" className="text-xs sm:text-sm px-2">Completed</TabsTrigger>
+                  <TabsTrigger value="ALL" className="text-xs sm:text-sm px-2">All</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6">
+            <div className="space-y-3 sm:space-y-4">
+              {/* Grant card skeletons - Vertical list layout */}
+              {/* Each card shows: title, status, budget, progress bar, date range, associated projects */}
+              {[1, 2, 3].map((i) => (
+                <GrantCardSkeleton key={i} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -244,39 +419,16 @@ export default function GrantsPage() {
     totalFunding: grants.reduce((sum: number, g: Grant) => sum + (g.budget || 0), 0),
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    createGrant({
-      variables: {
-        input: {
-          name: formData.name,
-          budget: parseFloat(formData.budget),
-          startDate: new Date(formData.startDate).toISOString(),
-          endDate: new Date(formData.endDate).toISOString(),
-        },
-      },
-    })
-  }
-
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
-            Track research funding and grant applications
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="page-header flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Grants & Funding</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+              Track research funding and grant applications
+            </p>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 shrink-0">
               <PlusIcon className="h-4 w-4" />
@@ -354,28 +506,28 @@ export default function GrantsPage() {
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Grants</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active Grants</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.active}</CardTitle>
+            <CardTitle className="text-3xl">{stats.active}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active Funding</CardDescription>
-            <CardTitle className="text-2xl text-accent">{formatCurrency(stats.totalFunding)}</CardTitle>
+            <CardTitle className="text-2xl">{formatCurrency(stats.totalFunding)}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-warning">
           <CardHeader className="pb-3">
             <CardDescription>Pending</CardDescription>
-            <CardTitle className="text-3xl text-chart-4">{stats.pending}</CardTitle>
+            <CardTitle className="text-3xl">{stats.pending}</CardTitle>
           </CardHeader>
         </Card>
       </div>

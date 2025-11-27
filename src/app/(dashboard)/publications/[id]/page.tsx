@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ListItemSkeleton } from '@/components/skeletons'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide-react'
 
@@ -74,8 +75,47 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Back button */}
         <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+        
+        {/* Publication header */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-5 w-3/4 mt-2" />
+            <div className="flex gap-2 mt-3">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-24 w-full" />
+          </CardContent>
+        </Card>
+
+        {/* Authors and projects */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon, HistoryIcon, FileTextIcon } from 'lucide-react'
 
 const GET_PROTOCOL = gql`
@@ -114,8 +115,51 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Back button */}
         <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+        
+        {/* Protocol header */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4" />
+            <div className="flex gap-2 mt-2">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Steps and materials */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3, 4].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }

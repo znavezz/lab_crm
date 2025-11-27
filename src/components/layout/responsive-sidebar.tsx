@@ -42,10 +42,10 @@ function SidebarContent() {
   return (
     <div className="flex h-full flex-col">
       {/* Logo/Title */}
-      <div className="flex h-16 items-center border-b border-sidebar-border px-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
+      <div className="flex h-16 items-center justify-center border-b border-sidebar-border px-6 lg:px-0">
+        <Link href="/dashboard" className="flex items-center gap-2" title="Lab CRM">
           <BeakerIcon className="h-6 w-6 text-primary" />
-          <span className="font-semibold text-lg">Lab CRM</span>
+          <span className="font-semibold text-lg lg:hidden">Lab CRM</span>
         </Link>
       </div>
 
@@ -60,12 +60,13 @@ function SidebarContent() {
               <Button
                 variant={isActive ? 'secondary' : 'ghost'}
                 className={cn(
-                  'w-full justify-start gap-3',
+                  'w-full justify-start gap-3 lg:justify-center lg:gap-0',
                   isActive && 'bg-sidebar-accent text-sidebar-accent-foreground'
                 )}
+                title={item.name}
               >
                 <Icon className="h-5 w-5" />
-                <span>{item.name}</span>
+                <span className="lg:hidden">{item.name}</span>
               </Button>
             </Link>
           )
@@ -115,8 +116,8 @@ export function ResponsiveSidebar() {
         </Button>
       </aside>
 
-      {/* Desktop Sidebar - Always visible on desktop (>= 1024px) */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col bg-sidebar border-r border-sidebar-border">
+      {/* Desktop Sidebar - Always visible on desktop (>= 1024px) - Icon only */}
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-16 lg:flex-col bg-sidebar border-r border-sidebar-border">
         <SidebarContent />
       </aside>
     </>

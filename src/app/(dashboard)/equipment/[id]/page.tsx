@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { TableRowSkeleton } from '@/components/skeletons'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -283,8 +284,40 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Back button */}
         <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+        
+        {/* Equipment details card */}
+        <Card>
+          <CardHeader>
+            <div className="space-y-3">
+              <Skeleton className="h-8 w-3/4" /> {/* Name */}
+              <Skeleton className="h-5 w-1/2" /> {/* Type */}
+              <Skeleton className="h-6 w-24" /> {/* Status */}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-20 w-full" /> {/* Description */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bookings card */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <TableRowSkeleton key={i} columns={5} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

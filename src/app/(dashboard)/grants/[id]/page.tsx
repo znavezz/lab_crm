@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, DollarSignIcon, FolderIcon } from 'lucide-react'
 
 // Type definitions for GraphQL query response
@@ -72,11 +73,47 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Back button */}
         <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+        
+        {/* Grant header card */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4" /> {/* Title */}
+            <Skeleton className="h-6 w-24 mt-2" /> {/* Status badge */}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+            </div>
+            <Skeleton className="h-2 w-full" /> {/* Progress bar */}
+          </CardContent>
+        </Card>
+
+        {/* Details grid */}
         <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-64" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

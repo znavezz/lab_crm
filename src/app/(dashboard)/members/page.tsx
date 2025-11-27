@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, MemberCardSkeleton } from '@/components/skeletons'
 import { SearchIcon, PlusIcon, MailIcon, PhoneIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Member } from '@/generated/graphql/resolvers-types'
@@ -161,13 +162,198 @@ export default function MembersPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+        {/* Page header - Static title, description, and fully functional "Add Member" button */}
+        <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Lab Members</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your research team and collaborators
+            </p>
+          </div>
+          {/* "Add Member" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <PlusIcon className="h-4 w-4" />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add New Member</DialogTitle>
+                  <DialogDescription>
+                    Add a new team member to the lab. Fill in their details below.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Dr. Jane Smith"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="rank">Rank (Optional)</Label>
+                    <Input
+                      id="rank"
+                      value={formData.rank}
+                      onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
+                      placeholder="e.g., PhD, MSc, BSc"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="role">Role</Label>
+                    <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PI">Principal Investigator</SelectItem>
+                        <SelectItem value="POSTDOC">Postdoc</SelectItem>
+                        <SelectItem value="STUDENT">Student</SelectItem>
+                        <SelectItem value="RESEARCHER">Researcher</SelectItem>
+                        <SelectItem value="LAB_MANAGER">Lab Manager</SelectItem>
+                        <SelectItem value="INTERN">Intern</SelectItem>
+                        <SelectItem value="CONTRACTOR">Contractor</SelectItem>
+                        <SelectItem value="GUEST">Guest</SelectItem>
+                        <SelectItem value="OTHER">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">Active</SelectItem>
+                        <SelectItem value="INACTIVE">Inactive</SelectItem>
+                        <SelectItem value="ALUMNI">Alumni</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="scholarship">Scholarship/Funding (Optional)</Label>
+                    <Input
+                      id="scholarship"
+                      value={formData.scholarship}
+                      onChange={(e) => setFormData({ ...formData, scholarship: e.target.value })}
+                      placeholder="Enter amount"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="joinedDate">Joined Date (Optional)</Label>
+                    <Input
+                      id="joinedDate"
+                      type="date"
+                      value={formData.joinedDate}
+                      onChange={(e) => setFormData({ ...formData, joinedDate: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Leave empty to use today's date as the joined date.
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Adding...' : 'Add Member'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Stats cards - Static labels with dynamic counts */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {/* Total Members stat */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Members</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" /> {/* Dynamic count */}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          {/* Active Members stat */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Active Members</CardDescription>
+              <CardTitle className="text-3xl text-chart-2">
+                <Skeleton className="h-9 w-12" /> {/* Dynamic count */}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          {/* Alumni stat */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Alumni</CardDescription>
+              <CardTitle className="text-3xl text-muted-foreground">
+                <Skeleton className="h-9 w-12" /> {/* Dynamic count */}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Main content - Carousel of member cards with functional search and filter tabs */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              {/* Search input - Fully functional during loading */}
+              <div className="relative flex-1 max-w-sm">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search members..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              {/* Status filter tabs - Fully interactive during loading */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'ALL' | 'ACTIVE' | 'INACTIVE' | 'ALUMNI')}>
+                <TabsList>
+                  <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+                  <TabsTrigger value="ALUMNI">Alumni</TabsTrigger>
+                  <TabsTrigger value="ALL">All</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="overflow-visible -mx-2 mt-2">
+            {/* Member carousel skeleton - Horizontal scrolling cards (200px wide, min 280px tall) */}
+            <div className="flex gap-4 overflow-x-auto px-1 py-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border w-[200px] min-h-[280px] flex-shrink-0">
+                  {/* Member avatar with status indicator dot */}
+                  <div className="relative">
+                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <Skeleton className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full" />
+                  </div>
+                  {/* Member details - Centered layout */}
+                  <div className="text-center space-y-2 w-full flex-1 flex flex-col">
+                    <Skeleton className="h-5 w-32 mx-auto" /> {/* Member name */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <Skeleton className="h-5 w-20" /> {/* Role badge (PI, Postdoc, etc.) */}
+                      <Skeleton className="h-5 w-16" /> {/* Status badge (Active, Alumni) */}
+                    </div>
+                    <Skeleton className="h-4 w-24 mx-auto" /> {/* Academic rank (PhD, MSc, etc.) */}
+                    <Skeleton className="h-4 w-16 mx-auto" /> {/* Scholarship amount */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -182,7 +368,7 @@ export default function MembersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Lab Members</h1>
           <p className="text-muted-foreground mt-1">
@@ -314,22 +500,22 @@ export default function MembersPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Members</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Active Members</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.active}</CardTitle>
+            <CardTitle className="text-3xl">{stats.active}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Alumni</CardDescription>
-            <CardTitle className="text-3xl text-muted-foreground">{stats.alumni}</CardTitle>
+            <CardTitle className="text-3xl">{stats.alumni}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -356,14 +542,14 @@ export default function MembersPage() {
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent className="overflow-visible">
+        <CardContent className="overflow-visible -mx-2 mt-2">
           {filteredMembers.length > 0 ? (
             <Carousel gap="md">
               {filteredMembers.map((member: MemberWithPhoto) => {
                 const initials = member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'
                 return (
                   <CarouselCard key={member.id} href={`/members/${member.id}`}>
-                    <div className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[200px] group cursor-pointer transform hover:scale-105 hover:-translate-y-2 relative z-10">
+                    <div className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card hover:bg-accent/30 w-[200px] min-h-[280px] group cursor-pointer transform hover:scale-105 hover:-translate-y-2 relative z-10">
                       <div className="relative">
                         <Avatar className="h-24 w-24 ring-2 ring-background ring-offset-2 ring-offset-background group-hover:ring-primary/50 transition-all duration-300 group-hover:scale-110">
                           <AvatarImage 
@@ -388,7 +574,7 @@ export default function MembersPage() {
                           </div>
                         )}
                       </div>
-                      <div className="text-center space-y-2 w-full">
+                      <div className="text-center space-y-2 w-full flex-1 flex flex-col">
                         <h3 className="font-semibold text-base group-hover:text-primary transition-colors truncate w-full">
                           {member.name}
                         </h3>
@@ -407,16 +593,12 @@ export default function MembersPage() {
                             </Badge>
                           )}
                         </div>
-                        {member.rank && (
-                          <p className="text-xs text-muted-foreground truncate w-full">
-                            {member.rank}
-                          </p>
-                        )}
-                        {member.scholarship && (
-                          <p className="text-xs text-muted-foreground">
-                            ${member.scholarship}
-                          </p>
-                        )}
+                        <p className="text-xs text-muted-foreground truncate w-full min-h-[16px]">
+                          {member.rank || '\u00A0'}
+                        </p>
+                        <p className="text-xs text-muted-foreground min-h-[16px]">
+                          {member.scholarship ? `$${member.scholarship}` : '\u00A0'}
+                        </p>
                       </div>
                     </div>
                   </CarouselCard>

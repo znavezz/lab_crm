@@ -53,21 +53,21 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.600 0.150 240.0); /* Blue - Primary color */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.950 0.010 120.0); /* Gray - Secondary color */
+  --secondary: oklch(0.940 0.020 240.0); /* Soft blue-gray - Secondary color */
   --secondary-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.950 0.010 120.0); /* Gray - Neutral elements */
+  --muted: oklch(0.960 0.015 240.0); /* Soft blue-tinted - Neutral elements */
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.600 0.150 240.0); /* Blue - Attention/special */
+  --accent: oklch(0.650 0.150 220.0); /* Soft cyan-blue - Attention/special */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.577 0.245 27.325); /* Red - Warnings/errors */
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.922 0.008 240.0);
+  --input: oklch(0.922 0.008 240.0);
   --ring: oklch(0.600 0.150 240.0); /* Blue - Focus states */
   --chart-1: oklch(0.600 0.150 240.0); /* Blue */
-  --chart-2: oklch(0.950 0.010 120.0); /* Gray */
-  --chart-3: oklch(0.600 0.150 240.0); /* Blue */
-  --chart-4: oklch(0.950 0.010 120.0); /* Gray */
-  --chart-5: oklch(0.950 0.010 120.0); /* Gray */
+  --chart-2: oklch(0.680 0.130 140.0); /* Soft green */
+  --chart-3: oklch(0.550 0.140 250.0); /* Deep blue */
+  --chart-4: oklch(0.700 0.150 80.0); /* Warm amber */
+  --chart-5: oklch(0.680 0.140 30.0); /* Coral */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.600 0.150 240.0); /* Blue - Navigation */
@@ -88,21 +88,21 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.650 0.180 240.0); /* Blue - Primary color (dark) */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.750 0.020 120.0); /* Gray - Secondary color (dark) */
+  --secondary: oklch(0.250 0.025 240.0); /* Soft blue-gray - Secondary color (dark) */
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.750 0.020 120.0); /* Gray - Neutral elements (dark) */
+  --muted: oklch(0.260 0.020 240.0); /* Soft blue-tinted - Neutral elements (dark) */
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.650 0.180 240.0); /* Blue - Attention/special (dark) */
+  --accent: oklch(0.700 0.170 220.0); /* Soft cyan-blue - Attention/special (dark) */
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.720 0.180 25.0); /* Light Coral Pink (#FF8F8F) - Warnings/errors (dark) */
+  --destructive: oklch(0.720 0.180 25.0); /* Light Coral Pink - Warnings/errors (dark) */
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.650 0.180 240.0); /* Blue - Focus states (dark) */
   --chart-1: oklch(0.650 0.180 240.0); /* Blue */
-  --chart-2: oklch(0.750 0.020 120.0); /* Gray */
-  --chart-3: oklch(0.650 0.180 240.0); /* Blue */
-  --chart-4: oklch(0.750 0.020 120.0); /* Gray */
-  --chart-5: oklch(0.750 0.020 120.0); /* Gray */
+  --chart-2: oklch(0.720 0.150 140.0); /* Soft green */
+  --chart-3: oklch(0.600 0.160 250.0); /* Deep blue */
+  --chart-4: oklch(0.740 0.170 80.0); /* Warm amber */
+  --chart-5: oklch(0.720 0.160 30.0); /* Coral */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.650 0.180 240.0); /* Blue - Navigation (dark) */
@@ -119,30 +119,186 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: linear-gradient(135deg, 
+      oklch(1 0 0) 0%, 
+      oklch(0.99 0.010 235) 40%, 
+      oklch(0.985 0.015 240) 100%);
+    background-attachment: fixed;
+  }
+  
+  .dark body {
+    background: linear-gradient(135deg, 
+      oklch(0.145 0 0) 0%, 
+      oklch(0.150 0.012 235) 40%, 
+      oklch(0.155 0.018 240) 100%);
+    background-attachment: fixed;
   }
 }
 
-/* Simple hover animation for dashboard cards */
+/* Enhanced card styling */
+@layer components {
+  /* Base card enhancements */
+  .card {
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.06);
+    border-color: oklch(0.922 0.008 240.0);
+    background: linear-gradient(to bottom, oklch(1 0 0), oklch(0.998 0.003 240));
+  }
+  
+  .dark .card {
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.3), 0 1px 2px oklch(0 0 0 / 0.2);
+    background: linear-gradient(to bottom, oklch(0.205 0 0), oklch(0.200 0.005 240));
+  }
 
-.paint-card {
-  transition: all 0.3s ease;
+  /* Stat cards - semantic naming for flexible color palette */
+  .stat-card-primary,   /* For totals, general metrics */
+  .stat-card-success,   /* For active/available states */
+  .stat-card-warning,   /* For pending/in-progress states */
+  .stat-card-danger {   /* For maintenance/alert states */
+    transition: all 0.3s ease;
+  }
+  
+  /* Use palette variables for automatic color inheritance */
+  .stat-card-primary {
+    --stat-color: var(--primary);
+  }
+  
+  .stat-card-success {
+    --stat-color: var(--chart-2); /* Active/available - uses palette green */
+  }
+  
+  .stat-card-warning {
+    --stat-color: var(--chart-4); /* Pending/in-progress - uses palette amber */
+  }
+  
+  .stat-card-danger {
+    --stat-color: var(--chart-5); /* Maintenance/alerts - uses palette coral */
+  }
+  
+  /* Clickable stat cards get subtle glow effect using CSS variable */
+  .stat-card-primary.cursor-pointer:hover,
+  .stat-card-success.cursor-pointer:hover,
+  .stat-card-warning.cursor-pointer:hover,
+  .stat-card-danger.cursor-pointer:hover {
+    background-color: color-mix(in oklch, var(--stat-color) 8%, hsl(var(--card))) !important;
+    background-image: linear-gradient(135deg, 
+      color-mix(in oklch, var(--stat-color) 12%, transparent),
+      color-mix(in oklch, var(--stat-color) 5%, transparent),
+      transparent) !important;
+    border-color: color-mix(in oklch, var(--stat-color) 30%, transparent) !important;
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--stat-color) 30%, transparent),
+                0 4px 16px -2px color-mix(in oklch, var(--stat-color) 20%, transparent),
+                0 8px 24px -4px color-mix(in oklch, var(--stat-color) 15%, transparent) !important;
+    transform: translateY(-2px);
+  }
+  
+  /* Bright colored numbers in stat cards - use CSS variable */
+  .stat-card-primary .text-3xl,
+  .stat-card-primary .text-2xl,
+  .stat-card-success .text-3xl,
+  .stat-card-success .text-2xl,
+  .stat-card-warning .text-3xl,
+  .stat-card-warning .text-2xl,
+  .stat-card-danger .text-3xl,
+  .stat-card-danger .text-2xl {
+    color: var(--stat-color);
+  }
+  
+  /* Quick action buttons with same hover effect as stat cards */
+  a[data-slot="button"].action-button-glow:hover,
+  button.action-button-glow:hover {
+    background-color: color-mix(in oklch, var(--primary) 8%, hsl(var(--card))) !important;
+    background-image: linear-gradient(135deg, 
+      color-mix(in oklch, var(--primary) 12%, transparent),
+      color-mix(in oklch, var(--primary) 5%, transparent),
+      transparent) !important;
+    border-color: color-mix(in oklch, var(--primary) 30%, transparent) !important;
+    color: var(--primary) !important;
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent),
+                0 4px 16px -2px color-mix(in oklch, var(--primary) 20%, transparent),
+                0 8px 24px -4px color-mix(in oklch, var(--primary) 15%, transparent) !important;
+    transform: translateY(-2px);
+  }
+  
+  /* Make icon and text glow with the button */
+  a[data-slot="button"].action-button-glow:hover svg,
+  button.action-button-glow:hover svg {
+    color: var(--primary);
+    filter: drop-shadow(0 0 4px color-mix(in oklch, var(--primary) 40%, transparent));
+  }
+  
+  a[data-slot="button"].action-button-glow:hover span,
+  button.action-button-glow:hover span {
+    color: var(--primary);
+  }
 }
 
-.paint-card:hover {
-  background-color: oklch(0.600 0.150 240.0 / 0.05);
-  box-shadow: 0 10px 25px -5px oklch(0.600 0.150 240.0 / 0.3),
-              0 8px 10px -6px oklch(0.600 0.150 240.0 / 0.2);
-  border-color: oklch(0.600 0.150 240.0 / 0.5);
-  transform: translateY(-2px);
-}
-
-.dark .paint-card:hover {
-  background-color: oklch(0.650 0.180 240.0 / 0.08);
-  box-shadow: 0 10px 25px -5px oklch(0.650 0.180 240.0 / 0.4),
-              0 8px 10px -6px oklch(0.650 0.180 240.0 / 0.3);
-  border-color: oklch(0.650 0.180 240.0 / 0.6);
-  transform: translateY(-2px);
+/* Button enhancements */
+@layer components {
+  .btn-primary {
+    background: linear-gradient(135deg, 
+      oklch(0.600 0.150 240.0), 
+      oklch(0.550 0.150 250.0));
+    box-shadow: 0 2px 4px oklch(0.600 0.150 240.0 / 0.2);
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, 
+      oklch(0.550 0.150 240.0), 
+      oklch(0.500 0.150 250.0));
+    box-shadow: 0 4px 12px oklch(0.600 0.150 240.0 / 0.3),
+                0 0 20px oklch(0.600 0.150 240.0 / 0.15);
+    transform: translateY(-1px);
+  }
+  
+  /* Enhanced tabs */
+  .tabs-list-enhanced [data-state="active"] {
+    background: linear-gradient(to bottom,
+      oklch(0.600 0.150 240.0 / 0.08),
+      oklch(0.600 0.150 240.0 / 0.05));
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.08);
+  }
+  
+  /* Input focus enhancements */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: oklch(0.600 0.150 240.0 / 0.5);
+    box-shadow: 0 0 0 3px oklch(0.600 0.150 240.0 / 0.1);
+    background-color: oklch(0.600 0.150 240.0 / 0.02);
+  }
+  
+  /* Carousel card enhancements */
+  .carousel-card-enhanced {
+    border-top: 3px solid transparent;
+    box-shadow: 0 1px 3px oklch(0 0 0 / 0.08);
+    transition: all 0.3s ease;
+  }
+  
+  .carousel-card-enhanced:hover {
+    box-shadow: 0 8px 16px oklch(0 0 0 / 0.12), 0 4px 8px oklch(0 0 0 / 0.08);
+  }
+  
+  .carousel-card-blue {
+    border-top-color: oklch(0.600 0.150 240.0);
+  }
+  
+  .carousel-card-green {
+    border-top-color: oklch(0.680 0.130 140.0);
+  }
+  
+  .carousel-card-purple {
+    border-top-color: oklch(0.650 0.120 280.0);
+  }
+  
+  .carousel-card-amber {
+    border-top-color: oklch(0.700 0.150 80.0);
+  }
+  
+  .carousel-card-coral {
+    border-top-color: oklch(0.680 0.140 30.0);
+  }
 }
 
 /* Diagonal Tear-Strip Peel Animation */

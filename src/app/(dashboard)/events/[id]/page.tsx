@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, FileTextIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
 
 const GET_EVENT = gql`
@@ -110,11 +111,49 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   if (loading) {
     return (
       <div className="space-y-6">
+        {/* Back button */}
         <Skeleton className="h-10 w-32" />
-        <Skeleton className="h-64" />
+        
+        {/* Event header */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4" />
+            <div className="flex gap-2 mt-2">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-16 w-full" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Related content */}
         <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-64" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2, 3].map((i) => (
+                <ListItemSkeleton key={i} />
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

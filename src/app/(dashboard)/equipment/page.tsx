@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, SearchBarSkeleton, TabsSkeleton, EquipmentCardSkeleton } from '@/components/skeletons'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -30,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { SearchIcon, PlusIcon, BeakerIcon } from 'lucide-react'
+import { SearchIcon, PlusIcon } from 'lucide-react'
 import type { 
   Equipment, 
   Booking, 
@@ -206,16 +207,266 @@ export default function EquipmentPage() {
     }
   }
 
+  const members = membersData?.members || []
+  const projects = projectsData?.projects || []
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Validate: Cannot have both member and project
+    if (formData.memberId && formData.projectId) {
+      toast.error('Equipment cannot be assigned to both a member and a project. Please select either a member OR a project.')
+      return
+    }
+
+    createEquipment({
+      variables: {
+        input: {
+          name: formData.name,
+          description: formData.description || undefined,
+          serialNumber: formData.serialNumber || undefined,
+          status: formData.status || undefined,
+          memberId: formData.memberId || undefined,
+          projectId: formData.projectId || undefined,
+        },
+      },
+    })
+  }
+
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+      <div className="space-y-4 sm:space-y-6">
+        {/* Page header - Static title, description, and fully functional "Add Equipment" button */}
+        <div className="page-header flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Lab Equipment</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
+              Track and manage laboratory instruments and devices
+            </p>
+          </div>
+          {/* "Add Equipment" dialog - Fully functional during loading */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 shrink-0">
+                <PlusIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Equipment</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Add New Equipment</DialogTitle>
+                  <DialogDescription>
+                    Add new equipment to the lab inventory.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Equipment Name</Label>
+                    <Input
+                      ref={nameRef}
+                      id="name"
+                      value={formData.name}
+                      onChange={handleNameChange}
+                      placeholder="PCR Machine"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description (Optional)</Label>
+                    <Textarea
+                      ref={descriptionRef}
+                      id="description"
+                      value={formData.description}
+                      onChange={handleDescriptionChange}
+                      placeholder="Thermal cycler for DNA amplification"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="serialNumber">Serial Number (Optional)</Label>
+                    <Input
+                      ref={serialNumberRef}
+                      id="serialNumber"
+                      value={formData.serialNumber}
+                      onChange={handleSerialNumberChange}
+                      placeholder="SN-2024-001"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="memberId">Assign to Member (Optional)</Label>
+                    <Select
+                      value={formData.memberId || ''}
+                      onValueChange={(value) => {
+                        setFormData({
+                          ...formData,
+                          memberId: value === 'none' ? undefined : value || undefined,
+                          projectId: value && value !== 'none' ? undefined : formData.projectId, // Clear project if member selected
+                        })
+                        // Auto-focus to project select after member selection
+                        if (value && value !== 'none') {
+                          setTimeout(() => projectSelectRef.current?.focus(), 100)
+                        }
+                      }}
+                    >
+                      <SelectTrigger ref={memberSelectRef} id="memberId">
+                        <SelectValue placeholder="Select a member (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {members.map((member: Member) => (
+                          <SelectItem key={member.id} value={member.id}>
+                            {member.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Assigning a member will automatically set status to &quot;In Use&quot;
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="projectId">Assign to Project (Optional)</Label>
+                    <Select
+                      value={formData.projectId || ''}
+                      onValueChange={(value) => {
+                        setFormData({
+                          ...formData,
+                          projectId: value === 'none' ? undefined : value || undefined,
+                          memberId: value && value !== 'none' ? undefined : formData.memberId, // Clear member if project selected
+                        })
+                        // Auto-focus to status select after project selection
+                        if (value && value !== 'none') {
+                          setTimeout(() => statusSelectRef.current?.focus(), 100)
+                        }
+                      }}
+                    >
+                      <SelectTrigger ref={projectSelectRef} id="projectId">
+                        <SelectValue placeholder="Select a project (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {projects.map((project: Project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Assigning a project will automatically set status to &quot;In Use&quot;
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="status">Set to Maintenance (Optional)</Label>
+                    <Select
+                      value={formData.status || ''}
+                      onValueChange={(value) => {
+                        setFormData({
+                          ...formData,
+                          status: value === 'MAINTENANCE' ? 'MAINTENANCE' : undefined,
+                          memberId: value === 'MAINTENANCE' ? undefined : formData.memberId, // Clear assignments if maintenance
+                          projectId: value === 'MAINTENANCE' ? undefined : formData.projectId,
+                        })
+                      }}
+                    >
+                      <SelectTrigger ref={statusSelectRef} id="status">
+                        <SelectValue placeholder="Normal operation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AVAILABLE">Normal Operation</SelectItem>
+                        <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Setting to maintenance will remove any member/project assignments
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={creating}>
+                    {creating ? 'Adding...' : 'Add Equipment'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Skeleton className="h-96" />
+
+        {/* Stats cards - Static labels with dynamic counts */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Total Equipment</CardDescription>
+              <CardTitle className="text-3xl">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Available</CardDescription>
+              <CardTitle className="text-3xl text-chart-2">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>In Use</CardDescription>
+              <CardTitle className="text-3xl text-chart-4">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardDescription>Maintenance</CardDescription>
+              <CardTitle className="text-3xl text-chart-5">
+                <Skeleton className="h-9 w-12" />
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Main content - Equipment grid with functional search and filter tabs */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {/* Search input - Fully functional during loading */}
+              <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search equipment..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              
+              {/* Status filter tabs - Fully interactive during loading */}
+              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'ALL' | 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE')} className="w-full">
+                <TabsList className="w-full grid grid-cols-4 h-auto">
+                  <TabsTrigger value="ALL" className="text-xs sm:text-sm px-2">All</TabsTrigger>
+                  <TabsTrigger value="AVAILABLE" className="text-xs sm:text-sm px-2">Available</TabsTrigger>
+                  <TabsTrigger value="IN_USE" className="text-xs sm:text-sm px-2">In Use</TabsTrigger>
+                  <TabsTrigger value="MAINTENANCE" className="text-xs sm:text-sm px-2">Maint.</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-6">
+            {/* Equipment grid - 2 columns max (md:grid-cols-2) to match actual UI */}
+            <div className="grid gap-4 md:grid-cols-2">
+              {[1, 2, 3, 4].map((i) => (
+                <EquipmentCardSkeleton key={i} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -272,32 +523,6 @@ export default function EquipmentPage() {
 
     return acc
   }, { total: 0, available: 0, inUse: 0, maintenance: 0 })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Validate: Cannot have both member and project
-    if (formData.memberId && formData.projectId) {
-      toast.error('Equipment cannot be assigned to both a member and a project. Please select either a member OR a project.')
-      return
-    }
-
-    createEquipment({
-      variables: {
-        input: {
-          name: formData.name,
-          description: formData.description || undefined,
-          serialNumber: formData.serialNumber || undefined,
-          status: formData.status || undefined,
-          memberId: formData.memberId || undefined,
-          projectId: formData.projectId || undefined,
-        },
-      },
-    })
-  }
-
-  const members = membersData?.members || []
-  const projects = projectsData?.projects || []
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -460,28 +685,28 @@ export default function EquipmentPage() {
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Equipment</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Available</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.available}</CardTitle>
+            <CardTitle className="text-3xl">{stats.available}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-warning">
           <CardHeader className="pb-3">
             <CardDescription>In Use</CardDescription>
-            <CardTitle className="text-3xl text-chart-4">{stats.inUse}</CardTitle>
+            <CardTitle className="text-3xl">{stats.inUse}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-danger">
           <CardHeader className="pb-3">
             <CardDescription>Maintenance</CardDescription>
-            <CardTitle className="text-3xl text-chart-5">{stats.maintenance}</CardTitle>
+            <CardTitle className="text-3xl">{stats.maintenance}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -538,9 +763,6 @@ export default function EquipmentPage() {
               >
                   <CardHeader>
                     <div className="flex items-start gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2">
-                        <BeakerIcon className="h-5 w-5 text-primary" />
-                      </div>
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -589,11 +811,25 @@ export default function EquipmentPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {item.serialNumber && (
+                    <div className="flex items-center justify-between pt-2">
+                      {item.serialNumber ? (
                       <div className="text-sm text-muted-foreground">
                         <span className="font-mono text-xs">Serial: {item.serialNumber}</span>
                       </div>
-                    )}
+                      ) : (
+                        <div />
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          router.push(`/equipment/${item.id}`)
+                        }}
+                      >
+                        Book
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               )
