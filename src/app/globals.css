@@ -203,6 +203,34 @@
   .stat-card-danger .text-2xl {
     color: var(--stat-color);
   }
+  
+  /* Quick action buttons with same hover effect as stat cards */
+  a[data-slot="button"].action-button-glow:hover,
+  button.action-button-glow:hover {
+    background-color: color-mix(in oklch, var(--primary) 8%, hsl(var(--card))) !important;
+    background-image: linear-gradient(135deg, 
+      color-mix(in oklch, var(--primary) 12%, transparent),
+      color-mix(in oklch, var(--primary) 5%, transparent),
+      transparent) !important;
+    border-color: color-mix(in oklch, var(--primary) 30%, transparent) !important;
+    color: var(--primary) !important;
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 30%, transparent),
+                0 4px 16px -2px color-mix(in oklch, var(--primary) 20%, transparent),
+                0 8px 24px -4px color-mix(in oklch, var(--primary) 15%, transparent) !important;
+    transform: translateY(-2px);
+  }
+  
+  /* Make icon and text glow with the button */
+  a[data-slot="button"].action-button-glow:hover svg,
+  button.action-button-glow:hover svg {
+    color: var(--primary);
+    filter: drop-shadow(0 0 4px color-mix(in oklch, var(--primary) 40%, transparent));
+  }
+  
+  a[data-slot="button"].action-button-glow:hover span,
+  button.action-button-glow:hover span {
+    color: var(--primary);
+  }
 }
 
 /* Button enhancements */
