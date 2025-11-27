@@ -588,25 +588,25 @@ export default function ProtocolsPage() {
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Protocols</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Wet Lab</CardDescription>
-            <CardTitle className="text-3xl text-primary">{stats.wetLab}</CardTitle>
+            <CardTitle className="text-3xl">{stats.wetLab}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Computational</CardDescription>
-            <CardTitle className="text-3xl text-accent">{stats.computational}</CardTitle>
+            <CardTitle className="text-3xl">{stats.computational}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Downloads</CardDescription>
             <CardTitle className="text-3xl">{stats.totalDownloads}</CardTitle>
