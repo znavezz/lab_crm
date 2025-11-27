@@ -237,7 +237,7 @@ export default function EquipmentPage() {
     return (
       <div className="space-y-4 sm:space-y-6">
         {/* Page header - Static title, description, and fully functional "Add Equipment" button */}
-        <div className="flex items-center justify-between gap-2">
+        <div className="page-header flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">Lab Equipment</h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base truncate">
@@ -685,28 +685,28 @@ export default function EquipmentPage() {
       </div>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="stat-card-primary">
           <CardHeader className="pb-3">
             <CardDescription>Total Equipment</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-success">
           <CardHeader className="pb-3">
             <CardDescription>Available</CardDescription>
-            <CardTitle className="text-3xl text-chart-2">{stats.available}</CardTitle>
+            <CardTitle className="text-3xl">{stats.available}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-warning">
           <CardHeader className="pb-3">
             <CardDescription>In Use</CardDescription>
-            <CardTitle className="text-3xl text-chart-4">{stats.inUse}</CardTitle>
+            <CardTitle className="text-3xl">{stats.inUse}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="stat-card-danger">
           <CardHeader className="pb-3">
             <CardDescription>Maintenance</CardDescription>
-            <CardTitle className="text-3xl text-chart-5">{stats.maintenance}</CardTitle>
+            <CardTitle className="text-3xl">{stats.maintenance}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -813,9 +813,9 @@ export default function EquipmentPage() {
                   <CardContent className="space-y-3">
                     <div className="flex items-center justify-between pt-2">
                       {item.serialNumber ? (
-                        <div className="text-sm text-muted-foreground">
-                          <span className="font-mono text-xs">Serial: {item.serialNumber}</span>
-                        </div>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-mono text-xs">Serial: {item.serialNumber}</span>
+                      </div>
                       ) : (
                         <div />
                       )}
