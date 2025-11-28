@@ -32,7 +32,6 @@ export default function SignInPage() {
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [showSmsVerification, setShowSmsVerification] = useState(false);
-  const [smsCode, setSmsCode] = useState('');
 
   // Biometric state
   const [biometricEmail, setBiometricEmail] = useState('');

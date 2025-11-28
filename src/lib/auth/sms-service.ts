@@ -14,7 +14,6 @@ export interface SmsCodeVerificationResult {
   error?: string;
 }
 
-const CODE_LENGTH = 6;
 const CODE_EXPIRY_MINUTES = 10;
 
 /**

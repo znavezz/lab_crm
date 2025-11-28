@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRepositories } from '@/repositories/factory';
 import { verifyWebAuthnAuthentication } from '@/lib/webauthn';
-import { signIn } from '@/lib/auth';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
 
 /**
