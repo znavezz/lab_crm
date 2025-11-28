@@ -493,6 +493,9 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  phone         String?   // Optional phone number for SMS auth
+  phoneVerified DateTime? // When phone was verified
+  password      String?   // Hashed password (bcrypt)
 
   /// 1:1 link to the corresponding Member profile.
   /// Nullable to allow User creation before Member profile is created during authentication.
@@ -503,6 +506,12 @@ model User {
   accounts Account[]
   /// 1:M link to all active login sessions.
   sessions Session[]
+  /// 1:M link to WebAuthn credentials (passkeys/biometrics).
+  authenticators Authenticator[]
+  /// 1:M link to SMS verification codes.
+  smsVerificationCodes SmsVerificationCode[]
+  /// 1:M link to WebAuthn challenges (temporary).
+  webAuthnChallenges WebAuthnChallenge[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -517,4 +526,56 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+/// NextAuth v5 / Auth.js model for WebAuthn credentials.
+/// Stores biometric authentication credentials (Face ID, fingerprint, etc.).
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+/// Temporary storage for SMS verification codes.
+/// Codes expire after 10 minutes and are deleted after verification.
+model SmsVerificationCode {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([code])
+}
+
+/// Temporary storage for WebAuthn challenges.
+/// Challenges expire after 5 minutes and should be deleted after verification.
+model WebAuthnChallenge {
+  id        String   @id @default(cuid())
+  userId    String
+  challenge String   @unique
+  expiresAt DateTime
+  type      String   // 'registration' | 'authentication'
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([challenge])
+  @@index([expiresAt])
 }

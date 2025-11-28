@@ -1,11 +1,19 @@
 import { NavBar } from '@/components/nav-bar'
 import { Footer } from '@/components/footer'
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth()
+  
+  if (!session) {
+    redirect('/auth/signin')
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
