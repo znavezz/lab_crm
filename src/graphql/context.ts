@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
 
 export interface GraphQLContext {
@@ -14,11 +13,11 @@ export interface GraphQLContext {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function createContext(request: NextRequest): Promise<GraphQLContext> {
-  // Get the session from NextAuth
-  // In App Router API routes, getServerSession works with cookies automatically
-  // Note: request parameter is required by the API signature but not used since getServerSession
-  // automatically reads cookies from the request context
-  const session = await getServerSession(authOptions);
+  // Get the session from NextAuth v5
+  // The auth() function automatically reads cookies from the request context
+  // Note: request parameter is required by the API signature but not used since auth()
+  // automatically reads from the request context
+  const session = await auth();
   
   // Extract user info from session
   let user: GraphQLContext['user'] = null;
