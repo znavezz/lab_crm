@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { BeakerIcon, UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BookOpenIcon, LayoutDashboardIcon, TrendingUpIcon, CalendarIcon } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { signOut } from 'next-auth/react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboardIcon },
@@ -58,7 +59,22 @@ export function NavBar() {
 
           <div className="flex items-center gap-2 flex-shrink-0">
             <ThemeToggle />
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="hidden sm:flex"
+              onClick={async () => {
+                try {
+                  await signOut({ 
+                    callbackUrl: '/auth/signin',
+                    redirect: true 
+                  });
+                } catch (error) {
+                  console.error('Signout error:', error);
+                  window.location.href = '/auth/signin';
+                }
+              }}
+            >
               Sign Out
             </Button>
           </div>

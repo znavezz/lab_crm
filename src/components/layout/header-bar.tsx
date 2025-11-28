@@ -33,7 +33,18 @@ export function HeaderBar() {
   }
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/auth/signin' })
+    try {
+      console.log('Signing out...');
+      await signOut({ 
+        callbackUrl: '/auth/signin',
+        redirect: true 
+      });
+      console.log('Signout complete');
+    } catch (error) {
+      console.error('Signout error:', error);
+      // Force redirect even if signout fails
+      window.location.href = '/auth/signin';
+    }
   }
 
   const userInitials = session?.user?.name
@@ -96,7 +107,12 @@ export function HeaderBar() {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
+              <DropdownMenuItem 
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSignOut();
+                }}
+              >
                 <LogOutIcon className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
