@@ -20,9 +20,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { response, deviceName } = body as {
+    const { response } = body as {
       response: RegistrationResponseJSON;
-      deviceName?: string;
     };
 
     if (!response) {
