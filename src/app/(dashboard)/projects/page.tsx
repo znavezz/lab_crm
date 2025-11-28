@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { gql } from '@apollo/client'
 import { toast } from 'sonner'
@@ -10,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { Carousel, CarouselCard } from '@/components/ui/carousel'
 import {
@@ -46,8 +45,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatsCardSkeleton, SearchBarSkeleton, TabsSkeleton, ProjectCardSkeleton } from '@/components/skeletons'
-import { SearchIcon, PlusIcon, CalendarIcon, UsersIcon, Check, ChevronsUpDown, X } from 'lucide-react'
+import { SearchIcon, PlusIcon, CalendarIcon, Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { 
   Project, 

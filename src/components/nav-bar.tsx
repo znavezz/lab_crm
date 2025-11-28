@@ -50,7 +50,7 @@ export function NavBar() {
                     title={item.name}
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="md:hidden">{item.name}</span>
+                    <span className="hidden md:inline">{item.name}</span>
                   </Button>
                 </Link>
               )

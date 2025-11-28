@@ -44,6 +44,7 @@ function SidebarContent() {
       {/* Logo/Title */}
       <div className="flex h-16 items-center justify-center border-b border-sidebar-border px-6 lg:px-0">
         <Link href="/dashboard" className="flex items-center gap-2" title="Lab CRM">
+          {/* Logo text is intentionally hidden on large screens (lg:hidden) to match icon-only sidebar (lg:w-16) */}
           <BeakerIcon className="h-6 w-6 text-primary" />
           <span className="font-semibold text-lg lg:hidden">Lab CRM</span>
         </Link>
