@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getUserRepository } from '@/repositories/factory';
 import { hashPassword, checkPasswordStrength } from '@/lib/auth/password-service';
 
 /**
@@ -37,11 +37,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the user
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { password: true },
-    });
+    // Use repository instead of direct Prisma
+    const userRepo = getUserRepository();
+    const user = await userRepo.findById(session.user.id);
 
     if (!user) {
       return NextResponse.json(
@@ -69,12 +67,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Hash and save the new password
+    // Hash and save the new password via repository
     const hashedPassword = await hashPassword(password);
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { password: hashedPassword },
-    });
+    await userRepo.updatePassword(session.user.id, hashedPassword);
 
     return NextResponse.json({
       success: true,

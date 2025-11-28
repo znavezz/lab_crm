@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getUserRepository } from '@/repositories/factory';
 
 /**
  * GET /api/auth/password/check
@@ -17,10 +17,8 @@ export async function GET() {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { password: true },
-    });
+    const userRepo = getUserRepository();
+    const user = await userRepo.findById(session.user.id);
 
     return NextResponse.json({
       hasPassword: !!user?.password,

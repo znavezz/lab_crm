@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 import { verifySmsCode } from '@/lib/auth/sms-service';
 
 /**
@@ -28,16 +28,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use repositories instead of direct Prisma
+    const { user: userRepo, smsCode: smsRepo } = getRepositories();
+
     // Find the most recent unverified code for this user
-    const smsCode = await prisma.smsVerificationCode.findFirst({
-      where: {
-        userId: session.user.id,
-        verified: false,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const smsCode = await smsRepo.findLatestByUserId(session.user.id);
 
     if (!smsCode) {
       return NextResponse.json(
@@ -57,16 +52,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Mark code as verified
-    await prisma.smsVerificationCode.update({
-      where: { id: smsCode.id },
-      data: { verified: true },
-    });
+    await smsRepo.markAsVerified(smsCode.id);
 
     // Mark phone as verified
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { phoneVerified: new Date() },
-    });
+    const user = await userRepo.findById(session.user.id);
+    if (user?.phone) {
+      await userRepo.updatePhone(session.user.id, user.phone, true);
+    }
 
     return NextResponse.json({
       success: true,

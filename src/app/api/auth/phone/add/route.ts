@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 import { validatePhoneNumber, sanitizePhoneNumber } from '@/lib/auth/phone-service';
 import { generateSmsCode } from '@/lib/auth/sms-service';
 import { sendSmsCode } from '@/lib/sms';
@@ -41,15 +41,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if phone number is already in use by another user
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        phone: validation.formatted,
-        NOT: { id: session.user.id },
-      },
-    });
+    // Use repositories instead of direct Prisma
+    const { user: userRepo, smsCode: smsRepo } = getRepositories();
 
-    if (existingUser) {
+    // Check if phone number is already in use by another user
+    const existingUser = await userRepo.findByPhone(validation.formatted);
+    if (existingUser && existingUser.id !== session.user.id) {
       return NextResponse.json(
         { error: 'This phone number is already in use' },
         { status: 400 }
@@ -57,31 +54,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user's phone number (unverified)
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        phone: validation.formatted,
-        phoneVerified: null, // Clear verification until code is verified
-      },
-    });
+    await userRepo.updatePhone(session.user.id, validation.formatted, false);
 
     // Delete any existing verification codes
-    await prisma.smsVerificationCode.deleteMany({
-      where: {
-        userId: session.user.id,
-        verified: false,
-      },
-    });
+    await smsRepo.deleteByUserId(session.user.id);
 
     // Generate and send verification code
     const { code, expiresAt } = generateSmsCode();
 
-    await prisma.smsVerificationCode.create({
-      data: {
-        userId: session.user.id,
-        code,
-        expiresAt,
-      },
+    await smsRepo.create({
+      userId: session.user.id,
+      code,
+      expiresAt,
     });
 
     const result = await sendSmsCode(validation.formatted!, code);

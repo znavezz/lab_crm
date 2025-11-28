@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 import { generateSmsCode } from '@/lib/auth/sms-service';
 import { validatePhoneNumber, sanitizePhoneNumber } from '@/lib/auth/phone-service';
 import { sendSmsCode } from '@/lib/sms';
@@ -31,10 +31,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use repositories instead of direct Prisma
+    const { user: userRepo, smsCode: smsRepo } = getRepositories();
+
     // Find user with this phone number
-    const user = await prisma.user.findFirst({
-      where: { phone: validation.formatted },
-    });
+    const user = await userRepo.findByPhone(validation.formatted);
 
     if (!user) {
       return NextResponse.json(
@@ -44,23 +45,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete any existing unverified codes for this user
-    await prisma.smsVerificationCode.deleteMany({
-      where: {
-        userId: user.id,
-        verified: false,
-      },
-    });
+    await smsRepo.deleteByUserId(user.id);
 
     // Generate new code
     const { code, expiresAt } = generateSmsCode();
 
     // Save code to database
-    await prisma.smsVerificationCode.create({
-      data: {
-        userId: user.id,
-        code,
-        expiresAt,
-      },
+    await smsRepo.create({
+      userId: user.id,
+      code,
+      expiresAt,
     });
 
     // Send SMS (this will be stubbed unless configured)
