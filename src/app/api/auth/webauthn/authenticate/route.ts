@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 import { verifyWebAuthnAuthentication } from '@/lib/webauthn';
 import { signIn } from '@/lib/auth';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
@@ -23,14 +23,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user and their authenticators
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      select: {
-        id: true,
-        authenticators: true,
-      },
-    });
+    // Use repositories instead of direct Prisma
+    const { user: userRepo, webauthn: webauthnRepo } = getRepositories();
+
+    // Find user
+    const user = await userRepo.findByEmail(email);
 
     if (!user) {
       return NextResponse.json(
@@ -40,14 +37,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the stored challenge
-    const challengeRecord = await prisma.webAuthnChallenge.findFirst({
-      where: {
-        userId: user.id,
-        type: 'authentication',
-        expiresAt: { gt: new Date() }, // Not expired
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const challengeRecord = await webauthnRepo.findLatestChallenge(
+      user.id,
+      'authentication'
+    );
 
     if (!challengeRecord) {
       return NextResponse.json(
@@ -60,8 +53,9 @@ export async function POST(request: NextRequest) {
 
     // Find the authenticator being used
     const credentialID = Buffer.from(response.id, 'base64url').toString('base64url');
-    const authenticator = user.authenticators.find(
-      (auth) => auth.credentialID === credentialID
+    const authenticator = await webauthnRepo.findAuthenticatorByCredentialId(
+      user.id,
+      credentialID
     );
 
     if (!authenticator) {
@@ -85,24 +79,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update the authenticator counter and delete the challenge (transaction)
-    await prisma.$transaction([
-      prisma.authenticator.update({
-        where: {
-          userId_credentialID: {
-            userId: user.id,
-            credentialID: authenticator.credentialID,
-          },
-        },
-        data: {
-          counter: verification.authenticationInfo.newCounter,
-        },
-      }),
-      // Delete the used challenge
-      prisma.webAuthnChallenge.delete({
-        where: { id: challengeRecord.id },
-      }),
-    ]);
+    // Update the authenticator counter
+    await webauthnRepo.updateAuthenticatorCounter(
+      user.id,
+      authenticator.credentialID,
+      verification.authenticationInfo.newCounter
+    );
+
+    // Delete the used challenge
+    await webauthnRepo.deleteChallenge(challengeRecord.id);
 
     // Note: Actual session creation would happen through NextAuth
     // This endpoint verifies the WebAuthn response

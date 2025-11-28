@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getWebAuthnRepository } from '@/repositories/factory';
 import { verifyWebAuthnRegistration } from '@/lib/webauthn';
 import type { RegistrationResponseJSON } from '@simplewebauthn/types';
 
@@ -32,15 +32,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use repository instead of direct Prisma
+    const webauthnRepo = getWebAuthnRepository();
+
     // Get stored challenge
-    const challengeRecord = await prisma.webAuthnChallenge.findFirst({
-      where: {
-        userId: session.user.id,
-        type: 'registration',
-        expiresAt: { gt: new Date() }, // Not expired
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const challengeRecord = await webauthnRepo.findLatestChallenge(
+      session.user.id,
+      'registration'
+    );
 
     if (!challengeRecord) {
       return NextResponse.json(
@@ -66,25 +65,20 @@ export async function POST(request: NextRequest) {
 
     const { credential } = verification.registrationInfo;
 
-    // Store the authenticator and delete the challenge (transaction for atomicity)
-    await prisma.$transaction([
-      prisma.authenticator.create({
-        data: {
-          credentialID: Buffer.from(credential.id).toString('base64url'),
-          userId: session.user.id,
-          providerAccountId: Buffer.from(credential.id).toString('base64url'),
-          credentialPublicKey: Buffer.from(credential.publicKey).toString('base64url'),
-          counter: credential.counter,
-          credentialDeviceType: verification.registrationInfo.credentialDeviceType,
-          credentialBackedUp: verification.registrationInfo.credentialBackedUp,
-          transports: credential.transports ? JSON.stringify(credential.transports) : null,
-        },
-      }),
-      // Delete the used challenge
-      prisma.webAuthnChallenge.delete({
-        where: { id: challengeRecord.id },
-      }),
-    ]);
+    // Store the authenticator
+    await webauthnRepo.createAuthenticator({
+      credentialID: Buffer.from(credential.id).toString('base64url'),
+      userId: session.user.id,
+      providerAccountId: Buffer.from(credential.id).toString('base64url'),
+      credentialPublicKey: Buffer.from(credential.publicKey).toString('base64url'),
+      counter: credential.counter,
+      credentialDeviceType: verification.registrationInfo.credentialDeviceType,
+      credentialBackedUp: verification.registrationInfo.credentialBackedUp,
+      transports: credential.transports ? JSON.stringify(credential.transports) : null,
+    });
+
+    // Delete the used challenge
+    await webauthnRepo.deleteChallenge(challengeRecord.id);
 
     return NextResponse.json({
       success: true,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 import { generateWebAuthnAuthenticationOptions } from '@/lib/webauthn';
 
 /**
@@ -18,14 +18,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use repositories instead of direct Prisma
+    const { user: userRepo, webauthn: webauthnRepo } = getRepositories();
+
     // Find user and their authenticators
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      select: {
-        id: true,
-        authenticators: true,
-      },
-    });
+    const user = await userRepo.findByEmail(email);
 
     if (!user) {
       return NextResponse.json(
@@ -34,7 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (user.authenticators.length === 0) {
+    const authenticators = await webauthnRepo.findAuthenticatorsByUserId(user.id);
+
+    if (authenticators.length === 0) {
       return NextResponse.json(
         { error: 'No authenticators registered for this user' },
         { status: 400 }
@@ -42,30 +41,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate authentication options
-    const options = await generateWebAuthnAuthenticationOptions(
-      user.authenticators
-    );
+    const options = await generateWebAuthnAuthenticationOptions(authenticators);
 
     // Store challenge temporarily (5 minute expiry)
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
     // Delete any existing authentication challenges for this user
-    await prisma.webAuthnChallenge.deleteMany({
-      where: {
-        userId: user.id,
-        type: 'authentication',
-      },
-    });
+    await webauthnRepo.deleteUserChallenges(user.id, 'authentication');
 
     // Create new challenge
-    await prisma.webAuthnChallenge.create({
-      data: {
-        userId: user.id,
-        challenge: options.challenge,
-        expiresAt,
-        type: 'authentication',
-      },
+    await webauthnRepo.createChallenge({
+      userId: user.id,
+      challenge: options.challenge,
+      expiresAt,
+      type: 'authentication',
     });
 
     return NextResponse.json(options);

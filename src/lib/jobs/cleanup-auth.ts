@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 
 /**
  * Cleanup Job for Authentication Data
@@ -19,39 +19,24 @@ export interface CleanupResult {
  * Clean up expired SMS verification codes
  */
 async function cleanupSmsVerificationCodes(): Promise<number> {
-  const now = new Date();
+  const { smsCode: smsRepo } = getRepositories();
+  
+  // Delete expired codes
+  const expiredCount = await smsRepo.deleteExpired();
+  
+  // Delete verified codes older than 24 hours
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const verifiedCount = await smsRepo.deleteVerifiedOlderThan(oneDayAgo);
 
-  const result = await prisma.smsVerificationCode.deleteMany({
-    where: {
-      OR: [
-        // Delete expired codes
-        { expiresAt: { lt: now } },
-        // Delete verified codes older than 24 hours
-        {
-          verified: true,
-          createdAt: { lt: oneDayAgo },
-        },
-      ],
-    },
-  });
-
-  return result.count;
+  return expiredCount + verifiedCount;
 }
 
 /**
  * Clean up expired WebAuthn challenges
  */
 async function cleanupWebAuthnChallenges(): Promise<number> {
-  const now = new Date();
-
-  const result = await prisma.webAuthnChallenge.deleteMany({
-    where: {
-      expiresAt: { lt: now },
-    },
-  });
-
-  return result.count;
+  const { webauthn: webauthnRepo } = getRepositories();
+  return await webauthnRepo.deleteExpiredChallenges();
 }
 
 /**
@@ -92,20 +77,13 @@ export async function cleanupAuthData(): Promise<CleanupResult> {
 export async function cleanupUserAuthData(userId: string): Promise<void> {
   console.log(`[Cleanup] Cleaning up auth data for user ${userId}...`);
 
-  await prisma.$transaction([
-    // Delete all SMS codes
-    prisma.smsVerificationCode.deleteMany({
-      where: { userId },
-    }),
-    // Delete all WebAuthn challenges
-    prisma.webAuthnChallenge.deleteMany({
-      where: { userId },
-    }),
-    // Delete all authenticators
-    prisma.authenticator.deleteMany({
-      where: { userId },
-    }),
-  ]);
+  const { smsCode: smsRepo, webauthn: webauthnRepo } = getRepositories();
+
+  // Delete user's auth data using repositories
+  await smsRepo.deleteByUserId(userId);
+  await webauthnRepo.deleteUserChallenges(userId, 'registration');
+  await webauthnRepo.deleteUserChallenges(userId, 'authentication');
+  await webauthnRepo.deleteUserAuthenticators(userId);
 
   console.log(`[Cleanup] Completed cleanup for user ${userId}`);
 }

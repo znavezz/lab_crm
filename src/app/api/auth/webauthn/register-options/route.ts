@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getRepositories } from '@/repositories/factory';
 import { generateWebAuthnRegistrationOptions } from '@/lib/webauthn';
 
 /**
@@ -18,18 +18,11 @@ export async function GET() {
       );
     }
 
+    // Use repositories instead of direct Prisma
+    const { user: userRepo, webauthn: webauthnRepo } = getRepositories();
+
     // Get user details
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        authenticators: {
-          select: { credentialID: true },
-        },
-      },
-    });
+    const user = await userRepo.findById(session.user.id);
 
     if (!user) {
       return NextResponse.json(
@@ -38,12 +31,15 @@ export async function GET() {
       );
     }
 
+    // Get user's authenticators
+    const authenticators = await webauthnRepo.findAuthenticatorsByUserId(user.id);
+
     // Generate registration options
     const options = await generateWebAuthnRegistrationOptions(
       user.id,
       user.name,
       user.email,
-      user.authenticators
+      authenticators
     );
 
     // Store challenge temporarily (5 minute expiry)
@@ -51,21 +47,14 @@ export async function GET() {
     expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
     // Delete any existing registration challenges for this user
-    await prisma.webAuthnChallenge.deleteMany({
-      where: {
-        userId: user.id,
-        type: 'registration',
-      },
-    });
+    await webauthnRepo.deleteUserChallenges(user.id, 'registration');
 
     // Create new challenge
-    await prisma.webAuthnChallenge.create({
-      data: {
-        userId: user.id,
-        challenge: options.challenge,
-        expiresAt,
-        type: 'registration',
-      },
+    await webauthnRepo.createChallenge({
+      userId: user.id,
+      challenge: options.challenge,
+      expiresAt,
+      type: 'registration',
     });
 
     return NextResponse.json(options);

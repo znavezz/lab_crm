@@ -3,6 +3,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from './prisma';
+import { getUserRepository, getSmsCodeRepository } from '@/repositories/factory';
 import { verifyPassword } from './auth/password-service';
 import { verifySmsCode } from './auth/sms-service';
 
@@ -65,9 +66,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('Email and password are required');
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
-        });
+        // Use repository instead of direct Prisma
+        const userRepo = getUserRepository();
+        const user = await userRepo.findByEmail(credentials.email);
 
         if (!user || !user.password) {
           throw new Error('Invalid email or password');
@@ -105,24 +106,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('Phone number and verification code are required');
         }
 
-        const user = await prisma.user.findFirst({
-          where: { phone: credentials.phone },
-        });
+        // Use repositories instead of direct Prisma
+        const userRepo = getUserRepository();
+        const smsRepo = getSmsCodeRepository();
+
+        const user = await userRepo.findByPhone(credentials.phone);
 
         if (!user) {
           throw new Error('No user found with this phone number');
         }
 
         // Find the most recent unverified code for this user
-        const smsCode = await prisma.smsVerificationCode.findFirst({
-          where: {
-            userId: user.id,
-            verified: false,
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        });
+        const smsCode = await smsRepo.findLatestByUserId(user.id);
 
         if (!smsCode) {
           throw new Error('No verification code found');
@@ -139,10 +134,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         // Mark code as verified
-        await prisma.smsVerificationCode.update({
-          where: { id: smsCode.id },
-          data: { verified: true },
-        });
+        await smsRepo.markAsVerified(smsCode.id);
 
         return {
           id: user.id,
