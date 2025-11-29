@@ -39,7 +39,33 @@ services:
     # Note: Run migrations separately with: docker compose run --rm app npx prisma migrate dev
     command: npm run dev
 
-  # 3. Test Service (for running tests)
+  # 3. Hasura GraphQL Engine Service
+  graphql-engine:
+    image: hasura/graphql-engine:v2.40.0
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      # Database connection - use the same credentials as the db service
+      HASURA_GRAPHQL_DATABASE_URL: postgresql://myuser:mysecretpassword@db:5432/lab_crm
+      # Enable the console
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      # Enable development mode (more detailed errors)
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      # Admin secret for console access
+      HASURA_GRAPHQL_ADMIN_SECRET: hasura_admin_secret_change_in_production
+      # JWT configuration for NextAuth.js integration
+      HASURA_GRAPHQL_JWT_SECRET: '{"type":"HS256","key":"this-is-a-dev-secret-key-change-in-production-minimum-32-characters"}'
+      # Allow unauthenticated requests (they'll have role 'anonymous')
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
+      # Enable remote schema permissions
+      HASURA_GRAPHQL_ENABLE_REMOTE_SCHEMA_PERMISSIONS: "true"
+    volumes:
+      - ./hasura/metadata:/hasura-metadata
+
+  # 4. Test Service (for running tests)
   test:
     build:
       context: .
