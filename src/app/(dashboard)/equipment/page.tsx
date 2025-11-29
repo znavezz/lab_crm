@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatsCardSkeleton, SearchBarSkeleton, TabsSkeleton, EquipmentCardSkeleton } from '@/components/skeletons'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EquipmentCardSkeleton } from '@/components/skeletons'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -822,12 +822,11 @@ export default function EquipmentPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/equipment/${item.id}`)
-                        }}
+                        asChild
                       >
-                        Book
+                        <Link href={`/equipment/${item.id}`}>
+                          Book
+                        </Link>
                       </Button>
                     </div>
                   </CardContent>

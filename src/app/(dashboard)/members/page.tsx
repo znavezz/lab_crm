@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { gql } from '@apollo/client'
 import { useRouter } from 'next/navigation'
@@ -12,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Carousel, CarouselCard } from '@/components/ui/carousel'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -31,8 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatsCardSkeleton, SearchBarSkeleton, MemberCardSkeleton } from '@/components/skeletons'
-import { SearchIcon, PlusIcon, MailIcon, PhoneIcon } from 'lucide-react'
+import { SearchIcon, PlusIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Member } from '@/generated/graphql/resolvers-types'
 
