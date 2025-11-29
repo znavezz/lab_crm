@@ -13,28 +13,28 @@ import { Button } from '@/components/ui/button'
 
 const GET_ALL_ACTIVITIES = gql`
   query GetAllActivities {
-    members {
+    Member {
       id
       name
       createdAt
     }
-    projects {
+    Project {
       id
       title
       createdAt
     }
-    publications {
+    Publication {
       id
       title
       published
       createdAt
     }
-    protocols {
+    Protocol {
       id
       title
       createdAt
     }
-    equipments {
+    Equipment {
       id
       name
       createdAt
