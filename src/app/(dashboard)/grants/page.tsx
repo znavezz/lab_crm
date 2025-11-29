@@ -63,7 +63,7 @@ interface CreateGrantMutationData {
 
 const GET_GRANTS = gql`
   query GetGrants {
-    grants {
+    Grant {
       id
       name
       budget
@@ -71,9 +71,11 @@ const GET_GRANTS = gql`
       endDate
       totalSpent
       remainingBudget
-      projects {
-        id
-        title
+      GrantProjects {
+        Project {
+          id
+          title
+        }
       }
       createdAt
     }
@@ -401,7 +403,11 @@ export default function GrantsPage() {
     )
   }
 
-  const grants = data?.grants || []
+  // Transform Hasura response to match expected format
+  const grants = (data?.Grant || []).map((grant: any) => ({
+    ...grant,
+    projects: grant.GrantProjects?.map((gp: any) => gp.Project) || [],
+  }))
 
   const filteredGrants = grants.filter((grant: Grant) => {
     const matchesSearch = grant.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false

@@ -45,30 +45,30 @@ import type {
 
 const GET_EQUIPMENTS = gql`
   query GetEquipments {
-    equipments {
+    Equipment {
       id
       name
       description
       serialNumber
       status
       projectId
-      project {
+      Project {
         id
         title
       }
       memberId
-      member {
+      Member {
         id
         name
       }
       createdAt
     }
-    bookings {
+    Booking {
       id
       startTime
       endTime
       equipmentId
-      member {
+      Member {
         id
         name
       }
@@ -78,7 +78,7 @@ const GET_EQUIPMENTS = gql`
 
 const GET_MEMBERS = gql`
   query GetMembers {
-    members {
+    Member {
       id
       name
     }
@@ -87,7 +87,7 @@ const GET_MEMBERS = gql`
 
 const GET_PROJECTS = gql`
   query GetProjects {
-    projects {
+    Project {
       id
       title
     }
@@ -479,7 +479,12 @@ export default function EquipmentPage() {
     )
   }
 
-  const equipments = data?.equipments || []
+  // Transform Hasura response to match expected format
+  const equipments = (data?.Equipment || []).map((equipment: any) => ({
+    ...equipment,
+    project: equipment.Project || null,
+    member: equipment.Member || null,
+  }))
 
   const filteredEquipment = equipments.filter((item: Equipment) => {
     const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -490,7 +495,7 @@ export default function EquipmentPage() {
     const now = new Date()
     const hasPermanentAssignment = (item.member || item.project) && item.status !== 'MAINTENANCE'
     // Filter bookings for this equipment
-    const equipmentBookings = data?.bookings?.filter((booking: Booking) => booking.equipmentId === item.id) || []
+    const equipmentBookings = data?.Booking?.filter((booking: Booking) => booking.equipmentId === item.id) || []
     const hasActiveBooking = equipmentBookings.some(booking => {
       const startTime = new Date(booking.startTime)
       const endTime = new Date(booking.endTime)
@@ -508,7 +513,7 @@ export default function EquipmentPage() {
     const now = new Date()
     const hasPermanentAssignment = (e.member || e.project) && e.status !== 'MAINTENANCE'
     // Filter bookings for this equipment
-    const equipmentBookings = data?.bookings?.filter((booking: Booking) => booking.equipmentId === e.id) || []
+    const equipmentBookings = data?.Booking?.filter((booking: Booking) => booking.equipmentId === e.id) || []
     const hasActiveBooking = equipmentBookings.some(booking => {
       const startTime = new Date(booking.startTime)
       const endTime = new Date(booking.endTime)
@@ -744,7 +749,7 @@ export default function EquipmentPage() {
               const now = new Date()
               const hasPermanentAssignment = (item.member || item.project) && item.status !== 'MAINTENANCE'
               // Filter bookings for this equipment
-              const equipmentBookings = data?.bookings?.filter((booking: Booking) => booking.equipmentId === item.id) || []
+              const equipmentBookings = data?.Booking?.filter((booking: Booking) => booking.equipmentId === item.id) || []
               const hasActiveBooking = equipmentBookings.some(booking => {
                 const startTime = new Date(booking.startTime)
                 const endTime = new Date(booking.endTime)

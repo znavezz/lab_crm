@@ -13,32 +13,38 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 
 const GET_ANALYTICS_DATA = gql`
   query GetAnalyticsData {
-    publications {
+    Publication {
       id
       published
       doi
       createdAt
-      members {
-        id
-        name
+      PublicationMembers {
+        Member {
+          id
+          name
+        }
       }
-      projects {
-        id
-        title
+      PublicationProjects {
+        Project {
+          id
+          title
+        }
       }
     }
-    projects {
+    Project {
       id
       title
       startDate
       endDate
       createdAt
-      members {
-        id
-        name
+      ProjectMembers {
+        Member {
+          id
+          name
+        }
       }
     }
-    grants {
+    Grant {
       id
       name
       budget
@@ -47,39 +53,43 @@ const GET_ANALYTICS_DATA = gql`
       createdAt
       totalSpent
       remainingBudget
-      expenses {
+      Expense {
         id
         amount
       }
-      projects {
-        id
-        title
-        members {
+      GrantProjects {
+        Project {
           id
-          name
+          title
+          ProjectMembers {
+            Member {
+              id
+              name
+            }
+          }
         }
       }
     }
-    equipments {
+    Equipment {
       id
       name
       status
-      member {
+      Member {
         id
         name
       }
-      project {
+      Project {
         id
         title
       }
     }
-    members {
+    Member {
       id
       name
       role
       status
     }
-    protocols {
+    Protocol {
       id
       category
     }
@@ -244,12 +254,30 @@ export default function AnalyticsPage() {
     )
   }
 
-  const publications = data?.publications || []
-  const projects = data?.projects || []
-  const grants = data?.grants || []
-  const equipments = data?.equipments || []
-  const members = data?.members || []
-  const protocols = data?.protocols || []
+  // Transform Hasura response to match expected format
+  const publications = (data?.Publication || []).map((pub: any) => ({
+    ...pub,
+    members: pub.PublicationMembers?.map((pm: any) => pm.Member) || [],
+    projects: pub.PublicationProjects?.map((pp: any) => pp.Project) || [],
+  }))
+  const projects = (data?.Project || []).map((project: any) => ({
+    ...project,
+    members: project.ProjectMembers?.map((pm: any) => pm.Member) || [],
+  }))
+  const grants = (data?.Grant || []).map((grant: any) => ({
+    ...grant,
+    projects: grant.GrantProjects?.map((gp: any) => ({
+      ...gp.Project,
+      members: gp.Project.ProjectMembers?.map((pm: any) => pm.Member) || [],
+    })) || [],
+  }))
+  const equipments = (data?.Equipment || []).map((equipment: any) => ({
+    ...equipment,
+    member: equipment.Member || null,
+    project: equipment.Project || null,
+  }))
+  const members = data?.Member || []
+  const protocols = data?.Protocol || []
 
   // Calculate publications per year
   const publicationsByYear: Record<string, { publications: number }> = {}

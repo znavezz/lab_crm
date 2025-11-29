@@ -54,7 +54,7 @@ interface CreateMemberData {
 
 const GET_MEMBERS = gql`
   query GetMembers {
-    members {
+    Member {
       id
       name
       rank
@@ -125,7 +125,7 @@ export default function MembersPage() {
     },
   })
 
-  const members = data?.members || []
+  const members = data?.Member || []
   
   const filteredMembers = members.filter((member: MemberWithPhoto) => {
     const matchesSearch = member.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false

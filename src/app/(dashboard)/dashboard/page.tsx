@@ -9,47 +9,49 @@ import { Button } from '@/components/ui/button'
 import { UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BeakerIcon, TrendingUpIcon, AlertCircleIcon, CalendarIcon, ArrowRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, ChartSkeleton, ListItemSkeleton } from '@/components/skeletons'
+import { cn } from '@/lib/utils'
 
 const GET_DASHBOARD_STATS = gql`
   query GetDashboardStats {
-    members {
+    Member {
       id
       name
       status
       createdAt
     }
-    projects {
+    Project {
       id
       title
       startDate
       endDate
       createdAt
     }
-    publications {
+    Publication {
       id
       title
       published
       createdAt
     }
-    grants {
+    Grant {
       id
       name
       startDate
       endDate
       createdAt
     }
-    events {
+    Event {
       id
       date
       title
     }
-    protocols {
+    Protocol {
       id
       title
       createdAt
       updatedAt
     }
-    equipments {
+    Equipment {
       id
       name
       createdAt
@@ -114,26 +116,26 @@ interface RecentActivity {
 }
 
 interface DashboardData {
-  members?: Member[]
-  projects?: Project[]
-  publications?: Publication[]
-  grants?: Grant[]
-  events?: Event[]
-  protocols?: Protocol[]
-  equipments?: Equipment[]
+  Member?: Member[]
+  Project?: Project[]
+  Publication?: Publication[]
+  Grant?: Grant[]
+  Event?: Event[]
+  Protocol?: Protocol[]
+  Equipment?: Equipment[]
 }
 
 export default function DashboardPage() {
   const { data, loading, error } = useQuery<DashboardData>(GET_DASHBOARD_STATS)
 
   // Extract data with proper typing - use useMemo to prevent unnecessary re-renders
-  const members = useMemo(() => (data?.members || []) as Member[], [data?.members])
-  const projects = useMemo(() => (data?.projects || []) as Project[], [data?.projects])
-  const publications = useMemo(() => (data?.publications || []) as Publication[], [data?.publications])
-  const grants = useMemo(() => (data?.grants || []) as Grant[], [data?.grants])
-  const events = useMemo(() => (data?.events || []) as Event[], [data?.events])
-  const protocols = useMemo(() => (data?.protocols || []) as Protocol[], [data?.protocols])
-  const equipments = useMemo(() => (data?.equipments || []) as Equipment[], [data?.equipments])
+  const members = useMemo(() => (data?.Member || []) as Member[], [data?.Member])
+  const projects = useMemo(() => (data?.Project || []) as Project[], [data?.Project])
+  const publications = useMemo(() => (data?.Publication || []) as Publication[], [data?.Publication])
+  const grants = useMemo(() => (data?.Grant || []) as Grant[], [data?.Grant])
+  const events = useMemo(() => (data?.Event || []) as Event[], [data?.Event])
+  const protocols = useMemo(() => (data?.Protocol || []) as Protocol[], [data?.Protocol])
+  const equipments = useMemo(() => (data?.Equipment || []) as Equipment[], [data?.Equipment])
 
   // Get recent items - combine all recent activities
   const allRecentActivities = useMemo(() => {
