@@ -34,8 +34,8 @@ interface GrantQueryData {
 }
 
 const GET_GRANT = gql`
-  query GetGrant($id: ID!) {
-    grant(id: $id) {
+  query GetGrant($id: String!) {
+    Grant_by_pk(id: $id) {
       id
       name
       budget
@@ -43,7 +43,7 @@ const GET_GRANT = gql`
       endDate
       totalSpent
       remainingBudget
-      projects {
+      Project {
         id
         title
         description
@@ -137,7 +137,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const grant = data.grant
+  const grant = data.Grant_by_pk
   // Calculate progress as percentage of budget spent
   const budgetSpent = grant.totalSpent || 0
   const totalBudget = grant.budget || 0

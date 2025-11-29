@@ -27,8 +27,8 @@ import type {
 } from '@/types/graphql-queries'
 
 const GET_EQUIPMENT = gql`
-  query GetEquipment($id: ID!) {
-    equipment(id: $id) {
+  query GetEquipment($id: String!) {
+    Equipment_by_pk(id: $id) {
       id
       name
       description
@@ -44,7 +44,7 @@ const GET_EQUIPMENT = gql`
       }
       createdAt
     }
-    bookings {
+    Booking {
       id
       startTime
       endTime
@@ -59,15 +59,15 @@ const GET_EQUIPMENT = gql`
 
 const GET_BOOKING_DATA = gql`
   query GetBookingData {
-    members {
+    Member {
       id
       name
     }
-    projects {
+    Project {
       id
       title
     }
-    events {
+    Event {
       id
       title
       date
@@ -87,7 +87,7 @@ const CREATE_BOOKING = gql`
 `
 
 const UPDATE_EQUIPMENT = gql`
-  mutation UpdateEquipment($id: ID!, $input: UpdateEquipmentInput!) {
+  mutation UpdateEquipment($id: String!, $input: UpdateEquipmentInput!) {
     updateEquipment(id: $id, input: $input) {
       id
       status
@@ -340,7 +340,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
     )
   }
 
-  const equipment = data.equipment
+  const equipment = data.Equipment_by_pk
 
   // Compute effective status:
   // 1. If permanently assigned (member/project), equipment is IN_USE (unless MAINTENANCE)
@@ -350,7 +350,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   const hasPermanentAssignment = (equipment.member || equipment.project) && equipment.status !== 'MAINTENANCE'
 
   // Filter bookings for this specific equipment and check for active bookings
-  const equipmentBookings = data?.bookings?.filter(booking => booking.equipmentId === equipment.id) || []
+  const equipmentBookings = data?.Booking?.filter(booking => booking.equipmentId === equipment.id) || []
   const hasActiveBooking = equipmentBookings.some(booking => {
     const startTime = new Date(booking.startTime)
     const endTime = new Date(booking.endTime)

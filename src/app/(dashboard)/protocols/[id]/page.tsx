@@ -12,8 +12,8 @@ import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon, HistoryIcon, FileTextIcon } from 'lucide-react'
 
 const GET_PROTOCOL = gql`
-  query GetProtocol($id: ID!) {
-    protocol(id: $id) {
+  query GetProtocol($id: String!) {
+    Protocol_by_pk(id: $id) {
       id
       title
       description
@@ -182,7 +182,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
-  const protocol = data.protocol
+  const protocol = data.Protocol_by_pk
   
   // Parse JSON fields
   const materials = protocol.materials ? (() => {

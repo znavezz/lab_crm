@@ -13,20 +13,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide-react'
 
 const GET_PUBLICATION = gql`
-  query GetPublication($id: ID!) {
-    publication(id: $id) {
+  query GetPublication($id: String!) {
+    Publication_by_pk(id: $id) {
       id
       title
       published
       doi
       url
-      members {
+      Member {
         id
         name
         photoUrl
         role
       }
-      projects {
+      Project {
         id
         title
       }
@@ -138,7 +138,7 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
     )
   }
 
-  const pub = data.publication
+  const pub = data.Publication_by_pk
 
   return (
     <div className="space-y-6">

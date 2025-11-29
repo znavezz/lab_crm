@@ -13,8 +13,8 @@ import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, FileTextIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
 
 const GET_EVENT = gql`
-  query GetEvent($id: ID!) {
-    event(id: $id) {
+  query GetEvent($id: String!) {
+    Event_by_pk(id: $id) {
       id
       title
       description
@@ -26,7 +26,7 @@ const GET_EVENT = gql`
         photoUrl
         role
       }
-      projects {
+      Project {
         id
         title
       }
@@ -36,13 +36,13 @@ const GET_EVENT = gql`
         completed
         dueDate
       }
-      expenses {
+      Expense {
         id
         description
         amount
         date
       }
-      equipments {
+      Equipment {
         id
         name
         status
@@ -177,7 +177,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const event = data.event
+  const event = data.Event_by_pk
   const eventDate = new Date(event.date)
   const isPast = eventDate < new Date()
   const formattedDate = eventDate.toLocaleDateString('en-GB', { 
