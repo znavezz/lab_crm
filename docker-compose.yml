@@ -21,10 +21,15 @@ services:
       - "3000:3000"
     depends_on:
       - db # Waits for the 'db' service to start first
+      - graphql-engine # Also wait for Hasura
     
     # This is the fix for your environment variables
     env_file:
       - .env.local # Tells Compose to load variables from your .env.local file
+    
+    environment:
+      # Override HASURA_ENDPOINT for Docker internal networking
+      HASURA_ENDPOINT: "http://graphql-engine:8080"
     
     # This is the fix for hot-reloading
     volumes:
