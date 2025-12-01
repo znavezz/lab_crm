@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Hasura proxy error:', error);
+    console.error('HASURA_ENDPOINT:', HASURA_ENDPOINT);
+    console.error('HASURA_ADMIN_SECRET:', HASURA_ADMIN_SECRET ? '[SET]' : '[NOT SET]');
     return NextResponse.json(
       {
         errors: [
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
             message: 'Internal server error',
             extensions: {
               code: 'INTERNAL_SERVER_ERROR',
+              details: error instanceof Error ? error.message : 'Unknown error',
             },
           },
         ],
