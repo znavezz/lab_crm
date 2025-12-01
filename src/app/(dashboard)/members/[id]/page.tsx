@@ -26,7 +26,7 @@ import { ArrowLeftIcon, CalendarIcon, GraduationCapIcon, DollarSignIcon, BookIco
 
 const GET_MEMBER = gql`
   query GetMember($id: String!) {
-    Member_by_pk(id: $id) {
+    member(id: $id) {
       id
       name
       rank
@@ -47,7 +47,7 @@ const GET_MEMBER = gql`
           title
         }
       }
-      _MemberToPublications {
+      PublicationMembers {
         Publication {
           id
           title
@@ -112,6 +112,7 @@ interface Project {
 interface Publication {
   id: string
   title?: string | null
+  published?: string | null
 }
 
 interface Equipment {
@@ -122,17 +123,33 @@ interface Equipment {
   serialNumber?: string | null
 }
 
+// Hasura response types (nested structure)
+interface ProjectMember {
+  Project: {
+    id: string
+    title: string | null
+  }
+}
+
+interface PublicationMember {
+  Publication: {
+    id: string
+    title: string | null
+    published: string | null
+  }
+}
+
 interface Member {
   id: string
-  name?: string | null
+  name: string 
   rank?: string | null
   role?: string | null
   status?: string | null
   scholarship?: number | null
   photoUrl?: string | null
-  academicInfo?: AcademicInfo[] | null
-  projects?: Project[] | null
-  publications?: Publication[] | null
+  academicInfos?: AcademicInfo[] | null
+  ProjectMembers?: ProjectMember[] | null
+  PublicationMembers?: PublicationMember[] | null
   equipments?: Equipment[] | null
   joinedDate?: string | null
   createdAt: string
@@ -314,7 +331,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
     )
   }
 
-  if (!data || !data.Member_by_pk) {
+  if (!data || !data.member) {
     return (
       <div className="space-y-6">
         <Link href="/members">
@@ -330,14 +347,14 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
     )
   }
 
-  const member = data.Member_by_pk
+  const member = data.member
   
   // Transform Hasura response to match expected format
   const transformedMember = {
     ...member,
-    projects: member.ProjectMembers?.map((pm: any) => pm.Project) || [],
-    publications: member._MemberToPublications?.map((mp: any) => mp.Publication) || [],
-    academicInfo: member.academicInfos?.[0] || null,
+    projects: member.ProjectMembers?.map((pm: ProjectMember) => pm.Project) || [],
+    publications: member.PublicationMembers?.map((mp: PublicationMember) => mp.Publication) || [],
+    academicInfo: member.academicInfos || [],
   }
 
   return (

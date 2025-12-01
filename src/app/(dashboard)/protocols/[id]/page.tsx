@@ -13,7 +13,7 @@ import { ArrowLeftIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon, History
 
 const GET_PROTOCOL = gql`
   query GetProtocol($id: String!) {
-    Protocol_by_pk(id: $id) {
+    protocol(id: $id) {
       id
       title
       description
@@ -23,15 +23,15 @@ const GET_PROTOCOL = gql`
       difficulty
       tags
       downloads
-      author {
+      Member {
         id
         name
       }
-      project {
+      Project {
         id
         title
       }
-      document {
+      Document {
         id
         filename
         url
@@ -182,7 +182,7 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
-  const protocol = data.Protocol_by_pk
+  const protocol = data.protocol
   
   // Parse JSON fields
   const materials = protocol.materials ? (() => {

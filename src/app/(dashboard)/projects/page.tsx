@@ -61,7 +61,7 @@ import type {
 
 const GET_PROJECTS = gql`
   query GetProjects {
-    Project {
+    projects {
       id
       title
       description
@@ -175,7 +175,7 @@ export default function ProjectsPage() {
   })
 
   // Transform Hasura response to match expected format
-  const projects = (data?.Project || []).map((project: any) => ({
+  const projects = (data?.projects || []).map((project: any) => ({
     ...project,
     members: project.ProjectMembers?.map((pm: any) => pm.Member) || [],
   }))

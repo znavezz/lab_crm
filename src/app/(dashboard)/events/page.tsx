@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label'
 
 const GET_EVENTS = gql`
   query GetEvents {
-    Event {
+    events {
       id
       title
       description
@@ -60,7 +60,7 @@ export default function EventsPage() {
   const [showGoogleCalendar, setShowGoogleCalendar] = useState(false)
 
   // Transform Hasura response to match expected format
-  const events = (data?.Event || []).map((event: any) => ({
+  const events = (data?.events || []).map((event: any) => ({
     ...event,
     attendees: event.EventMembers?.map((em: any) => em.Member) || [],
     projects: event.EventProjects?.map((ep: any) => ep.Project) || [],

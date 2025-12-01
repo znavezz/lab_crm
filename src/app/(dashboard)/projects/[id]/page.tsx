@@ -14,26 +14,30 @@ import { ArrowLeftIcon, CalendarIcon, UsersIcon, DollarSignIcon } from 'lucide-r
 
 const GET_PROJECT = gql`
   query GetProject($id: String!) {
-    Project_by_pk(id: $id) {
+    project(id: $id) {
       id
       title
       description
       startDate
       endDate
-      Member {
-        id
-        name
-        role
-      }
-      Grant {
-        id
-        name
-        budget
-        remainingBudget
-        Expense {
+      ProjectMembers {
+        Member {
           id
-          amount
-          projectId
+          name
+          role
+        }
+      }
+      _GrantToProjects {
+        Grant {
+          id
+          name
+          budget
+          remainingBudget
+          Expense {
+            id
+            amount
+            projectId
+          }
         }
       }
       totalInvestment
@@ -182,7 +186,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     )
   }
 
-  const project = data.Project_by_pk
+  const project = data.project
   const status = getProjectStatus(project)
   const progress = getProjectProgress(project)
 

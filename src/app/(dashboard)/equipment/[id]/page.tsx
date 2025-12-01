@@ -28,28 +28,28 @@ import type {
 
 const GET_EQUIPMENT = gql`
   query GetEquipment($id: String!) {
-    Equipment_by_pk(id: $id) {
+    equipment(id: $id) {
       id
       name
       description
       serialNumber
       status
-      project {
+      Project {
         id
         title
       }
-      member {
+      Member {
         id
         name
       }
       createdAt
     }
-    Booking {
+    bookings {
       id
       startTime
       endTime
       equipmentId
-      member {
+      Member {
         id
         name
       }
@@ -340,7 +340,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
     )
   }
 
-  const equipment = data.Equipment_by_pk
+  const equipment = data.equipment
 
   // Compute effective status:
   // 1. If permanently assigned (member/project), equipment is IN_USE (unless MAINTENANCE)
@@ -350,7 +350,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   const hasPermanentAssignment = (equipment.member || equipment.project) && equipment.status !== 'MAINTENANCE'
 
   // Filter bookings for this specific equipment and check for active bookings
-  const equipmentBookings = data?.Booking?.filter(booking => booking.equipmentId === equipment.id) || []
+  const equipmentBookings = data?.bookings?.filter(booking => booking.equipmentId === equipment.id) || []
   const hasActiveBooking = equipmentBookings.some(booking => {
     const startTime = new Date(booking.startTime)
     const endTime = new Date(booking.endTime)

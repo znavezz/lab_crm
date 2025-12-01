@@ -14,21 +14,25 @@ import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide
 
 const GET_PUBLICATION = gql`
   query GetPublication($id: String!) {
-    Publication_by_pk(id: $id) {
+    publication(id: $id) {
       id
       title
       published
       doi
       url
-      Member {
-        id
-        name
-        photoUrl
-        role
+      PublicationMembers {
+        Member {
+          id
+          name
+          photoUrl
+          role
+        }
       }
-      Project {
-        id
-        title
+      PublicationProjects {
+        Project {
+          id
+          title
+        }
       }
       createdAt
     }
@@ -138,7 +142,7 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
     )
   }
 
-  const pub = data.Publication_by_pk
+  const pub = data.publication
 
   return (
     <div className="space-y-6">

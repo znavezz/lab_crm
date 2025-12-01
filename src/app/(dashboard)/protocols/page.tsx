@@ -20,7 +20,7 @@ import { SearchIcon, PlusIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon }
 
 const GET_PROTOCOLS = gql`
   query GetProtocols {
-    Protocol {
+    protocols {
       id
       title
       description
@@ -423,7 +423,7 @@ export default function ProtocolsPage() {
   }
 
   // Transform Hasura response to match expected format
-  const protocols = (data?.Protocol || []).map((protocol: any) => ({
+  const protocols = (data?.protocols || []).map((protocol: any) => ({
     ...protocol,
     author: protocol.Member || null,
     project: protocol.Project || null,

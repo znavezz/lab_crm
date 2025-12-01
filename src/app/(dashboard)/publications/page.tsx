@@ -33,22 +33,22 @@ import { Carousel, CarouselCard } from '@/components/ui/carousel'
 
 const GET_PUBLICATIONS = gql`
   query GetPublications {
-    Publication {
+    publications {
       id
       title
       published
       doi
       url
       PublicationMembers {
-        Member {
-          id
-          name
-        }
+      Member {
+        id
+        name
+      }
       }
       PublicationProjects {
-        Project {
-          id
-          title
+      Project {
+        id
+        title
         }
       }
       createdAt
@@ -423,7 +423,7 @@ export default function PublicationsPage() {
   }
 
   // Transform Hasura response to match expected format
-  const publications = (data?.Publication || []).map((pub: any) => ({
+  const publications = (data?.publications || []).map((pub: any) => ({
     ...pub,
     members: pub.PublicationMembers?.map((pm: any) => pm.Member) || [],
     projects: pub.PublicationProjects?.map((pp: any) => pp.Project) || [],

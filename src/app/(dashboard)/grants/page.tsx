@@ -72,9 +72,9 @@ const GET_GRANTS = gql`
       totalSpent
       remainingBudget
       GrantProjects {
-        Project {
-          id
-          title
+      Project {
+        id
+        title
         }
       }
       createdAt
