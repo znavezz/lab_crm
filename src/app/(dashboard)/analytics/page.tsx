@@ -266,22 +266,6 @@ export default function AnalyticsPage() {
   const publications = data?.publications || []
   const projects = data?.projects || []
   const grants = data?.grants || []
-  // const publications = (data?.publications || []).map((pub: AnalyticsPublication) => ({
-  //   ...pub,
-  //   members: pub.members?.map((pm: PublicationMember) => pm.Member) || [],
-  //   projects: pub.projects?.map((pp: PublicationProject) => pp.Project) || [],
-  // }))
-  // const projects = (data?.projects || []).map((project: AnalyticsProject) => ({
-  //   ...project,
-  //   members: project.members?.map((pm: ProjectMember) => pm.Member) || [],
-  // }))
-  // const grants = (data?.grants || []).map((grant: AnalyticsGrant) => ({
-  //   ...grant,
-  //   projects: grant.projects?.map((gp: GrantProject) => ({
-  //     ...gp.project,
-  //     members: gp.project.members?.map((pm: ProjectMember) => pm.Member) || [],
-  //   })) || [],
-  // }))
   const equipments = (data?.equipments || []).map((equipment: AnalyticsEquipment) => ({
     ...equipment,
     member: equipment.Member || null,
