@@ -46,6 +46,12 @@
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
+  --app-background-gradient: linear-gradient(
+    135deg,
+    oklch(1 0 0) 0%, 
+    oklch(0.99 0.010 235) 40%, 
+    oklch(0.985 0.015 240) 100%
+  );
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -81,6 +87,12 @@
 
 .dark {
   --background: oklch(0.145 0 0);
+  --app-background-gradient-dark: linear-gradient(
+    135deg, 
+    oklch(0.145 0 0) 0%, 
+    oklch(0.150 0.012 235) 40%, 
+    oklch(0.155 0.018 240) 100%
+  );
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -120,18 +132,12 @@
   }
   body {
     @apply text-foreground;
-    background: linear-gradient(135deg, 
-      oklch(1 0 0) 0%, 
-      oklch(0.99 0.010 235) 40%, 
-      oklch(0.985 0.015 240) 100%);
+    background: var(--app-background-gradient);
     background-attachment: fixed;
   }
   
   .dark body {
-    background: linear-gradient(135deg, 
-      oklch(0.145 0 0) 0%, 
-      oklch(0.150 0.012 235) 40%, 
-      oklch(0.155 0.018 240) 100%);
+    background: var(--app-background-gradient-dark);
     background-attachment: fixed;
   }
 }
@@ -398,3 +404,4 @@
     --peel-color: var(--chart-5);
   }
 }
+
