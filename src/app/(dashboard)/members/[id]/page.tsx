@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input'
 import { ArrowLeftIcon, CalendarIcon, GraduationCapIcon, DollarSignIcon, BookIcon, CameraIcon, FolderIcon, MicroscopeIcon } from 'lucide-react'
 
 const GET_MEMBER = gql`
-  query GetMember($id: ID!) {
+  query GetMember($id: String!) {
     member(id: $id) {
       id
       name
@@ -34,22 +34,27 @@ const GET_MEMBER = gql`
       status
       scholarship
       photoUrl
-      academicInfo {
+      academicInfos {
         id
         degree
         field
         institution
         graduationYear
       }
-      projects {
-        id
-        title
+      ProjectMembers {
+        Project {
+          id
+          title
+        }
       }
-      publications {
-        id
-        title
+      PublicationMembers {
+        Publication {
+          id
+          title
+          published
+        }
       }
-      equipments {
+      Equipment {
         id
         name
         description
@@ -63,7 +68,7 @@ const GET_MEMBER = gql`
 `
 
 const UPDATE_MEMBER_PHOTO = gql`
-  mutation UpdateMemberPhoto($id: ID!, $input: UpdateMemberInput!) {
+  mutation UpdateMemberPhoto($id: String!, $input: UpdateMemberInput!) {
     updateMember(id: $id, input: $input) {
       id
       photoUrl
@@ -107,6 +112,7 @@ interface Project {
 interface Publication {
   id: string
   title?: string | null
+  published?: string | null
 }
 
 interface Equipment {
@@ -117,17 +123,33 @@ interface Equipment {
   serialNumber?: string | null
 }
 
+// Hasura response types (nested structure)
+interface ProjectMember {
+  Project: {
+    id: string
+    title: string | null
+  }
+}
+
+interface PublicationMember {
+  Publication: {
+    id: string
+    title: string | null
+    published: string | null
+  }
+}
+
 interface Member {
   id: string
-  name?: string | null
+  name: string 
   rank?: string | null
   role?: string | null
   status?: string | null
   scholarship?: number | null
   photoUrl?: string | null
-  academicInfo?: AcademicInfo[] | null
-  projects?: Project[] | null
-  publications?: Publication[] | null
+  academicInfos?: AcademicInfo[] | null
+  ProjectMembers?: ProjectMember[] | null
+  PublicationMembers?: PublicationMember[] | null
   equipments?: Equipment[] | null
   joinedDate?: string | null
   createdAt: string
@@ -190,7 +212,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
     
     if (!selectedFile) {
       // If no file selected and no current photo, do nothing
-      if (!member.photoUrl) {
+      if (!transformedMember.photoUrl) {
         setIsPhotoDialogOpen(false)
         return
       }
@@ -326,6 +348,14 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
   }
 
   const member = data.member
+  
+  // Transform Hasura response to match expected format
+  const transformedMember = {
+    ...member,
+    projects: member.ProjectMembers?.map((pm: ProjectMember) => pm.Project) || [],
+    publications: member.PublicationMembers?.map((mp: PublicationMember) => mp.Publication) || [],
+    academicInfo: member.academicInfos || [],
+  }
 
   return (
     <div className="space-y-6">
@@ -341,9 +371,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
           <CardHeader className="text-center">
             <div className="relative inline-block">
               <Avatar className="h-32 w-32 mx-auto mb-4">
-                <AvatarImage src={member.photoUrl || "/placeholder.svg"} alt={member.name || 'Member'} />
+                <AvatarImage src={transformedMember.photoUrl || "/placeholder.svg"} alt={transformedMember.name || 'Member'} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-                  {member.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
+                  {transformedMember.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'M'}
                 </AvatarFallback>
               </Avatar>
               <Dialog open={isPhotoDialogOpen} onOpenChange={setIsPhotoDialogOpen}>
@@ -384,22 +414,22 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
                         </p>
                       </div>
                       
-                      {(preview || member.photoUrl) && (
+                      {(preview || transformedMember.photoUrl) && (
                         <div className="grid gap-2">
                           <Label>{preview ? 'Preview' : 'Current Photo'}</Label>
                           <div className="flex items-center gap-4">
                             <Avatar className="h-24 w-24">
-                              <AvatarImage src={preview || member.photoUrl || undefined} alt="Photo preview" />
+                              <AvatarImage src={preview || transformedMember.photoUrl || undefined} alt="Photo preview" />
                               <AvatarFallback>Photo</AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                               {preview && (
                                 <p className="text-sm font-medium text-green-600">New photo selected</p>
                               )}
-                              {member.photoUrl && !preview && (
+                              {transformedMember.photoUrl && !preview && (
                                 <div className="text-sm text-muted-foreground">
                                   <p className="font-medium">Current photo</p>
-                                  <p className="break-all text-xs">{member.photoUrl}</p>
+                                  <p className="break-all text-xs">{transformedMember.photoUrl}</p>
                                 </div>
                               )}
                             </div>
@@ -408,7 +438,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
                       )}
                     </div>
                     <DialogFooter className="flex-col sm:flex-row gap-2">
-                      {member.photoUrl && (
+                      {transformedMember.photoUrl && (
                         <Button
                           type="button"
                           variant="destructive"
@@ -446,42 +476,42 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
                 </DialogContent>
               </Dialog>
             </div>
-            <CardTitle className="text-2xl">{member.name}</CardTitle>
+            <CardTitle className="text-2xl">{transformedMember.name}</CardTitle>
             <div className="flex justify-center gap-2 mt-2">
-              {member.role && (
-                <Badge className={roleColors[member.role] || 'bg-muted text-muted-foreground'}>
-                  {member.role}
+              {transformedMember.role && (
+                <Badge className={roleColors[transformedMember.role] || 'bg-muted text-muted-foreground'}>
+                  {transformedMember.role}
                 </Badge>
               )}
-              {member.status && (
-                <Badge className={statusColors[member.status] || 'bg-muted text-muted-foreground'}>
-                  {member.status}
+              {transformedMember.status && (
+                <Badge className={statusColors[transformedMember.status] || 'bg-muted text-muted-foreground'}>
+                  {transformedMember.status}
                 </Badge>
               )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              {member.rank && (
+              {transformedMember.rank && (
                 <div className="flex items-center gap-2 text-sm">
                   <GraduationCapIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>{member.rank}</span>
+                  <span>{transformedMember.rank}</span>
                 </div>
               )}
-              {member.scholarship && (
+              {transformedMember.scholarship && (
                 <div className="flex items-center gap-2 text-sm">
                   <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>Scholarship: ${member.scholarship.toLocaleString()}</span>
+                  <span>Scholarship: ${transformedMember.scholarship.toLocaleString()}</span>
                 </div>
               )}
               <div className="flex items-center gap-2 text-sm">
                 <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                <span>Joined {new Date(member.joinedDate || member.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                <span>Joined {new Date(transformedMember.joinedDate || transformedMember.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
               </div>
-              {member.publications && member.publications.length >= 0 && (
+              {transformedMember.publications && transformedMember.publications.length >= 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <BookIcon className="h-4 w-4 text-muted-foreground" />
-                  <span>{member.publications.length} Publication{member.publications.length !== 1 ? 's' : ''}</span>
+                  <span>{transformedMember.publications.length} Publication{transformedMember.publications.length !== 1 ? 's' : ''}</span>
                 </div>
               )}
             </div>
@@ -497,9 +527,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {member.academicInfo && member.academicInfo.length > 0 ? (
+              {transformedMember.academicInfos && transformedMember.academicInfos.length > 0 ? (
                 <ul className="space-y-2">
-                  {member.academicInfo.map((edu: AcademicInfo) => (
+                  {transformedMember.academicInfos.map((edu: AcademicInfo) => (
                     <li key={edu.id} className="text-sm text-muted-foreground flex items-start gap-2">
                       <span className="text-primary mt-1">•</span>
                       <span>
@@ -525,9 +555,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {member.projects && member.projects.length > 0 ? (
+              {transformedMember.projects && transformedMember.projects.length > 0 ? (
                 <ul className="space-y-2">
-                  {member.projects.map((project: Project) => (
+                  {transformedMember.projects.map((project: Project) => (
                     <li key={project.id} className="text-sm">
                       <Link href={`/projects/${project.id}`} className="font-medium text-primary hover:underline">
                         {project.title}
@@ -549,9 +579,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {member.publications && member.publications.length > 0 ? (
+              {transformedMember.publications && transformedMember.publications.length > 0 ? (
                 <ul className="space-y-2">
-                  {member.publications.map((publication: Publication) => (
+                  {transformedMember.publications.map((publication: Publication) => (
                     <li key={publication.id} className="text-sm">
                       <Link href={`/publications/${publication.id}`} className="font-medium text-primary hover:underline">
                         {publication.title}
@@ -573,9 +603,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {member.equipments && member.equipments.length > 0 ? (
+              {transformedMember.equipments && transformedMember.equipments.length > 0 ? (
                 <ul className="space-y-3">
-                  {member.equipments.map((equipment: Equipment) => (
+                  {transformedMember.equipments.map((equipment: Equipment) => (
                     <li key={equipment.id} className="text-sm space-y-1">
                       <div className="flex items-center gap-2">
                         <Link href={`/equipment/${equipment.id}`} className="font-medium text-primary hover:underline">

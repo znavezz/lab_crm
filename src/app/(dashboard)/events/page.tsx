@@ -22,13 +22,17 @@ const GET_EVENTS = gql`
       description
       date
       location
-      attendees {
-        id
-        name
+      EventMembers {
+        Member {
+          id
+          name
+        }
       }
-      projects {
-        id
-        title
+      EventProjects {
+        Project {
+          id
+          title
+        }
       }
     }
   }
@@ -55,7 +59,12 @@ export default function EventsPage() {
   const [googleCalendarId, setGoogleCalendarId] = useState('')
   const [showGoogleCalendar, setShowGoogleCalendar] = useState(false)
 
-  const events = data?.events || []
+  // Transform Hasura response to match expected format
+  const events = (data?.events || []).map((event: any) => ({
+    ...event,
+    attendees: event.EventMembers?.map((em: any) => em.Member) || [],
+    projects: event.EventProjects?.map((ep: any) => ep.Project) || [],
+  }))
   const upcomingEvents = events
     .filter((e) => new Date(e.date) >= new Date())
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())

@@ -34,7 +34,7 @@ interface GrantQueryData {
 }
 
 const GET_GRANT = gql`
-  query GetGrant($id: ID!) {
+  query GetGrant($id: String!) {
     grant(id: $id) {
       id
       name
@@ -43,12 +43,14 @@ const GET_GRANT = gql`
       endDate
       totalSpent
       remainingBudget
-      projects {
-        id
-        title
-        description
-        startDate
-        endDate
+      GrantProjects {
+        project {
+          id
+          title
+          description
+          startDate
+          endDate
+        }
       }
       createdAt
     }

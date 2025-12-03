@@ -18,13 +18,17 @@ const GET_ANALYTICS_DATA = gql`
       published
       doi
       createdAt
-      members {
+      PublicationMembers {
+      Member {
         id
         name
       }
-      projects {
+      }
+      PublicationProjects {
+      Project {
         id
         title
+        }
       }
     }
     projects {
@@ -33,9 +37,11 @@ const GET_ANALYTICS_DATA = gql`
       startDate
       endDate
       createdAt
-      members {
+      ProjectMembers {
+      Member {
         id
         name
+        }
       }
     }
     grants {
@@ -47,16 +53,20 @@ const GET_ANALYTICS_DATA = gql`
       createdAt
       totalSpent
       remainingBudget
-      expenses {
+      Expense {
         id
         amount
       }
-      projects {
+      GrantProjects {
+      project {
         id
         title
-        members {
+          ProjectMembers {
+        Member {
           id
           name
+            }
+          }
         }
       }
     }
@@ -64,11 +74,11 @@ const GET_ANALYTICS_DATA = gql`
       id
       name
       status
-      member {
+      Member {
         id
         name
       }
-      project {
+      Project {
         id
         title
       }
@@ -87,13 +97,17 @@ const GET_ANALYTICS_DATA = gql`
 `
 
 interface PublicationMember {
-  id: string
-  name: string
+  Member: {
+    id: string
+    name: string
+  }
 }
 
 interface PublicationProject {
-  id: string
-  title: string
+  Project: {
+    id: string
+    title: string
+  }
 }
 
 interface AnalyticsPublication {
@@ -101,13 +115,15 @@ interface AnalyticsPublication {
   published: string | null
   doi?: string | null
   createdAt: string
-  members: PublicationMember[]
-  projects: PublicationProject[]
+  PublicationMembers: PublicationMember[]
+  PublicationProjects: PublicationProject[]
 }
 
 interface ProjectMember {
-  id: string
-  name: string
+  Member: {
+    id: string
+    name: string
+  }
 }
 
 interface AnalyticsProject {
@@ -116,13 +132,15 @@ interface AnalyticsProject {
   startDate: string | null
   endDate: string | null
   createdAt: string
-  members: ProjectMember[]
+  ProjectMembers: ProjectMember[]
 }
 
 interface GrantProject {
-  id: string
-  title: string
-  members: Array<{ id: string; name: string }>
+  project: {
+    id: string
+    title: string
+    ProjectMembers: ProjectMember[]
+  }
 }
 
 interface GrantExpense {
@@ -139,8 +157,8 @@ interface AnalyticsGrant {
   createdAt: string
   totalSpent?: number
   remainingBudget?: number
-  expenses?: GrantExpense[]
-  projects: GrantProject[]
+  GrantExpenses?: GrantExpense[]
+  GrantProjects: GrantProject[]
 }
 
 interface EquipmentMember {
@@ -157,8 +175,8 @@ interface AnalyticsEquipment {
   id: string
   name: string
   status: string
-  member: EquipmentMember | null
-  project: EquipmentProject | null
+  Member: EquipmentMember | null
+  Project: EquipmentProject | null
 }
 
 interface AnalyticsMember {
@@ -244,10 +262,15 @@ export default function AnalyticsPage() {
     )
   }
 
+  // Transform Hasura response to match expected format
   const publications = data?.publications || []
   const projects = data?.projects || []
   const grants = data?.grants || []
-  const equipments = data?.equipments || []
+  const equipments = (data?.equipments || []).map((equipment: AnalyticsEquipment) => ({
+    ...equipment,
+    member: equipment.Member || null,
+    project: equipment.Project || null,
+  }))
   const members = data?.members || []
   const protocols = data?.protocols || []
 
@@ -285,14 +308,14 @@ export default function AnalyticsPage() {
     const endDatePassed = grant.endDate ? new Date(grant.endDate) < now : false
     const budgetSpent = grant.totalSpent !== undefined
       ? grant.totalSpent >= (grant.budget || 0)
-      : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0) >= (grant.budget || 0)
+      : (grant.GrantExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0) >= (grant.budget || 0)
     return !endDatePassed && !budgetSpent
   })
   const completedGrants = grants.filter((grant: AnalyticsGrant) => {
     const endDatePassed = grant.endDate ? new Date(grant.endDate) < now : false
     const totalSpent = grant.totalSpent !== undefined
       ? grant.totalSpent
-      : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0)
+      : (grant.GrantExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0)
     const budgetSpent = totalSpent >= (grant.budget || 0)
     return endDatePassed || budgetSpent
   })
@@ -335,11 +358,11 @@ export default function AnalyticsPage() {
   // Publications per member (sorted by count)
   const publicationsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
-    pub.members.forEach((member) => {
-      if (!publicationsPerMemberMap[member.id]) {
-        publicationsPerMemberMap[member.id] = { id: member.id, name: member.name, count: 0 }
+    pub.PublicationMembers.forEach((pm) => {
+      if (!publicationsPerMemberMap[pm.Member.id]) {
+        publicationsPerMemberMap[pm.Member.id] = { id: pm.Member.id, name: pm.Member.name, count: 0 }
       }
-      publicationsPerMemberMap[member.id].count++
+      publicationsPerMemberMap[pm.Member.id].count++
     })
   })
   const publicationsPerMember = Object.values(publicationsPerMemberMap)
@@ -349,11 +372,11 @@ export default function AnalyticsPage() {
   // Publications per project (sorted by count)
   const publicationsPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
-    pub.projects.forEach((project) => {
-      if (!publicationsPerProjectMap[project.id]) {
-        publicationsPerProjectMap[project.id] = { id: project.id, title: project.title, count: 0 }
+    pub.PublicationProjects.forEach((pp) => {
+      if (!publicationsPerProjectMap[pp.Project.id]) {
+        publicationsPerProjectMap[pp.Project.id] = { id: pp.Project.id, title: pp.Project.title, count: 0 }
       }
-      publicationsPerProjectMap[project.id].count++
+      publicationsPerProjectMap[pp.Project.id].count++
     })
   })
   const publicationsPerProject = Object.values(publicationsPerProjectMap)
@@ -363,11 +386,11 @@ export default function AnalyticsPage() {
   // Projects per member (sorted by count)
   const projectsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   projects.forEach((project: AnalyticsProject) => {
-    project.members.forEach((member) => {
-      if (!projectsPerMemberMap[member.id]) {
-        projectsPerMemberMap[member.id] = { id: member.id, name: member.name, count: 0 }
+    project.ProjectMembers.forEach((pm) => {
+      if (!projectsPerMemberMap[pm.Member.id]) {
+        projectsPerMemberMap[pm.Member.id] = { id: pm.Member.id, name: pm.Member.name, count: 0 }
       }
-      projectsPerMemberMap[member.id].count++
+      projectsPerMemberMap[pm.Member.id].count++
     })
   })
   const projectsPerMember = Object.values(projectsPerMemberMap)
@@ -379,12 +402,12 @@ export default function AnalyticsPage() {
     id: grant.id,
     name: grant.name,
     budget: grant.budget || 0,
-    projectCount: grant.projects.length,
-    projects: grant.projects.map((project) => ({
-      id: project.id,
-      title: project.title,
+    projectCount: grant.GrantProjects.length,
+    projects: grant.GrantProjects.map((gp) => ({
+      id: gp.project.id,
+      title: gp.project.title,
       // Each project gets equal share of the grant budget
-      funding: grant.projects.length > 0 ? (grant.budget || 0) / grant.projects.length : 0,
+      funding: grant.GrantProjects.length > 0 ? (grant.budget || 0) / grant.GrantProjects.length : 0,
     })),
   })).sort((a, b) => b.budget - a.budget)
 
@@ -402,19 +425,19 @@ export default function AnalyticsPage() {
   // Projects with total funding from all grants
   const projectsFundingMap: Record<string, { title: string; grantCount: number; totalFunding: number; grants: string[] }> = {}
   grants.forEach((grant: AnalyticsGrant) => {
-    const fundingPerProject = grant.projects.length > 0 ? (grant.budget || 0) / grant.projects.length : 0
-    grant.projects.forEach((project) => {
-      if (!projectsFundingMap[project.id]) {
-        projectsFundingMap[project.id] = {
-          title: project.title,
+    const fundingPerProject = grant.GrantProjects.length > 0 ? (grant.budget || 0) / grant.GrantProjects.length : 0
+    grant.GrantProjects.forEach((gp) => {
+      if (!projectsFundingMap[gp.project.id]) {
+        projectsFundingMap[gp.project.id] = {
+          title: gp.project.title,
           grantCount: 0,
           totalFunding: 0,
           grants: [],
         }
       }
-      projectsFundingMap[project.id].grantCount++
-      projectsFundingMap[project.id].totalFunding += fundingPerProject
-      projectsFundingMap[project.id].grants.push(grant.name)
+      projectsFundingMap[gp.project.id].grantCount++
+      projectsFundingMap[gp.project.id].totalFunding += fundingPerProject
+      projectsFundingMap[gp.project.id].grants.push(grant.name)
     })
   })
   const projectsByFunding = Object.keys(projectsFundingMap)
@@ -428,11 +451,11 @@ export default function AnalyticsPage() {
   // Equipment per member (sorted by count)
   const equipmentPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   equipments.forEach((eq: AnalyticsEquipment) => {
-    if (eq.member) {
-      if (!equipmentPerMemberMap[eq.member.id]) {
-        equipmentPerMemberMap[eq.member.id] = { id: eq.member.id, name: eq.member.name, count: 0 }
+    if (eq.Member) {
+      if (!equipmentPerMemberMap[eq.Member.id]) {
+        equipmentPerMemberMap[eq.Member.id] = { id: eq.Member.id, name: eq.Member.name, count: 0 }
       }
-      equipmentPerMemberMap[eq.member.id].count++
+      equipmentPerMemberMap[eq.Member.id].count++
     }
   })
   const equipmentPerMember = Object.values(equipmentPerMemberMap)
@@ -442,11 +465,11 @@ export default function AnalyticsPage() {
   // Equipment per project (sorted by count)
   const equipmentPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   equipments.forEach((eq: AnalyticsEquipment) => {
-    if (eq.project) {
-      if (!equipmentPerProjectMap[eq.project.id]) {
-        equipmentPerProjectMap[eq.project.id] = { id: eq.project.id, title: eq.project.title, count: 0 }
+    if (eq.Project) {
+      if (!equipmentPerProjectMap[eq.Project.id]) {
+        equipmentPerProjectMap[eq.Project.id] = { id: eq.Project.id, title: eq.Project.title, count: 0 }
       }
-      equipmentPerProjectMap[eq.project.id].count++
+      equipmentPerProjectMap[eq.Project.id].count++
     }
   })
   const equipmentPerProject = Object.values(equipmentPerProjectMap)
@@ -468,7 +491,7 @@ export default function AnalyticsPage() {
   }))
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg--app-background-gradient">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">

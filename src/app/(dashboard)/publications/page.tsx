@@ -39,13 +39,17 @@ const GET_PUBLICATIONS = gql`
       published
       doi
       url
-      members {
+      PublicationMembers {
+      Member {
         id
         name
       }
-      projects {
+      }
+      PublicationProjects {
+      Project {
         id
         title
+        }
       }
       createdAt
     }
@@ -54,7 +58,7 @@ const GET_PUBLICATIONS = gql`
 
 const GET_MEMBERS = gql`
   query GetMembers {
-    members {
+    Member {
       id
       name
     }
@@ -418,7 +422,12 @@ export default function PublicationsPage() {
     )
   }
 
-  const publications = data?.publications || []
+  // Transform Hasura response to match expected format
+  const publications = (data?.publications || []).map((pub: any) => ({
+    ...pub,
+    members: pub.PublicationMembers?.map((pm: any) => pm.Member) || [],
+    projects: pub.PublicationProjects?.map((pp: any) => pp.Project) || [],
+  }))
 
   const filteredPublications = publications.filter((pub: Publication) => {
     const matchesSearch = pub.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||

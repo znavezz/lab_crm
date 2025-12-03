@@ -27,18 +27,18 @@ import type {
 } from '@/types/graphql-queries'
 
 const GET_EQUIPMENT = gql`
-  query GetEquipment($id: ID!) {
+  query GetEquipment($id: String!) {
     equipment(id: $id) {
       id
       name
       description
       serialNumber
       status
-      project {
+      Project {
         id
         title
       }
-      member {
+      Member {
         id
         name
       }
@@ -49,7 +49,7 @@ const GET_EQUIPMENT = gql`
       startTime
       endTime
       equipmentId
-      member {
+      Member {
         id
         name
       }
@@ -59,15 +59,15 @@ const GET_EQUIPMENT = gql`
 
 const GET_BOOKING_DATA = gql`
   query GetBookingData {
-    members {
+    Member {
       id
       name
     }
-    projects {
+    Project {
       id
       title
     }
-    events {
+    Event {
       id
       title
       date
@@ -87,7 +87,7 @@ const CREATE_BOOKING = gql`
 `
 
 const UPDATE_EQUIPMENT = gql`
-  mutation UpdateEquipment($id: ID!, $input: UpdateEquipmentInput!) {
+  mutation UpdateEquipment($id: String!, $input: UpdateEquipmentInput!) {
     updateEquipment(id: $id, input: $input) {
       id
       status

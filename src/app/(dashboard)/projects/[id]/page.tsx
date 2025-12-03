@@ -13,27 +13,31 @@ import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, UsersIcon, DollarSignIcon } from 'lucide-react'
 
 const GET_PROJECT = gql`
-  query GetProject($id: ID!) {
+  query GetProject($id: String!) {
     project(id: $id) {
       id
       title
       description
       startDate
       endDate
-      members {
-        id
-        name
-        role
-      }
-      grants {
-        id
-        name
-        budget
-        remainingBudget
-        expenses {
+      ProjectMembers {
+        Member {
           id
-          amount
-          projectId
+          name
+          role
+        }
+      }
+      _GrantToProjects {
+        Grant {
+          id
+          name
+          budget
+          remainingBudget
+          Expense {
+            id
+            amount
+            projectId
+          }
         }
       }
       totalInvestment

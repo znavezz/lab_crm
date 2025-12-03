@@ -52,12 +52,12 @@ const GET_EQUIPMENTS = gql`
       serialNumber
       status
       projectId
-      project {
+      Project {
         id
         title
       }
       memberId
-      member {
+      Member {
         id
         name
       }
@@ -68,7 +68,7 @@ const GET_EQUIPMENTS = gql`
       startTime
       endTime
       equipmentId
-      member {
+      Member {
         id
         name
       }
@@ -78,7 +78,7 @@ const GET_EQUIPMENTS = gql`
 
 const GET_MEMBERS = gql`
   query GetMembers {
-    members {
+    Member {
       id
       name
     }
@@ -87,7 +87,7 @@ const GET_MEMBERS = gql`
 
 const GET_PROJECTS = gql`
   query GetProjects {
-    projects {
+    Project {
       id
       title
     }
@@ -479,7 +479,12 @@ export default function EquipmentPage() {
     )
   }
 
-  const equipments = data?.equipments || []
+  // Transform Hasura response to match expected format
+  const equipments = (data?.equipments || []).map((equipment: any) => ({
+    ...equipment,
+    project: equipment.Project || null,
+    member: equipment.Member || null,
+  }))
 
   const filteredEquipment = equipments.filter((item: Equipment) => {
     const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||

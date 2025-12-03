@@ -12,7 +12,7 @@ import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon, HistoryIcon, FileTextIcon } from 'lucide-react'
 
 const GET_PROTOCOL = gql`
-  query GetProtocol($id: ID!) {
+  query GetProtocol($id: String!) {
     protocol(id: $id) {
       id
       title
@@ -23,15 +23,15 @@ const GET_PROTOCOL = gql`
       difficulty
       tags
       downloads
-      author {
+      Member {
         id
         name
       }
-      project {
+      Project {
         id
         title
       }
-      document {
+      Document {
         id
         filename
         url

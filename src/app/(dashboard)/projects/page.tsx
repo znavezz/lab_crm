@@ -67,13 +67,11 @@ const GET_PROJECTS = gql`
       description
       startDate
       endDate
-      members {
-        id
-        name
-      }
-      grants {
-        id
-        name
+      ProjectMembers {
+        Member {
+          id
+          name
+        }
       }
       totalInvestment
       createdAt
@@ -83,7 +81,7 @@ const GET_PROJECTS = gql`
 
 const GET_GRANTS = gql`
   query GetGrants {
-    grants {
+    Grant {
       id
       name
       budget
@@ -176,7 +174,11 @@ export default function ProjectsPage() {
     },
   })
 
-  const projects = data?.projects || []
+  // Transform Hasura response to match expected format
+  const projects = (data?.projects || []).map((project: any) => ({
+    ...project,
+    members: project.ProjectMembers?.map((pm: any) => pm.Member) || [],
+  }))
   const grants = grantsData?.grants || []
 
   // Calculate project status and progress for each project

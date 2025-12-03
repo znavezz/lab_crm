@@ -153,6 +153,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.memberId = user.memberId || null;
       }
+      
+      // Add Hasura-specific JWT claims
+      // These claims are used by Hasura to determine user identity and roles
+      token['https://hasura.io/jwt/claims'] = {
+        'x-hasura-allowed-roles': ['user', 'anonymous'],
+        'x-hasura-default-role': 'user',
+        'x-hasura-user-id': token.id,
+        'x-hasura-member-id': token.memberId || '',
+      };
+      
       return token;
     },
     async session({ session, token }) {

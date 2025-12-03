@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BeakerIcon, TrendingUpIcon, AlertCircleIcon, CalendarIcon, ArrowRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StatsCardSkeleton, ChartSkeleton, ListItemSkeleton } from '@/components/skeletons'
+import { cn } from '@/lib/utils'
 
 const GET_DASHBOARD_STATS = gql`
   query GetDashboardStats {

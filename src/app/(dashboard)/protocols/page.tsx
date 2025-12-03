@@ -30,11 +30,11 @@ const GET_PROTOCOLS = gql`
       difficulty
       tags
       downloads
-      author {
+      Member {
         id
         name
       }
-      project {
+      Project {
         id
         title
       }
@@ -46,7 +46,7 @@ const GET_PROTOCOLS = gql`
 
 const GET_MEMBERS = gql`
   query GetMembers {
-    members {
+    Member {
       id
       name
     }
@@ -422,7 +422,12 @@ export default function ProtocolsPage() {
     )
   }
 
-  const protocols = data?.protocols || []
+  // Transform Hasura response to match expected format
+  const protocols = (data?.protocols || []).map((protocol: any) => ({
+    ...protocol,
+    author: protocol.Member || null,
+    project: protocol.Project || null,
+  }))
 
   const filteredProtocols = protocols.filter((protocol: Protocol) => {
     const matchesSearch = protocol.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||

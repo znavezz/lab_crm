@@ -13,22 +13,26 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide-react'
 
 const GET_PUBLICATION = gql`
-  query GetPublication($id: ID!) {
+  query GetPublication($id: String!) {
     publication(id: $id) {
       id
       title
       published
       doi
       url
-      members {
-        id
-        name
-        photoUrl
-        role
+      PublicationMembers {
+        Member {
+          id
+          name
+          photoUrl
+          role
+        }
       }
-      projects {
-        id
-        title
+      PublicationProjects {
+        Project {
+          id
+          title
+        }
       }
       createdAt
     }
