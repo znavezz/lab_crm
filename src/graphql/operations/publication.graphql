@@ -1,0 +1,72 @@
+# Publication Queries and Mutations
+
+query GetPublications {
+  publications {
+    id
+    title
+    published
+    doi
+    url
+    PublicationMembers {
+      Member {
+        id
+        name
+      }
+    }
+    PublicationProjects {
+      Project {
+        id
+        title
+      }
+    }
+    createdAt
+  }
+}
+
+query GetPublication($id: String!) {
+  publication(id: $id) {
+    id
+    title
+    published
+    doi
+    url
+    PublicationMembers {
+      Member {
+        id
+        name
+        photoUrl
+        role
+      }
+    }
+    PublicationProjects {
+      Project {
+        id
+        title
+      }
+    }
+    createdAt
+  }
+}
+
+mutation CreatePublication($object: Publication_insert_input!) {
+  insert_Publication_one(object: $object) {
+    id
+    title
+  }
+}
+
+mutation UpdatePublication($id: String!, $set: Publication_set_input!) {
+  update_Publication_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    title
+    published
+    doi
+    url
+  }
+}
+
+mutation DeletePublication($id: String!) {
+  delete_Publication_by_pk(id: $id) {
+    id
+  }
+}

@@ -1,0 +1,97 @@
+# Member Queries and Mutations
+# Note: Member uses Hasura's default naming - Members for list, Member(id) for single
+
+query GetMembers {
+  Members {
+    id
+    name
+    rank
+    role
+    status
+    scholarship
+    photoUrl
+    createdAt
+  }
+}
+
+query GetMembersBasic {
+  Members {
+    id
+    name
+  }
+}
+
+query GetMember($id: String!) {
+  Member(id: $id) {
+    id
+    name
+    rank
+    role
+    status
+    scholarship
+    photoUrl
+    AcademicInfos {
+      id
+      degree
+      field
+      institution
+      graduationYear
+    }
+    ProjectMembers {
+      Project {
+        id
+        title
+      }
+    }
+    PublicationMembers {
+      Publication {
+        id
+        title
+        published
+      }
+    }
+    Equipment {
+      id
+      name
+      description
+      status
+      serialNumber
+    }
+    joinedDate
+    createdAt
+  }
+}
+
+mutation CreateMember($object: Member_insert_input!) {
+  insert_Member_one(object: $object) {
+    id
+    name
+    rank
+    role
+    status
+  }
+}
+
+mutation UpdateMember($id: String!, $set: Member_set_input!) {
+  update_Member_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    name
+    rank
+    role
+    status
+    photoUrl
+  }
+}
+
+mutation UpdateMemberPhoto($id: String!, $photoUrl: String) {
+  update_Member_by_pk(pk_columns: { id: $id }, _set: { photoUrl: $photoUrl }) {
+    id
+    photoUrl
+  }
+}
+
+mutation DeleteMember($id: String!) {
+  delete_Member_by_pk(id: $id) {
+    id
+  }
+}

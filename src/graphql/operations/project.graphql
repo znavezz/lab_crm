@@ -1,0 +1,81 @@
+# Project Queries and Mutations
+
+query GetProjects {
+  projects {
+    id
+    title
+    description
+    startDate
+    endDate
+    ProjectMembers {
+      Member {
+        id
+        name
+      }
+    }
+    totalInvestment
+    createdAt
+  }
+}
+
+query GetProjectsBasic {
+  projects {
+    id
+    title
+  }
+}
+
+query GetProject($id: String!) {
+  project(id: $id) {
+    id
+    title
+    description
+    startDate
+    endDate
+    ProjectMembers {
+      Member {
+        id
+        name
+        role
+      }
+    }
+    _GrantToProjects {
+      Grant {
+        id
+        name
+        budget
+        remainingBudget
+        Expense {
+          id
+          amount
+          projectId
+        }
+      }
+    }
+    totalInvestment
+    createdAt
+  }
+}
+
+mutation CreateProject($object: Project_insert_input!) {
+  insert_Project_one(object: $object) {
+    id
+    title
+  }
+}
+
+mutation UpdateProject($id: String!, $set: Project_set_input!) {
+  update_Project_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    title
+    description
+    startDate
+    endDate
+  }
+}
+
+mutation DeleteProject($id: String!) {
+  delete_Project_by_pk(id: $id) {
+    id
+  }
+}

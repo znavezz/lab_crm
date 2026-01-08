@@ -1,0 +1,83 @@
+# Protocol Queries and Mutations
+
+query GetProtocols {
+  protocols {
+    id
+    title
+    description
+    category
+    version
+    estimatedTime
+    difficulty
+    tags
+    downloads
+    Member {
+      id
+      name
+    }
+    Project {
+      id
+      title
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetProtocol($id: String!) {
+  protocol(id: $id) {
+    id
+    title
+    description
+    category
+    version
+    estimatedTime
+    difficulty
+    tags
+    downloads
+    materials
+    equipment
+    steps
+    safetyNotes
+    versionHistory
+    Member {
+      id
+      name
+    }
+    Project {
+      id
+      title
+    }
+    Document {
+      id
+      filename
+      url
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateProtocol($object: Protocol_insert_input!) {
+  insert_Protocol_one(object: $object) {
+    id
+    title
+  }
+}
+
+mutation UpdateProtocol($id: String!, $set: Protocol_set_input!) {
+  update_Protocol_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    title
+    description
+    category
+    version
+    difficulty
+  }
+}
+
+mutation DeleteProtocol($id: String!) {
+  delete_Protocol_by_pk(id: $id) {
+    id
+  }
+}

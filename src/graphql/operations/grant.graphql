@@ -1,0 +1,72 @@
+# Grant Queries and Mutations
+
+query GetGrants {
+  grants {
+    id
+    name
+    budget
+    startDate
+    endDate
+    totalSpent
+    remainingBudget
+    GrantProjects {
+      project {
+        id
+        title
+      }
+    }
+    createdAt
+  }
+}
+
+query GetGrant($id: String!) {
+  grant(id: $id) {
+    id
+    name
+    budget
+    startDate
+    endDate
+    totalSpent
+    remainingBudget
+    GrantProjects {
+      project {
+        id
+        title
+        description
+        startDate
+        endDate
+      }
+    }
+    Expense {
+      id
+      description
+      amount
+      date
+    }
+    createdAt
+  }
+}
+
+mutation CreateGrant($object: Grant_insert_input!) {
+  insert_Grant_one(object: $object) {
+    id
+    name
+    budget
+  }
+}
+
+mutation UpdateGrant($id: String!, $set: Grant_set_input!) {
+  update_Grant_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    name
+    budget
+    startDate
+    endDate
+  }
+}
+
+mutation DeleteGrant($id: String!) {
+  delete_Grant_by_pk(id: $id) {
+    id
+  }
+}

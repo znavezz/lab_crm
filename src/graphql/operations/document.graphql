@@ -1,0 +1,86 @@
+# Document Queries and Mutations
+
+query GetDocuments {
+  Document {
+    id
+    filename
+    url
+    projectId
+    Project {
+      id
+      title
+    }
+    memberId
+    Member {
+      id
+      name
+    }
+    Protocols {
+      id
+      title
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetDocumentsByProject($projectId: String!) {
+  Document(where: { projectId: { _eq: $projectId } }) {
+    id
+    filename
+    url
+    createdAt
+  }
+}
+
+query GetDocument($id: String!) {
+  Document_by_pk(id: $id) {
+    id
+    filename
+    url
+    projectId
+    Project {
+      id
+      title
+    }
+    memberId
+    Member {
+      id
+      name
+    }
+    Protocols {
+      id
+      title
+    }
+    NoteTasks {
+      id
+      title
+      content
+      completed
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateDocument($object: Document_insert_input!) {
+  insert_Document_one(object: $object) {
+    id
+    filename
+    url
+  }
+}
+
+mutation UpdateDocument($id: String!, $set: Document_set_input!) {
+  update_Document_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    filename
+    url
+  }
+}
+
+mutation DeleteDocument($id: String!) {
+  delete_Document_by_pk(id: $id) {
+    id
+  }
+}

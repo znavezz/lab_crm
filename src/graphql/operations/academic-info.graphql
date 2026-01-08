@@ -1,0 +1,79 @@
+# AcademicInfo Queries and Mutations
+
+query GetAcademicInfos {
+  AcademicInfo {
+    id
+    degree
+    field
+    institution
+    graduationYear
+    memberId
+    Member {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetAcademicInfosByMember($memberId: String!) {
+  AcademicInfo(where: { memberId: { _eq: $memberId } }) {
+    id
+    degree
+    field
+    institution
+    graduationYear
+    createdAt
+  }
+}
+
+query GetAcademicInfo($id: String!) {
+  AcademicInfo_by_pk(id: $id) {
+    id
+    degree
+    field
+    institution
+    graduationYear
+    memberId
+    Member {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateAcademicInfo($object: AcademicInfo_insert_input!) {
+  insert_AcademicInfo_one(object: $object) {
+    id
+    degree
+    field
+    institution
+    graduationYear
+  }
+}
+
+mutation UpdateAcademicInfo($id: String!, $set: AcademicInfo_set_input!) {
+  update_AcademicInfo_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    degree
+    field
+    institution
+    graduationYear
+  }
+}
+
+mutation DeleteAcademicInfo($id: String!) {
+  delete_AcademicInfo_by_pk(id: $id) {
+    id
+  }
+}
+
+
+
+
+
+
+

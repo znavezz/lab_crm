@@ -1,0 +1,441 @@
+# Auth-related GraphQL operations for NextAuth adapter and repositories
+# These operations are used server-side with admin privileges
+
+# ==================== USER ====================
+
+query AuthGetUserById($id: String!) {
+  User_by_pk(id: $id) {
+    id
+    name
+    email
+    emailVerified
+    image
+    phone
+    phoneVerified
+    password
+    memberId
+    createdAt
+    updatedAt
+  }
+}
+
+query AuthGetUserByEmail($email: String!) {
+  User(where: { email: { _eq: $email } }, limit: 1) {
+    id
+    name
+    email
+    emailVerified
+    image
+    phone
+    phoneVerified
+    password
+    memberId
+    createdAt
+    updatedAt
+  }
+}
+
+query GetUserByPhone($phone: String!) {
+  User(where: { phone: { _eq: $phone } }, limit: 1) {
+    id
+    name
+    email
+    emailVerified
+    image
+    phone
+    phoneVerified
+    password
+    memberId
+    createdAt
+    updatedAt
+  }
+}
+
+query CountUsersByEmail($email: String!) {
+  User_aggregate(where: { email: { _eq: $email } }) {
+    aggregate {
+      count
+    }
+  }
+}
+
+query CountUsersByPhone($phone: String!) {
+  User_aggregate(where: { phone: { _eq: $phone } }) {
+    aggregate {
+      count
+    }
+  }
+}
+
+mutation AuthCreateUser($object: User_insert_input!) {
+  insert_User_one(object: $object) {
+    id
+    name
+    email
+    emailVerified
+    image
+    phone
+    phoneVerified
+    password
+    memberId
+    createdAt
+    updatedAt
+  }
+}
+
+mutation AuthUpdateUser($id: String!, $set: User_set_input!) {
+  update_User_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    name
+    email
+    emailVerified
+    image
+    phone
+    phoneVerified
+    password
+    memberId
+    createdAt
+    updatedAt
+  }
+}
+
+mutation AuthDeleteUser($id: String!) {
+  delete_User_by_pk(id: $id) {
+    id
+  }
+}
+
+# ==================== ACCOUNT ====================
+
+query GetAccountByProvider($provider: String!, $providerAccountId: String!) {
+  Account(where: { 
+    provider: { _eq: $provider }, 
+    providerAccountId: { _eq: $providerAccountId } 
+  }, limit: 1) {
+    id
+    userId
+    type
+    provider
+    providerAccountId
+    refreshToken
+    accessToken
+    expiresAt
+    tokenType
+    scope
+    idToken
+    sessionState
+  }
+}
+
+query GetAccountsByUserId($userId: String!) {
+  Account(where: { userId: { _eq: $userId } }) {
+    id
+    userId
+    type
+    provider
+    providerAccountId
+    refreshToken
+    accessToken
+    expiresAt
+    tokenType
+    scope
+    idToken
+    sessionState
+  }
+}
+
+mutation CreateAccount($object: Account_insert_input!) {
+  insert_Account_one(object: $object) {
+    id
+    userId
+    type
+    provider
+    providerAccountId
+  }
+}
+
+mutation DeleteAccountByProvider($provider: String!, $providerAccountId: String!) {
+  delete_Account(where: { 
+    provider: { _eq: $provider }, 
+    providerAccountId: { _eq: $providerAccountId } 
+  }) {
+    affected_rows
+  }
+}
+
+# ==================== SESSION ====================
+
+query GetSessionByToken($sessionToken: String!) {
+  Session(where: { sessionToken: { _eq: $sessionToken } }, limit: 1) {
+    id
+    sessionToken
+    userId
+    expires
+    User {
+      id
+      name
+      email
+      emailVerified
+      image
+      memberId
+    }
+  }
+}
+
+mutation CreateSession($object: Session_insert_input!) {
+  insert_Session_one(object: $object) {
+    id
+    sessionToken
+    userId
+    expires
+  }
+}
+
+mutation UpdateSession($sessionToken: String!, $set: Session_set_input!) {
+  update_Session(
+    where: { sessionToken: { _eq: $sessionToken } }, 
+    _set: $set
+  ) {
+    returning {
+      id
+      sessionToken
+      userId
+      expires
+    }
+  }
+}
+
+mutation DeleteSessionByToken($sessionToken: String!) {
+  delete_Session(where: { sessionToken: { _eq: $sessionToken } }) {
+    affected_rows
+  }
+}
+
+# ==================== VERIFICATION TOKEN ====================
+
+query GetVerificationToken($identifier: String!, $token: String!) {
+  VerificationToken(where: { 
+    identifier: { _eq: $identifier }, 
+    token: { _eq: $token } 
+  }, limit: 1) {
+    id
+    identifier
+    token
+    expires
+  }
+}
+
+mutation CreateVerificationToken($object: VerificationToken_insert_input!) {
+  insert_VerificationToken_one(object: $object) {
+    id
+    identifier
+    token
+    expires
+  }
+}
+
+mutation DeleteVerificationToken($identifier: String!, $token: String!) {
+  delete_VerificationToken(where: { 
+    identifier: { _eq: $identifier }, 
+    token: { _eq: $token } 
+  }) {
+    returning {
+      id
+      identifier
+      token
+      expires
+    }
+  }
+}
+
+# ==================== AUTHENTICATOR (WebAuthn) ====================
+
+query GetAuthenticatorsByUserId($userId: String!) {
+  Authenticator(where: { userId: { _eq: $userId } }) {
+    credentialID
+    userId
+    providerAccountId
+    credentialPublicKey
+    counter
+    credentialDeviceType
+    credentialBackedUp
+    transports
+  }
+}
+
+query GetAuthenticatorByCredentialId($userId: String!, $credentialID: String!) {
+  Authenticator(where: { 
+    userId: { _eq: $userId }, 
+    credentialID: { _eq: $credentialID } 
+  }, limit: 1) {
+    credentialID
+    userId
+    providerAccountId
+    credentialPublicKey
+    counter
+    credentialDeviceType
+    credentialBackedUp
+    transports
+  }
+}
+
+mutation CreateAuthenticator($object: Authenticator_insert_input!) {
+  insert_Authenticator_one(object: $object) {
+    credentialID
+    userId
+    providerAccountId
+    credentialPublicKey
+    counter
+    credentialDeviceType
+    credentialBackedUp
+    transports
+  }
+}
+
+mutation UpdateAuthenticatorCounter($userId: String!, $credentialID: String!, $counter: Int!) {
+  update_Authenticator(
+    where: { userId: { _eq: $userId }, credentialID: { _eq: $credentialID } },
+    _set: { counter: $counter }
+  ) {
+    affected_rows
+  }
+}
+
+mutation DeleteAuthenticator($userId: String!, $credentialID: String!) {
+  delete_Authenticator(where: { 
+    userId: { _eq: $userId }, 
+    credentialID: { _eq: $credentialID } 
+  }) {
+    affected_rows
+  }
+}
+
+mutation DeleteAuthenticatorsByUserId($userId: String!) {
+  delete_Authenticator(where: { userId: { _eq: $userId } }) {
+    affected_rows
+  }
+}
+
+# ==================== WEBAUTHN CHALLENGE ====================
+
+query GetLatestWebAuthnChallenge($userId: String!, $type: String!, $now: timestamp!) {
+  WebAuthnChallenge(
+    where: { 
+      userId: { _eq: $userId }, 
+      type: { _eq: $type },
+      expiresAt: { _gt: $now }
+    },
+    order_by: { createdAt: desc },
+    limit: 1
+  ) {
+    id
+    userId
+    challenge
+    expiresAt
+    type
+    createdAt
+  }
+}
+
+mutation CreateWebAuthnChallenge($object: WebAuthnChallenge_insert_input!) {
+  insert_WebAuthnChallenge_one(object: $object) {
+    id
+    userId
+    challenge
+    expiresAt
+    type
+    createdAt
+  }
+}
+
+mutation DeleteWebAuthnChallenge($id: String!) {
+  delete_WebAuthnChallenge_by_pk(id: $id) {
+    id
+  }
+}
+
+mutation DeleteWebAuthnChallengesByUserAndType($userId: String!, $type: String!) {
+  delete_WebAuthnChallenge(where: { 
+    userId: { _eq: $userId }, 
+    type: { _eq: $type } 
+  }) {
+    affected_rows
+  }
+}
+
+mutation DeleteExpiredWebAuthnChallenges($now: timestamp!) {
+  delete_WebAuthnChallenge(where: { expiresAt: { _lt: $now } }) {
+    affected_rows
+  }
+}
+
+# ==================== SMS VERIFICATION CODE ====================
+
+query GetLatestSmsCode($userId: String!) {
+  SmsVerificationCode(
+    where: { userId: { _eq: $userId }, verified: { _eq: false } },
+    order_by: { createdAt: desc },
+    limit: 1
+  ) {
+    id
+    userId
+    code
+    expiresAt
+    verified
+    createdAt
+  }
+}
+
+query GetSmsCodeById($id: String!) {
+  SmsVerificationCode_by_pk(id: $id) {
+    id
+    userId
+    code
+    expiresAt
+    verified
+    createdAt
+  }
+}
+
+mutation CreateSmsCode($object: SmsVerificationCode_insert_input!) {
+  insert_SmsVerificationCode_one(object: $object) {
+    id
+    userId
+    code
+    expiresAt
+    verified
+    createdAt
+  }
+}
+
+mutation MarkSmsCodeAsVerified($id: String!) {
+  update_SmsVerificationCode_by_pk(
+    pk_columns: { id: $id },
+    _set: { verified: true }
+  ) {
+    id
+    verified
+  }
+}
+
+mutation DeleteSmsCodesByUserId($userId: String!) {
+  delete_SmsVerificationCode(where: { userId: { _eq: $userId } }) {
+    affected_rows
+  }
+}
+
+mutation DeleteExpiredSmsCodes($now: timestamp!) {
+  delete_SmsVerificationCode(where: { expiresAt: { _lt: $now } }) {
+    affected_rows
+  }
+}
+
+mutation DeleteOldVerifiedSmsCodes($date: timestamp!) {
+  delete_SmsVerificationCode(where: { 
+    verified: { _eq: true }, 
+    createdAt: { _lt: $date } 
+  }) {
+    affected_rows
+  }
+}
+

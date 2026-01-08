@@ -1,0 +1,46 @@
+# Dashboard statistics query (composite query for main dashboard)
+query GetDashboardStats {
+  Members {
+    id
+    name
+    status
+    createdAt
+  }
+  projects {
+    id
+    title
+    startDate
+    endDate
+    createdAt
+  }
+  publications {
+    id
+    title
+    published
+    createdAt
+  }
+  grants {
+    id
+    name
+    startDate
+    endDate
+    createdAt
+  }
+  events {
+    id
+    date
+    title
+  }
+  protocols {
+    id
+    title
+    createdAt
+    updatedAt
+  }
+  equipments {
+    id
+    name
+    createdAt
+  }
+}
+
