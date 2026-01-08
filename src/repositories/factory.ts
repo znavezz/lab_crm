@@ -2,7 +2,7 @@
  * Repository Factory
  * 
  * Dependency Injection container for repositories.
- * Returns the correct repository implementation based on environment configuration.
+ * Now uses Hasura GraphQL for all database operations.
  * 
  * SOLID Benefits:
  * - D (Dependency Inversion): API routes depend on abstract interfaces
@@ -10,43 +10,27 @@
  * - S (Single Responsibility): Factory's only job is creating repositories
  */
 
-import { prisma } from '@/lib/prisma';
 import { IUserRepository } from './interfaces/IUserRepository';
 import { ISmsCodeRepository } from './interfaces/ISmsCodeRepository';
 import { IWebAuthnRepository } from './interfaces/IWebAuthnRepository';
 
-// Prisma implementations (current/default)
-import { PrismaUserRepository } from './prisma/PrismaUserRepository';
-import { PrismaSmsCodeRepository } from './prisma/PrismaSmsCodeRepository';
-import { PrismaWebAuthnRepository } from './prisma/PrismaWebAuthnRepository';
+// Hasura implementations (default)
+import { HasuraUserRepository } from './hasura/HasuraUserRepository';
+import { HasuraSmsCodeRepository } from './hasura/HasuraSmsCodeRepository';
+import { HasuraWebAuthnRepository } from './hasura/HasuraWebAuthnRepository';
 
-// Future implementations (add when deploying to lab server)
-// import { LabApiUserRepository } from './lab/LabApiUserRepository';
-// import { LabApiSmsCodeRepository } from './lab/LabApiSmsCodeRepository';
-// import { LabApiWebAuthnRepository } from './lab/LabApiWebAuthnRepository';
-
-/**
- * Repository configuration type
- * Determines which implementation to use
- */
-type DatabaseType = 'prisma' | 'lab-api' | 'mysql' | 'custom';
-
-/**
- * Get the configured database type from environment
- */
-function getDatabaseType(): DatabaseType {
-  const dbType = process.env.DATABASE_TYPE || 'prisma';
-  return dbType as DatabaseType;
-}
+// Singleton instances (created once, reused)
+let userRepository: IUserRepository | null = null;
+let smsCodeRepository: ISmsCodeRepository | null = null;
+let webAuthnRepository: IWebAuthnRepository | null = null;
 
 /**
  * Get User Repository instance
  * 
- * @returns IUserRepository implementation based on DATABASE_TYPE env var
+ * @returns IUserRepository implementation
  * 
  * @example
  * ```typescript
- * // In API route
  * import { getUserRepository } from '@/repositories/factory';
  * 
  * const userRepo = getUserRepository();
@@ -54,77 +38,34 @@ function getDatabaseType(): DatabaseType {
  * ```
  */
 export function getUserRepository(): IUserRepository {
-  const dbType = getDatabaseType();
-
-  switch (dbType) {
-    case 'prisma':
-      return new PrismaUserRepository(prisma);
-
-    // Add when deploying to lab server:
-    // case 'lab-api':
-    //   return new LabApiUserRepository(
-    //     process.env.LAB_API_URL!,
-    //     process.env.LAB_API_KEY!
-    //   );
-
-    // case 'mysql':
-    //   return new MySQLUserRepository(mysqlConnection);
-
-    default:
-      // Fallback to Prisma
-      console.warn(`Unknown DATABASE_TYPE: ${dbType}, falling back to Prisma`);
-      return new PrismaUserRepository(prisma);
+  if (!userRepository) {
+    userRepository = new HasuraUserRepository();
   }
+  return userRepository;
 }
 
 /**
  * Get SMS Code Repository instance
  * 
- * @returns ISmsCodeRepository implementation based on DATABASE_TYPE env var
+ * @returns ISmsCodeRepository implementation
  */
 export function getSmsCodeRepository(): ISmsCodeRepository {
-  const dbType = getDatabaseType();
-
-  switch (dbType) {
-    case 'prisma':
-      return new PrismaSmsCodeRepository(prisma);
-
-    // Add when deploying to lab server:
-    // case 'lab-api':
-    //   return new LabApiSmsCodeRepository(
-    //     process.env.LAB_API_URL!,
-    //     process.env.LAB_API_KEY!
-    //   );
-
-    default:
-      console.warn(`Unknown DATABASE_TYPE: ${dbType}, falling back to Prisma`);
-      return new PrismaSmsCodeRepository(prisma);
+  if (!smsCodeRepository) {
+    smsCodeRepository = new HasuraSmsCodeRepository();
   }
+  return smsCodeRepository;
 }
 
 /**
  * Get WebAuthn Repository instance
  * 
- * @returns IWebAuthnRepository implementation based on DATABASE_TYPE env var
+ * @returns IWebAuthnRepository implementation
  */
 export function getWebAuthnRepository(): IWebAuthnRepository {
-  const dbType = getDatabaseType();
-
-  switch (dbType) {
-    case 'prisma':
-      return new PrismaWebAuthnRepository(prisma);
-
-    // Add when deploying to lab server:
-    // case 'lab-api':
-    //   return new LabApiWebAuthnRepository(
-    //     process.env.LAB_API_URL!,
-    //     process.env.LAB_API_KEY!
-    //   );
-
-    default:
-      console.warn(`Unknown DATABASE_TYPE: ${dbType}, falling back to Prisma`);
-      return new PrismaWebAuthnRepository(prisma);
+  if (!webAuthnRepository) {
+    webAuthnRepository = new HasuraWebAuthnRepository();
   }
+  return webAuthnRepository;
 }
 
 /**
@@ -147,47 +88,10 @@ export function getRepositories() {
 }
 
 /**
- * Check if using Prisma (for backwards compatibility checks)
+ * Reset all repository instances (useful for testing)
  */
-export function isPrismaDatabase(): boolean {
-  return getDatabaseType() === 'prisma';
+export function resetRepositories(): void {
+  userRepository = null;
+  smsCodeRepository = null;
+  webAuthnRepository = null;
 }
-
-/**
- * Example: How to add a new database implementation
- * 
- * 1. Create new repository files:
- *    - src/repositories/lab/LabApiUserRepository.ts
- *    - src/repositories/lab/LabApiSmsCodeRepository.ts
- *    - src/repositories/lab/LabApiWebAuthnRepository.ts
- * 
- * 2. Implement the interfaces:
- *    ```typescript
- *    export class LabApiUserRepository implements IUserRepository {
- *      constructor(private apiUrl: string, private apiKey: string) {}
- *      
- *      async findById(id: string): Promise<User | null> {
- *        const response = await fetch(`${this.apiUrl}/users/${id}`, {
- *          headers: { 'X-API-Key': this.apiKey }
- *        });
- *        return response.json();
- *      }
- *      
- *      // ... implement all other methods
- *    }
- *    ```
- * 
- * 3. Uncomment the import statements at the top
- * 
- * 4. Uncomment the case statements in each factory function
- * 
- * 5. Set environment variables:
- *    ```bash
- *    DATABASE_TYPE=lab-api
- *    LAB_API_URL=https://lab-server.edu/api
- *    LAB_API_KEY=your-api-key
- *    ```
- * 
- * 6. Done! Zero changes to API routes needed! ✅
- */
-

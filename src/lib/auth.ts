@@ -1,8 +1,7 @@
 import NextAuth, { type DefaultSession } from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import { HasuraAdapter } from './auth/hasura-adapter';
 import EmailProvider from 'next-auth/providers/email';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from './prisma';
 import { getUserRepository, getSmsCodeRepository } from '@/repositories/factory';
 import { verifyPassword } from './auth/password-service';
 import { verifySmsCode } from './auth/sms-service';
@@ -30,7 +29,7 @@ declare module 'next-auth/jwt' {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: HasuraAdapter(),
   session: {
     strategy: 'jwt', // Changed from 'database' to 'jwt' for Credentials providers
     maxAge: 30 * 24 * 60 * 60, // 30 days
