@@ -1,12 +1,11 @@
 // scripts/seed-from-json.ts
 // Seed database from JSON file
+// Uses Hasura GraphQL mutations instead of Prisma
 
 import 'dotenv/config';
-import { PrismaClient } from '@/generated/prisma';
+import { hasuraQuery, checkHasuraConnection } from '../src/lib/hasura-client';
 import * as fs from 'fs';
 import * as path from 'path';
-
-const prisma = new PrismaClient();
 
 interface AcademicInfoInput {
   degree: string;
@@ -29,36 +28,42 @@ interface SeedData {
   members: MemberInput[];
 }
 
+interface Member {
+  id: string;
+  name: string;
+  role?: string;
+}
+
 async function main() {
   const shouldReset = process.argv.includes('--reset');
   const jsonFile = process.argv.find(arg => arg.endsWith('.json')) || 'data/members-template.json';
   const jsonPath = path.resolve(process.cwd(), jsonFile);
 
-  // Check if DATABASE_URL is set
-  if (!process.env.DATABASE_URL) {
-    console.error('❌ Error: DATABASE_URL environment variable is not set!');
-    console.error('   Please set it in your .env.local or .env file');
-    process.exit(1);
-  }
-
   // Check if JSON file exists
   if (!fs.existsSync(jsonPath)) {
     console.error(`❌ Error: JSON file not found: ${jsonPath}`);
     console.error('   Please create the file or specify a different path');
-    console.error('   Example: npm run seed:json -- data/members-template.json');
+    console.error('   Example: npm run db:seed:json -- data/members-template.json');
     process.exit(1);
   }
 
   console.log('🌱 Starting database seed from JSON...\n');
   console.log(`📄 Reading from: ${jsonPath}\n`);
 
-  // Test database connection
+  // Test Hasura connection
   try {
-    await prisma.$connect();
-    console.log('✅ Database connection established\n');
+    const connected = await checkHasuraConnection();
+    if (!connected) {
+      throw new Error('Could not connect to Hasura');
+    }
+    console.log('✅ Hasura connection established\n');
   } catch (error) {
-    console.error('❌ Error connecting to database:');
+    console.error('❌ Error connecting to Hasura:');
     console.error(`   ${error instanceof Error ? error.message : String(error)}`);
+    console.error('\n   Please check:');
+    console.error('   1. Is Hasura running? (docker-compose up -d)');
+    console.error('   2. Is HASURA_ENDPOINT correct?');
+    console.error('   3. Is HASURA_GRAPHQL_ADMIN_SECRET correct?');
     process.exit(1);
   }
 
@@ -74,60 +79,44 @@ async function main() {
   }
 
   // Check if data exists
-  const memberCount = await prisma.member.count();
+  const countData = await hasuraQuery<{ Member_aggregate: { aggregate: { count: number } } }>(
+    `query { Member_aggregate { aggregate { count } } }`
+  );
+  const memberCount = countData.Member_aggregate.aggregate.count;
 
   if (memberCount > 0) {
     if (!shouldReset) {
       console.log('⚠️  Database already contains data!');
-      console.log('   Use --reset flag to clear and reseed: npm run seed:json -- --reset');
+      console.log('   Use --reset flag to clear and reseed: npm run db:seed:json -- --reset');
       process.exit(0);
     }
 
     console.log('🧹 Clearing existing data (--reset flag detected)...\n');
-    
+
     // Delete in correct order to respect foreign key constraints
-    await prisma.noteTask.deleteMany();
-    await prisma.booking.deleteMany();
-    await prisma.expense.deleteMany();
-    await prisma.document.deleteMany();
-    await prisma.publication.deleteMany();
-    await prisma.academicInfo.deleteMany();
-    
-    // Disconnect many-to-many relations (ignore errors if tables don't exist)
-    const relationTables = [
-      '_EventToEquipment',
-      '_EventToMember',
-      '_EventToProject',
-      '_ProjectMembers',
-      '_ProjectToGrant',
-      '_ProjectToPublication',
-      '_ProjectToCollaborator',
-      '_MemberToPublication',
+    const deleteOperations = [
+      'delete_NoteTask(where: {}) { affected_rows }',
+      'delete_Booking(where: {}) { affected_rows }',
+      'delete_Expense(where: {}) { affected_rows }',
+      'delete_Document(where: {}) { affected_rows }',
+      'delete_AcademicInfo(where: {}) { affected_rows }',
+      // Many-to-many junction tables
+      'delete__EventToMember(where: {}) { affected_rows }',
+      'delete__ProjectMembers(where: {}) { affected_rows }',
+      'delete__MemberToPublication(where: {}) { affected_rows }',
+      // Main tables
+      'delete_Member(where: {}) { affected_rows }',
     ];
-    
-    for (const table of relationTables) {
+
+    for (const operation of deleteOperations) {
       try {
-        await prisma.$executeRawUnsafe(`DELETE FROM "${table}"`);
-      } catch (error: unknown) {
-        // Ignore errors if table doesn't exist (error code 42P01)
-        const err = error as { meta?: { code?: string }; code?: string };
-        const errorCode = err?.meta?.code || err?.code;
-        if (errorCode !== '42P01' && errorCode !== 'P2010') {
-          throw error;
-        }
-        // Silently continue if table doesn't exist
+        await hasuraQuery(`mutation { ${operation} }`);
+      } catch {
+        // Ignore errors
       }
     }
-    
-    await prisma.event.deleteMany();
-    await prisma.equipment.deleteMany();
-    await prisma.collaborator.deleteMany();
-    await prisma.grant.deleteMany();
-    await prisma.project.deleteMany();
-    await prisma.member.deleteMany();
-    await prisma.user.deleteMany();
-    
-    console.log('✅ Database cleared.\n');
+
+    console.log('✅ Members cleared.\n');
   }
 
   // Seed members from JSON
@@ -146,34 +135,47 @@ async function main() {
       }
 
       // Create member
-      const member = await prisma.member.create({
-        data: {
-          name: memberData.name,
-          rank: memberData.rank || undefined,
-          status: memberData.status || undefined,
-          role: memberData.role || undefined,
-          scholarship: memberData.scholarship ?? undefined,
-          photoUrl: memberData.photoUrl || undefined,
-          academicInfo: memberData.academicInfo
-            ? {
-                create: memberData.academicInfo.map(academic => ({
-                  degree: academic.degree,
-                  field: academic.field || undefined,
-                  institution: academic.institution || undefined,
-                  graduationYear: academic.graduationYear || undefined,
-                })),
-              }
-            : undefined,
-        },
-        include: {
-          academicInfo: true,
-        },
-      });
+      const memberResult = await hasuraQuery<{ insert_Member_one: Member }>(
+        `mutation CreateMember($object: Member_insert_input!) {
+          insert_Member_one(object: $object) { id name role }
+        }`,
+        {
+          object: {
+            name: memberData.name,
+            rank: memberData.rank || undefined,
+            status: memberData.status || undefined,
+            role: memberData.role || undefined,
+            scholarship: memberData.scholarship ?? undefined,
+            photoUrl: memberData.photoUrl || undefined,
+          },
+        }
+      );
 
-      console.log(`✅ Created: ${member.name} (${member.role || 'No role'})`);
-      if (member.academicInfo.length > 0) {
-        console.log(`   Academic Info: ${member.academicInfo.length} degree(s)`);
+      const member = memberResult.insert_Member_one;
+
+      // Create academic info if provided
+      if (memberData.academicInfo && memberData.academicInfo.length > 0) {
+        for (const academic of memberData.academicInfo) {
+          await hasuraQuery(
+            `mutation CreateAcademicInfo($object: AcademicInfo_insert_input!) {
+              insert_AcademicInfo_one(object: $object) { id }
+            }`,
+            {
+              object: {
+                memberId: member.id,
+                degree: academic.degree,
+                field: academic.field || undefined,
+                institution: academic.institution || undefined,
+                graduationYear: academic.graduationYear || undefined,
+              },
+            }
+          );
+        }
+        console.log(`✅ Created: ${member.name} (${member.role || 'No role'}) with ${memberData.academicInfo.length} degree(s)`);
+      } else {
+        console.log(`✅ Created: ${member.name} (${member.role || 'No role'})`);
       }
+
       createdCount++;
     } catch (error) {
       console.error(`❌ Error creating member "${memberData.name}":`);
@@ -190,16 +192,13 @@ async function main() {
   }
 
   // Final count
-  const finalCount = await prisma.member.count();
-  console.log(`   Total in database: ${finalCount} member(s)\n`);
+  const finalCountData = await hasuraQuery<{ Member_aggregate: { aggregate: { count: number } } }>(
+    `query { Member_aggregate { aggregate { count } } }`
+  );
+  console.log(`   Total in database: ${finalCountData.Member_aggregate.aggregate.count} member(s)\n`);
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Error seeding database:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-
+main().catch((e) => {
+  console.error('❌ Error seeding database:', e);
+  process.exit(1);
+});
