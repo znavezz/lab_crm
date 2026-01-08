@@ -3,7 +3,6 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,116 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, FileTextIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
-
-const GET_EVENT = gql`
-  query GetEvent($id: String!) {
-    event(id: $id) {
-      id
-      title
-      description
-      date
-      location
-      EventMembers {
-        Member {
-          id
-          name
-          photoUrl
-          role
-        }
-      }
-      EventProjects {
-        Project {
-          id
-          title
-        }
-      }
-      NoteTasks {
-        id
-        title
-        completed
-        dueDate
-      }
-      Expense {
-        id
-        description
-        amount
-        date
-      }
-      EventEquipments {
-        Equipment {
-          id
-          name
-          status
-        }
-      }
-      createdAt
-    }
-  }
-`
-
-interface EventAttendee {
-  Member: {
-    id: string
-    name: string
-    photoUrl: string | null
-    role: string | null
-  }
-}
-
-interface EventProject {
-  Project: {
-    id: string
-    title: string
-  }
-}
-
-interface EventTask {
-  NoteTask: {
-    id: string
-    title: string
-    completed: boolean
-    dueDate: string | null
-  }
-}
-
-interface EventExpense {
-  Expense: {
-    id: string
-    description: string
-    amount: number
-    date: string
-  }
-}
-
-interface EventEquipment {
-  Equipment: {
-    id: string
-    name: string
-    status: string
-  }
-}
-
-interface EventDetail {
-  id: string
-  title: string
-  description: string | null
-  date: string
-  location: string | null
-  attendees: EventAttendee[]
-  projects: EventProject[]
-  tasks: EventTask[]
-  expenses: EventExpense[]
-  equipments: EventEquipment[]
-  createdAt: string
-}
-
-interface GetEventData {
-  event: EventDetail | null
-}
+import {
+  GetEventDocument,
+  GetEventQuery,
+  GetEventQueryVariables,
+} from '@/generated/graphql/graphql'
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetEventData>(GET_EVENT, {
+  const { data, loading, error } = useQuery<GetEventQuery, GetEventQueryVariables>(GetEventDocument, {
     variables: { id },
   })
 
@@ -193,15 +91,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const event = data.event
+  const eventData = data.event
 
+  // Transform Hasura response to match expected format
   const transformedEvent = {
-    ...event,
-    attendees: event.attendees?.map((attendee: EventAttendee) => attendee.Member) || [],
-    projects: event.projects?.map((project: EventProject) => project.Project) || [],
-    tasks: event.tasks?.map((task: EventTask) => task.NoteTask) || [],
-    expenses: event.expenses?.map((expense: EventExpense) => expense.Expense) || [],
-    equipments: event.equipments?.map((equipment: EventEquipment) => equipment.Equipment) || [],
+    ...eventData,
+    attendees: eventData?.EventMembers?.map((em: any) => em.Member) || [],
+    projects: eventData?.EventProjects?.map((ep: any) => ep.Project) || [],
+    tasks: eventData?.NoteTasks || [],
+    expenses: eventData?.Expense || [],
+    equipments: eventData?.EventEquipments?.map((ee: any) => ee.Equipment) || [],
   }
   const eventDate = new Date(transformedEvent.date)
   const isPast = eventDate < new Date()

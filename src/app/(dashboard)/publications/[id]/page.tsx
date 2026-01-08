@@ -3,7 +3,6 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,33 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide-react'
-
-const GET_PUBLICATION = gql`
-  query GetPublication($id: String!) {
-    publication(id: $id) {
-      id
-      title
-      published
-      doi
-      url
-      PublicationMembers {
-        Member {
-          id
-          name
-          photoUrl
-          role
-        }
-      }
-      PublicationProjects {
-        Project {
-          id
-          title
-        }
-      }
-      createdAt
-    }
-  }
-`
+import {
+  GetPublicationDocument,
+  GetPublicationQuery,
+  GetPublicationQueryVariables,
+} from '@/generated/graphql/graphql'
 
 interface PublicationMember {
   id: string
@@ -51,28 +28,9 @@ interface PublicationProject {
   title: string
 }
 
-interface PublicationDetail {
-  id: string
-  title: string
-  published: string | null
-  doi: string | null
-  url: string | null
-  members: PublicationMember[]
-  projects: PublicationProject[]
-  createdAt: string
-}
-
-interface GetPublicationData {
-  publication: PublicationDetail
-}
-
-interface GetPublicationVariables {
-  id: string
-}
-
 export default function PublicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetPublicationData, GetPublicationVariables>(GET_PUBLICATION, {
+  const { data, loading, error } = useQuery<GetPublicationQuery, GetPublicationQueryVariables>(GetPublicationDocument, {
     variables: { id },
   })
 
@@ -142,7 +100,13 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
     )
   }
 
-  const pub = data.publication
+  const pubData = data.publication
+  // Transform Hasura response to match expected format
+  const pub = {
+    ...pubData,
+    members: pubData?.PublicationMembers?.map((pm: any) => pm.Member) || [],
+    projects: pubData?.PublicationProjects?.map((pp: any) => pp.Project) || [],
+  }
 
   return (
     <div className="space-y-6">

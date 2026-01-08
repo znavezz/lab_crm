@@ -3,7 +3,6 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,55 +10,15 @@ import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, DollarSignIcon, FolderIcon } from 'lucide-react'
-
-// Type definitions for GraphQL query response
-interface GrantQueryData {
-  grant: {
-    id: string
-    name: string
-    budget: number
-    startDate: string
-    endDate: string
-    totalSpent: number
-    remainingBudget: number
-    projects: Array<{
-      id: string
-      title: string
-      description?: string | null
-      startDate?: string | null
-      endDate?: string | null
-    }>
-    createdAt: string
-  } | null
-}
-
-const GET_GRANT = gql`
-  query GetGrant($id: String!) {
-    grant(id: $id) {
-      id
-      name
-      budget
-      startDate
-      endDate
-      totalSpent
-      remainingBudget
-      GrantProjects {
-        project {
-          id
-          title
-          description
-          startDate
-          endDate
-        }
-      }
-      createdAt
-    }
-  }
-`
+import {
+  GetGrantDocument,
+  GetGrantQuery,
+  GetGrantQueryVariables,
+} from '@/generated/graphql/graphql'
 
 export default function GrantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GrantQueryData>(GET_GRANT, {
+  const { data, loading, error } = useQuery<GetGrantQuery, GetGrantQueryVariables>(GetGrantDocument, {
     variables: { id },
   })
 
@@ -139,7 +98,12 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const grant = data.grant
+  const grantData = data.grant
+  // Transform Hasura response to match expected format
+  const grant = {
+    ...grantData,
+    projects: grantData?.GrantProjects?.map((gp: any) => gp.project) || [],
+  }
   // Calculate progress as percentage of budget spent
   const budgetSpent = grant.totalSpent || 0
   const totalBudget = grant.budget || 0

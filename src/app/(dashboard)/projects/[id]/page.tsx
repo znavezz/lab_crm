@@ -3,7 +3,6 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,40 +10,11 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, UsersIcon, DollarSignIcon } from 'lucide-react'
-
-const GET_PROJECT = gql`
-  query GetProject($id: String!) {
-    project(id: $id) {
-      id
-      title
-      description
-      startDate
-      endDate
-      ProjectMembers {
-        Member {
-          id
-          name
-          role
-        }
-      }
-      _GrantToProjects {
-        Grant {
-          id
-          name
-          budget
-          remainingBudget
-          Expense {
-            id
-            amount
-            projectId
-          }
-        }
-      }
-      totalInvestment
-      createdAt
-    }
-  }
-`
+import {
+  GetProjectDocument,
+  GetProjectQuery,
+  GetProjectQueryVariables,
+} from '@/generated/graphql/graphql'
 
 type ProjectMember = {
   id: string
@@ -76,10 +46,6 @@ type ProjectData = {
   grants?: ProjectGrant[] | null
   totalInvestment?: number | null
   createdAt: string
-}
-
-type GetProjectQueryResult = {
-  project?: ProjectData | null
 }
 
 const statusColors: Record<string, string> = {
@@ -116,7 +82,7 @@ function getProjectProgress(project: { startDate?: string | null; endDate?: stri
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetProjectQueryResult>(GET_PROJECT, {
+  const { data, loading, error } = useQuery<GetProjectQuery, GetProjectQueryVariables>(GetProjectDocument, {
     variables: { id },
   })
 
@@ -186,7 +152,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     )
   }
 
-  const project = data.project
+  const projectData = data.project
+  // Transform Hasura response to match expected format
+  const project: ProjectData = {
+    ...projectData,
+    members: projectData?.ProjectMembers?.map((pm: any) => pm.Member) || [],
+    grants: projectData?._GrantToProjects?.map((gp: any) => ({
+      ...gp.Grant,
+      expenses: gp.Grant?.Expense || [],
+    })) || [],
+  } as ProjectData
   const status = getProjectStatus(project)
   const progress = getProjectProgress(project)
 

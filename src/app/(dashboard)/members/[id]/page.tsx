@@ -3,14 +3,12 @@
 import { use, useState } from 'react'
 import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ListItemSkeleton } from '@/components/skeletons'
 import {
   Dialog,
   DialogContent,
@@ -23,58 +21,13 @@ import {
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { ArrowLeftIcon, CalendarIcon, GraduationCapIcon, DollarSignIcon, BookIcon, CameraIcon, FolderIcon, MicroscopeIcon } from 'lucide-react'
-
-const GET_MEMBER = gql`
-  query GetMember($id: String!) {
-    member(id: $id) {
-      id
-      name
-      rank
-      role
-      status
-      scholarship
-      photoUrl
-      academicInfos {
-        id
-        degree
-        field
-        institution
-        graduationYear
-      }
-      ProjectMembers {
-        Project {
-          id
-          title
-        }
-      }
-      PublicationMembers {
-        Publication {
-          id
-          title
-          published
-        }
-      }
-      Equipment {
-        id
-        name
-        description
-        status
-        serialNumber
-      }
-      joinedDate
-      createdAt
-    }
-  }
-`
-
-const UPDATE_MEMBER_PHOTO = gql`
-  mutation UpdateMemberPhoto($id: String!, $input: UpdateMemberInput!) {
-    updateMember(id: $id, input: $input) {
-      id
-      photoUrl
-    }
-  }
-`
+import {
+  GetMemberDocument,
+  UpdateMemberPhotoDocument,
+  GetMemberQuery,
+  GetMemberQueryVariables,
+  UpdateMemberPhotoMutation,
+} from '@/generated/graphql/graphql'
 
 const roleColors: Record<string, string> = {
   PI: 'bg-primary text-primary-foreground',
@@ -95,69 +48,14 @@ const statusColors: Record<string, string> = {
   ALUMNI: 'bg-secondary text-secondary-foreground',
 }
 
-// Type definitions
-interface AcademicInfo {
-  id: string
-  degree?: string | null
-  field?: string | null
-  institution?: string | null
-  graduationYear?: number | null
-}
-
-interface Project {
-  id: string
-  title?: string | null
-}
-
-interface Publication {
-  id: string
-  title?: string | null
-  published?: string | null
-}
-
-interface Equipment {
-  id: string
-  name?: string | null
-  description?: string | null
-  status?: string | null
-  serialNumber?: string | null
-}
-
-// Hasura response types (nested structure)
-interface ProjectMember {
-  Project: {
-    id: string
-    title: string | null
-  }
-}
-
-interface PublicationMember {
-  Publication: {
-    id: string
-    title: string | null
-    published: string | null
-  }
-}
-
-interface Member {
-  id: string
-  name: string 
-  rank?: string | null
-  role?: string | null
-  status?: string | null
-  scholarship?: number | null
-  photoUrl?: string | null
-  academicInfos?: AcademicInfo[] | null
-  ProjectMembers?: ProjectMember[] | null
-  PublicationMembers?: PublicationMember[] | null
-  equipments?: Equipment[] | null
-  joinedDate?: string | null
-  createdAt: string
-}
-
-interface GetMemberData {
-  member?: Member | null
-}
+// Type aliases from generated types
+type MemberType = NonNullable<GetMemberQuery['Member']>
+type ProjectMember = MemberType['ProjectMembers'][number]
+type PublicationMember = MemberType['PublicationMembers'][number]
+type AcademicInfo = MemberType['AcademicInfos'][number]
+type Project = ProjectMember['Project']
+type Publication = PublicationMember['Publication']
+type Equipment = MemberType['Equipment'][number]
 
 export default function MemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -166,11 +64,11 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   
-  const { data, loading, error, refetch } = useQuery<GetMemberData>(GET_MEMBER, {
+  const { data, loading, error, refetch } = useQuery<GetMemberQuery, GetMemberQueryVariables>(GetMemberDocument, {
     variables: { id },
   })
 
-  const [updateMemberPhoto, { loading: updatingPhoto }] = useMutation(UPDATE_MEMBER_PHOTO, {
+  const [updateMemberPhoto, { loading: updatingPhoto }] = useMutation<UpdateMemberPhotoMutation>(UpdateMemberPhotoDocument, {
     onCompleted: () => {
       toast.success('Profile photo updated successfully')
       setIsPhotoDialogOpen(false)
@@ -220,9 +118,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
       updateMemberPhoto({
         variables: {
           id,
-          input: {
-            photoUrl: null,
-          },
+          photoUrl: null,
         },
       })
       return
@@ -250,9 +146,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
       updateMemberPhoto({
         variables: {
           id,
-          input: {
-            photoUrl: result.url,
-          },
+          photoUrl: result.url,
         },
       })
     } catch (error) {
@@ -331,7 +225,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
     )
   }
 
-  if (!data || !data.member) {
+  if (!data || !data.Member) {
     return (
       <div className="space-y-6">
         <Link href="/members">
@@ -347,14 +241,14 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
     )
   }
 
-  const member = data.member
+  const member = data.Member
   
   // Transform Hasura response to match expected format
   const transformedMember = {
     ...member,
-    projects: member.ProjectMembers?.map((pm: ProjectMember) => pm.Project) || [],
-    publications: member.PublicationMembers?.map((mp: PublicationMember) => mp.Publication) || [],
-    academicInfo: member.academicInfos || [],
+    projects: member?.ProjectMembers?.map((pm: ProjectMember) => pm.Project) || [],
+    publications: member?.PublicationMembers?.map((mp: PublicationMember) => mp.Publication) || [],
+    academicInfo: member?.AcademicInfos || [],
   }
 
   return (
@@ -527,9 +421,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {transformedMember.academicInfos && transformedMember.academicInfos.length > 0 ? (
+              {transformedMember.academicInfo && transformedMember.academicInfo.length > 0 ? (
                 <ul className="space-y-2">
-                  {transformedMember.academicInfos.map((edu: AcademicInfo) => (
+                  {transformedMember.academicInfo.map((edu: AcademicInfo) => (
                     <li key={edu.id} className="text-sm text-muted-foreground flex items-start gap-2">
                       <span className="text-primary mt-1">•</span>
                       <span>
@@ -603,9 +497,9 @@ export default function MemberDetailPage({ params }: { params: Promise<{ id: str
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {transformedMember.equipments && transformedMember.equipments.length > 0 ? (
+              {transformedMember.Equipment && transformedMember.Equipment.length > 0 ? (
                 <ul className="space-y-3">
-                  {transformedMember.equipments.map((equipment: Equipment) => (
+                  {transformedMember.Equipment.map((equipment: Equipment) => (
                     <li key={equipment.id} className="text-sm space-y-1">
                       <div className="flex items-center gap-2">
                         <Link href={`/equipment/${equipment.id}`} className="font-medium text-primary hover:underline">

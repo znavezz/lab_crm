@@ -3,7 +3,6 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BeakerIcon, TrendingUpIcon, AlertCircleIcon, CalendarIcon, ArrowRightIcon } from 'lucide-react'
@@ -11,100 +10,16 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatsCardSkeleton, ChartSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { cn } from '@/lib/utils'
+import { GetDashboardStatsDocument, GetDashboardStatsQuery } from '@/generated/graphql/graphql'
 
-const GET_DASHBOARD_STATS = gql`
-  query GetDashboardStats {
-    members {
-      id
-      name
-      status
-      createdAt
-    }
-    projects {
-      id
-      title
-      startDate
-      endDate
-      createdAt
-    }
-    publications {
-      id
-      title
-      published
-      createdAt
-    }
-    grants {
-      id
-      name
-      startDate
-      endDate
-      createdAt
-    }
-    events {
-      id
-      date
-      title
-    }
-    protocols {
-      id
-      title
-      createdAt
-      updatedAt
-    }
-    equipments {
-      id
-      name
-      createdAt
-    }
-  }
-`
-
-// Type definitions
-interface Member {
-  id: string
-  status?: string
-  name?: string
-  createdAt: string
-}
-
-interface Project {
-  id: string
-  endDate?: string | null
-  title?: string
-  createdAt: string
-}
-
-interface Publication {
-  id: string
-  published?: string | null
-  title?: string
-  createdAt: string
-}
-
-interface Grant {
-  id: string
-  startDate: string
-  endDate: string
-  name?: string
-}
-
-interface Protocol {
-  id: string
-  title?: string
-  createdAt: string
-}
-
-interface Equipment {
-  id: string
-  name?: string
-  createdAt: string
-}
-
-interface Event {
-  id: string
-  date: string
-  title?: string
-}
+// Type aliases from generated types
+type Member = GetDashboardStatsQuery['Members'][number]
+type Project = GetDashboardStatsQuery['projects'][number]
+type Publication = GetDashboardStatsQuery['publications'][number]
+type Grant = GetDashboardStatsQuery['grants'][number]
+type EventType = GetDashboardStatsQuery['events'][number]
+type Protocol = GetDashboardStatsQuery['protocols'][number]
+type Equipment = GetDashboardStatsQuery['equipments'][number]
 
 interface RecentActivity {
   type: string
@@ -115,27 +30,17 @@ interface RecentActivity {
   href: string
 }
 
-interface DashboardData {
-  members?: Member[]
-  projects?: Project[]
-  publications?: Publication[]
-  grants?: Grant[]
-  events?: Event[]
-  protocols?: Protocol[]
-  equipments?: Equipment[]
-}
-
 export default function DashboardPage() {
-  const { data, loading, error } = useQuery<DashboardData>(GET_DASHBOARD_STATS)
+  const { data, loading, error } = useQuery<GetDashboardStatsQuery>(GetDashboardStatsDocument)
 
   // Extract data with proper typing - use useMemo to prevent unnecessary re-renders
-  const members = useMemo(() => (data?.members || []) as Member[], [data?.members])
-  const projects = useMemo(() => (data?.projects || []) as Project[], [data?.projects])
-  const publications = useMemo(() => (data?.publications || []) as Publication[], [data?.publications])
-  const grants = useMemo(() => (data?.grants || []) as Grant[], [data?.grants])
-  const events = useMemo(() => (data?.events || []) as Event[], [data?.events])
-  const protocols = useMemo(() => (data?.protocols || []) as Protocol[], [data?.protocols])
-  const equipments = useMemo(() => (data?.equipments || []) as Equipment[], [data?.equipments])
+  const members = useMemo(() => data?.Members || [], [data?.Members])
+  const projects = useMemo(() => data?.projects || [], [data?.projects])
+  const publications = useMemo(() => data?.publications || [], [data?.publications])
+  const grants = useMemo(() => data?.grants || [], [data?.grants])
+  const events = useMemo(() => data?.events || [], [data?.events])
+  const protocols = useMemo(() => data?.protocols || [], [data?.protocols])
+  const equipments = useMemo(() => data?.equipments || [], [data?.equipments])
 
   // Get recent items - combine all recent activities
   const allRecentActivities = useMemo(() => {

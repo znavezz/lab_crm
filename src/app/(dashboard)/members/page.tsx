@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,52 +31,16 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { SearchIcon, PlusIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Member } from '@/generated/graphql/resolvers-types'
+import {
+  GetMembersDocument,
+  CreateMemberDocument,
+  GetMembersQuery,
+  CreateMemberMutation,
+  Member_Insert_Input,
+} from '@/generated/graphql/graphql'
 
-interface MemberWithPhoto extends Member {
-  photoUrl?: string | null
-}
-
-interface GetMembersData {
-  members: MemberWithPhoto[]
-}
-
-interface CreateMemberData {
-  createMember: {
-    id: string
-    name: string
-    rank?: string | null
-    role?: string | null
-    status?: string | null
-  }
-}
-
-const GET_MEMBERS = gql`
-  query GetMembers {
-    members {
-      id
-      name
-      rank
-      role
-      status
-      scholarship
-      photoUrl
-      createdAt
-    }
-  }
-`
-
-const CREATE_MEMBER = gql`
-  mutation CreateMember($input: CreateMemberInput!) {
-    createMember(input: $input) {
-      id
-      name
-      rank
-      role
-      status
-    }
-  }
-`
+// Type alias for member from query result
+type MemberWithPhoto = NonNullable<GetMembersQuery['Members']>[number]
 
 const roleColors: Record<string, string> = {
   PI: 'bg-primary text-primary-foreground',
@@ -111,21 +74,23 @@ export default function MembersPage() {
     joinedDate: '',
   })
 
-  const { data, loading, error, refetch } = useQuery<GetMembersData>(GET_MEMBERS)
-  const [createMember, { loading: creating }] = useMutation<CreateMemberData>(CREATE_MEMBER, {
+  const { data, loading, error, refetch } = useQuery<GetMembersQuery>(GetMembersDocument)
+  const [createMember, { loading: creating }] = useMutation<CreateMemberMutation>(CreateMemberDocument, {
     onCompleted: (data) => {
       toast.success('Member created successfully')
       setIsDialogOpen(false)
       setFormData({ name: '', rank: '', role: '', status: 'ACTIVE', scholarship: '', joinedDate: '' })
       refetch()
-      router.push(`/members/${data.createMember.id}`)
+      if (data.insert_Member_one?.id) {
+        router.push(`/members/${data.insert_Member_one.id}`)
+      }
     },
     onError: (error) => {
       toast.error(`Failed to create member: ${error.message}`)
     },
   })
 
-  const members = data?.members || []
+  const members = data?.Members || []
   
   const filteredMembers = members.filter((member: MemberWithPhoto) => {
     const matchesSearch = member.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
@@ -145,7 +110,7 @@ export default function MembersPage() {
     e.preventDefault()
     createMember({
       variables: {
-        input: {
+        object: {
           name: formData.name,
           rank: formData.rank || undefined,
           role: formData.role || undefined,

@@ -3,7 +3,6 @@
 import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -11,51 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormField } from '@/components/form-field'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeftIcon } from 'lucide-react'
+import {
+  GetMemberDocument,
+  UpdateMemberDocument,
+  GetMemberQuery,
+  GetMemberQueryVariables,
+  UpdateMemberMutation,
+  Member_Set_Input,
+} from '@/generated/graphql/graphql'
 
 type FormEvent = React.FormEvent<HTMLFormElement>
-
-const GET_MEMBER = gql`
-  query GetMember($id: ID!) {
-    member(id: $id) {
-      id
-      name
-      rank
-      role
-      status
-      scholarship
-      photoUrl
-      joinedDate
-    }
-  }
-`
-
-const UPDATE_MEMBER = gql`
-  mutation UpdateMember($id: ID!, $input: UpdateMemberInput!) {
-    updateMember(id: $id, input: $input) {
-      id
-      name
-      rank
-      role
-      status
-      scholarship
-    }
-  }
-`
-
-interface Member {
-  id: string
-  name?: string | null
-  rank?: string | null
-  role?: string | null
-  status?: string | null
-  scholarship?: number | null
-  photoUrl?: string | null
-  joinedDate?: string | null
-}
-
-interface GetMemberData {
-  member?: Member | null
-}
 
 export default function EditMemberPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -68,11 +32,11 @@ export default function EditMemberPage({ params }: { params: Promise<{ id: strin
     scholarship: '',
   })
 
-  const { data, loading, error } = useQuery<GetMemberData>(GET_MEMBER, {
+  const { data, loading, error } = useQuery<GetMemberQuery, GetMemberQueryVariables>(GetMemberDocument, {
     variables: { id },
   })
 
-  const [updateMember, { loading: updating }] = useMutation(UPDATE_MEMBER, {
+  const [updateMember, { loading: updating }] = useMutation<UpdateMemberMutation>(UpdateMemberDocument, {
     onCompleted: () => {
       toast.success('Member updated successfully')
       router.push(`/members/${id}`)
@@ -83,7 +47,7 @@ export default function EditMemberPage({ params }: { params: Promise<{ id: strin
   })
 
   // Initialize form data when member data is loaded
-  const member = data?.member
+  const member = data?.Member
   useEffect(() => {
     if (member) {
       // Initialize form from fetched member data
@@ -104,13 +68,13 @@ export default function EditMemberPage({ params }: { params: Promise<{ id: strin
     updateMember({
       variables: {
         id,
-        input: {
+        set: {
           name: formData.name || undefined,
           rank: formData.rank || undefined,
           role: formData.role || undefined,
           status: formData.status || undefined,
           scholarship: formData.scholarship ? parseInt(formData.scholarship, 10) : undefined,
-        },
+        } as Member_Set_Input,
       },
     })
   }
@@ -124,7 +88,7 @@ export default function EditMemberPage({ params }: { params: Promise<{ id: strin
     )
   }
 
-  if (error || !data?.member) {
+  if (error || !data?.Member) {
     return (
       <div className="space-y-6">
         <Link href={`/members/${id}`}>

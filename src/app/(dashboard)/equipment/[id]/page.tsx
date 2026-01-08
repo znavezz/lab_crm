@@ -3,7 +3,6 @@
 import { use, useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,94 +14,19 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeftIcon, BeakerIcon, HashIcon, UserIcon, CalendarIcon, AlertTriangleIcon } from 'lucide-react'
-import type {
-  Equipment,
-  Booking,
-  Member,
-  Project,
-  Event,
-  BookingDataQuery,
-  CreateBookingMutationData,
-  UpdateEquipmentMutationData
-} from '@/types/graphql-queries'
-
-const GET_EQUIPMENT = gql`
-  query GetEquipment($id: String!) {
-    equipment(id: $id) {
-      id
-      name
-      description
-      serialNumber
-      status
-      Project {
-        id
-        title
-      }
-      Member {
-        id
-        name
-      }
-      createdAt
-    }
-    bookings {
-      id
-      startTime
-      endTime
-      equipmentId
-      Member {
-        id
-        name
-      }
-    }
-  }
-`
-
-const GET_BOOKING_DATA = gql`
-  query GetBookingData {
-    Member {
-      id
-      name
-    }
-    Project {
-      id
-      title
-    }
-    Event {
-      id
-      title
-      date
-    }
-  }
-`
-
-const CREATE_BOOKING = gql`
-  mutation CreateBooking($input: CreateBookingInput!) {
-    createBooking(input: $input) {
-      id
-      startTime
-      endTime
-      purpose
-    }
-  }
-`
-
-const UPDATE_EQUIPMENT = gql`
-  mutation UpdateEquipment($id: String!, $input: UpdateEquipmentInput!) {
-    updateEquipment(id: $id, input: $input) {
-      id
-      status
-    }
-  }
-`
-
-interface GetEquipmentData {
-  equipment: Equipment
-  bookings: Booking[]
-}
-
-interface GetEquipmentVariables {
-  id: string
-}
+import {
+  GetEquipmentDocument,
+  GetBookingDataDocument,
+  CreateBookingDocument,
+  UpdateEquipmentDocument,
+  GetEquipmentQuery,
+  GetEquipmentQueryVariables,
+  GetBookingDataQuery,
+  CreateBookingMutation,
+  UpdateEquipmentMutation,
+  Booking_Insert_Input,
+  Equipment_Set_Input,
+} from '@/generated/graphql/graphql'
 
 const statusColors: Record<string, string> = {
   AVAILABLE: 'bg-chart-2 text-white',
@@ -121,13 +45,13 @@ interface BookingFormData {
 
 export default function EquipmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetEquipmentData, GetEquipmentVariables>(GET_EQUIPMENT, {
+  const { data, loading, error } = useQuery<GetEquipmentQuery, GetEquipmentQueryVariables>(GetEquipmentDocument, {
     variables: { id },
   })
 
-  const { data: bookingData } = useQuery<BookingDataQuery>(GET_BOOKING_DATA)
-  const [createBooking] = useMutation<CreateBookingMutationData>(CREATE_BOOKING)
-  const [updateEquipment] = useMutation<UpdateEquipmentMutationData>(UPDATE_EQUIPMENT)
+  const { data: bookingData } = useQuery<GetBookingDataQuery>(GetBookingDataDocument)
+  const [createBooking] = useMutation<CreateBookingMutation>(CreateBookingDocument)
+  const [updateEquipment] = useMutation<UpdateEquipmentMutation>(UpdateEquipmentDocument)
 
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false)
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
@@ -234,7 +158,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
 
       if (overlappingBookings.length > 0) {
         const conflictBooking = overlappingBookings[0]
-        const conflictMember = conflictBooking.member?.name || 'Unknown user'
+        const conflictMember = conflictBooking.Member?.name || 'Unknown user'
         setErrorMessage(`Cannot book equipment. It conflicts with an existing booking by ${conflictMember} from ${new Date(conflictBooking.startTime).toLocaleString()} to ${new Date(conflictBooking.endTime).toLocaleString()}.`)
         setIsErrorDialogOpen(true)
         return
@@ -252,14 +176,15 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
       // Create the booking record
       await createBooking({
         variables: {
-          input: {
-            ...bookingForm,
+          object: {
+            purpose: bookingForm.purpose,
+            memberId: bookingForm.memberId,
             equipmentId: id,
             startTime: startTime.toISOString(),
             endTime: endTime.toISOString(),
             projectId: bookingForm.projectId || undefined,
             eventId: bookingForm.eventId || undefined,
-          },
+          } as Booking_Insert_Input,
         },
       })
 
@@ -340,7 +265,13 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
     )
   }
 
-  const equipment = data.equipment
+  const equipmentData = data.equipment
+  // Transform Hasura response to match expected format
+  const equipment = {
+    ...equipmentData,
+    member: equipmentData?.Member || null,
+    project: equipmentData?.Project || null,
+  }
 
   // Compute effective status:
   // 1. If permanently assigned (member/project), equipment is IN_USE (unless MAINTENANCE)
@@ -349,8 +280,8 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
   const now = new Date()
   const hasPermanentAssignment = (equipment.member || equipment.project) && equipment.status !== 'MAINTENANCE'
 
-  // Filter bookings for this specific equipment and check for active bookings
-  const equipmentBookings = data?.bookings?.filter(booking => booking.equipmentId === equipment.id) || []
+  // Get bookings from equipment's nested Bookings
+  const equipmentBookings = equipmentData?.Bookings || []
   const hasActiveBooking = equipmentBookings.some(booking => {
     const startTime = new Date(booking.startTime)
     const endTime = new Date(booking.endTime)
@@ -466,7 +397,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                           <SelectValue placeholder="Select a member" />
                         </SelectTrigger>
                         <SelectContent>
-                          {bookingData?.members?.map((member: Member) => (
+                          {bookingData?.Members?.map((member) => (
                             <SelectItem key={member.id} value={member.id}>
                               {member.name}
                             </SelectItem>
@@ -491,7 +422,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          {(bookingData?.projects || []).map((project: Project) => (
+                          {(bookingData?.projects || []).map((project) => (
                             <SelectItem key={project.id} value={project.id}>
                               {project.title}
                             </SelectItem>
@@ -510,7 +441,7 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          {(bookingData?.events || []).map((event: Event) => (
+                          {(bookingData?.events || []).map((event) => (
                             <SelectItem key={event.id} value={event.id}>
                               {event.title}
                             </SelectItem>

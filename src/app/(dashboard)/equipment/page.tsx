@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -32,77 +31,25 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SearchIcon, PlusIcon } from 'lucide-react'
-import type { 
-  Equipment, 
-  Booking, 
-  Member, 
-  Project,
-  EquipmentsQueryData,
-  MembersQueryData,
-  ProjectsQueryData,
-  CreateEquipmentMutationData
-} from '@/types/graphql-queries'
+import {
+  GetEquipmentsDocument,
+  GetMembersDocument,
+  GetProjectsDocument,
+  CreateEquipmentDocument,
+  GetEquipmentsQuery,
+  GetMembersQuery,
+  GetProjectsQuery,
+  CreateEquipmentMutation,
+} from '@/generated/graphql/graphql'
 
-const GET_EQUIPMENTS = gql`
-  query GetEquipments {
-    equipments {
-      id
-      name
-      description
-      serialNumber
-      status
-      projectId
-      Project {
-        id
-        title
-      }
-      memberId
-      Member {
-        id
-        name
-      }
-      createdAt
-    }
-    bookings {
-      id
-      startTime
-      endTime
-      equipmentId
-      Member {
-        id
-        name
-      }
-    }
-  }
-`
-
-const GET_MEMBERS = gql`
-  query GetMembers {
-    Member {
-      id
-      name
-    }
-  }
-`
-
-const GET_PROJECTS = gql`
-  query GetProjects {
-    Project {
-      id
-      title
-    }
-  }
-`
-
-const CREATE_EQUIPMENT = gql`
-  mutation CreateEquipment($input: CreateEquipmentInput!) {
-    createEquipment(input: $input) {
-      id
-      name
-      status
-    }
-  }
-`
+// Type aliases from generated types
+type Equipment = NonNullable<GetEquipmentsQuery['equipments']>[number] & {
+  project?: { id: string; title: string } | null
+  member?: { id: string; name: string } | null
+}
+type Booking = NonNullable<GetEquipmentsQuery['bookings']>[number]
+type Member = NonNullable<GetMembersQuery['Members']>[number]
+type Project = NonNullable<GetProjectsQuery['projects']>[number]
 
 const statusColors: Record<string, string> = {
   AVAILABLE: 'bg-chart-2 text-white',
@@ -138,10 +85,10 @@ export default function EquipmentPage() {
     projectId: undefined as string | undefined,
   })
 
-  const { data, loading, error, refetch } = useQuery<EquipmentsQueryData>(GET_EQUIPMENTS)
-  const { data: membersData } = useQuery<MembersQueryData>(GET_MEMBERS)
-  const { data: projectsData } = useQuery<ProjectsQueryData>(GET_PROJECTS)
-  const [createEquipment, { loading: creating }] = useMutation<CreateEquipmentMutationData>(CREATE_EQUIPMENT, {
+  const { data, loading, error, refetch } = useQuery<GetEquipmentsQuery>(GetEquipmentsDocument)
+  const { data: membersData } = useQuery<GetMembersQuery>(GetMembersDocument)
+  const { data: projectsData } = useQuery<GetProjectsQuery>(GetProjectsDocument)
+  const [createEquipment, { loading: creating }] = useMutation<CreateEquipmentMutation>(CreateEquipmentDocument, {
     onCompleted: () => {
       toast.success('Equipment created successfully')
       setIsDialogOpen(false)
@@ -207,7 +154,7 @@ export default function EquipmentPage() {
     }
   }
 
-  const members = membersData?.members || []
+  const members = membersData?.Members || []
   const projects = projectsData?.projects || []
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -221,7 +168,7 @@ export default function EquipmentPage() {
 
     createEquipment({
       variables: {
-        input: {
+        object: {
           name: formData.name,
           description: formData.description || undefined,
           serialNumber: formData.serialNumber || undefined,

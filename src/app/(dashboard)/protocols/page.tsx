@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,92 +16,20 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SearchIcon, PlusIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon } from 'lucide-react'
+import {
+  GetProtocolsDocument,
+  GetMembersBasicDocument,
+  CreateProtocolDocument,
+  GetProtocolsQuery,
+  GetMembersBasicQuery,
+  CreateProtocolMutation,
+  Protocol_Insert_Input,
+} from '@/generated/graphql/graphql'
 
-const GET_PROTOCOLS = gql`
-  query GetProtocols {
-    protocols {
-      id
-      title
-      description
-      category
-      version
-      estimatedTime
-      difficulty
-      tags
-      downloads
-      Member {
-        id
-        name
-      }
-      Project {
-        id
-        title
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`
-
-const GET_MEMBERS = gql`
-  query GetMembers {
-    Member {
-      id
-      name
-    }
-  }
-`
-
-type ProtocolAuthor = {
-  id: string
-  name: string
-}
-
-type ProtocolProject = {
-  id: string
-  title: string
-}
-
+// Type aliases from generated types
+type Protocol = NonNullable<GetProtocolsQuery['protocols']>[number]
 type ProtocolCategory = 'WET_LAB' | 'COMPUTATIONAL' | 'SAFETY' | 'GENERAL'
 type ProtocolDifficulty = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
-
-type Protocol = {
-  id: string
-  title: string
-  description?: string | null
-  category: ProtocolCategory
-  version: string
-  estimatedTime?: string | null
-  difficulty: ProtocolDifficulty
-  tags?: string | null
-  downloads: number
-  author?: ProtocolAuthor | null
-  project?: ProtocolProject | null
-  createdAt: string
-  updatedAt: string
-}
-
-type Member = {
-  id: string
-  name: string
-}
-
-type GetProtocolsQueryResult = {
-  protocols: Protocol[]
-}
-
-type GetMembersQueryResult = {
-  members: Member[]
-}
-
-const CREATE_PROTOCOL = gql`
-  mutation CreateProtocol($input: CreateProtocolInput!) {
-    createProtocol(input: $input) {
-      id
-      title
-    }
-  }
-`
 
 const categoryColors: Record<ProtocolCategory, string> = {
   WET_LAB: 'bg-primary text-primary-foreground',
@@ -148,9 +75,9 @@ export default function ProtocolsPage() {
     authorId: '',
   })
 
-  const { data, loading, error, refetch } = useQuery<GetProtocolsQueryResult>(GET_PROTOCOLS)
-  const { data: membersData } = useQuery<GetMembersQueryResult>(GET_MEMBERS)
-  const [createProtocol, { loading: creating }] = useMutation(CREATE_PROTOCOL, {
+  const { data, loading, error, refetch } = useQuery<GetProtocolsQuery>(GetProtocolsDocument)
+  const { data: membersData } = useQuery<GetMembersBasicQuery>(GetMembersBasicDocument)
+  const [createProtocol, { loading: creating }] = useMutation<CreateProtocolMutation>(CreateProtocolDocument, {
     onCompleted: () => {
       toast.success('Protocol created successfully')
       setIsDialogOpen(false)
@@ -171,13 +98,13 @@ export default function ProtocolsPage() {
     },
   })
 
-  const members = membersData?.members || []
+  const members = membersData?.Members || []
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     createProtocol({
       variables: {
-        input: {
+        object: {
           title: formData.title,
           description: formData.description || undefined,
           category: formData.category,
@@ -185,8 +112,8 @@ export default function ProtocolsPage() {
           estimatedTime: formData.estimatedTime || undefined,
           difficulty: formData.difficulty,
           tags: formData.tags || undefined,
-          authorId: formData.authorId || undefined,
-        },
+          memberId: formData.authorId || undefined,
+        } as Protocol_Insert_Input,
       },
     })
   }
@@ -317,7 +244,7 @@ export default function ProtocolsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">None</SelectItem>
-                        {members.map((member: Member) => (
+                        {members.map((member) => (
                           <SelectItem key={member.id} value={member.id}>
                             {member.name}
                           </SelectItem>
@@ -432,7 +359,7 @@ export default function ProtocolsPage() {
   const filteredProtocols = protocols.filter((protocol: Protocol) => {
     const matchesSearch = protocol.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       protocol.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      protocol.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      protocol.Member?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (protocol.tags && protocol.tags.toLowerCase().includes(searchQuery.toLowerCase())) || false
     
     const matchesCategory = categoryFilter === 'ALL' || protocol.category === categoryFilter
@@ -570,7 +497,7 @@ export default function ProtocolsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>
-                      {members.map((member: Member) => (
+                      {members.map((member) => (
                         <SelectItem key={member.id} value={member.id}>
                           {member.name}
                         </SelectItem>
@@ -657,11 +584,11 @@ export default function ProtocolsPage() {
                           <div>
                             <CardTitle className="text-lg">{protocol.title}</CardTitle>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
-                              <Badge className={categoryColors[protocol.category]}>
-                                {categoryLabels[protocol.category]}
+                              <Badge className={categoryColors[protocol.category as ProtocolCategory]}>
+                                {categoryLabels[protocol.category as ProtocolCategory]}
                               </Badge>
-                              <Badge className={difficultyColors[protocol.difficulty]} variant="outline">
-                                {protocol.difficulty}
+                              <Badge className={difficultyColors[protocol.difficulty as ProtocolDifficulty]} variant="outline">
+                                {protocol.difficulty as ProtocolDifficulty}
                               </Badge>
                               <span className="text-xs text-muted-foreground font-mono">
                                 v{protocol.version}
@@ -686,10 +613,10 @@ export default function ProtocolsPage() {
                         <ClockIcon className="h-3.5 w-3.5" />
                         <span>{protocol.estimatedTime}</span>
                       </div>
-                      {protocol.author && (
+                      {protocol.Member && (
                         <div className="flex items-center gap-1.5">
                           <UserIcon className="h-3.5 w-3.5" />
-                          <span>{protocol.author.name}</span>
+                          <span>{protocol.Member.name}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1.5">

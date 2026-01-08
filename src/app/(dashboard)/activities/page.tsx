@@ -3,83 +3,16 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
 import { AlertCircleIcon, ArrowLeftIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-
-const GET_ALL_ACTIVITIES = gql`
-  query GetAllActivities {
-    Member {
-      id
-      name
-      createdAt
-    }
-    Project {
-      id
-      title
-      createdAt
-    }
-    Publication {
-      id
-      title
-      published
-      createdAt
-    }
-    Protocol {
-      id
-      title
-      createdAt
-    }
-    Equipment {
-      id
-      name
-      createdAt
-    }
-  }
-`
-
-interface Member {
-  id: string
-  name: string
-  createdAt: string
-}
-
-interface Project {
-  id: string
-  title: string
-  createdAt: string
-}
-
-interface Publication {
-  id: string
-  title: string
-  published: string | null
-  createdAt: string
-}
-
-interface Protocol {
-  id: string
-  title: string
-  createdAt: string
-}
-
-interface Equipment {
-  id: string
-  name: string
-  createdAt: string
-}
-
-interface GetAllActivitiesData {
-  members: Member[]
-  projects: Project[]
-  publications: Publication[]
-  protocols: Protocol[]
-  equipments: Equipment[]
-}
+import {
+  GetAllActivitiesDocument,
+  GetAllActivitiesQuery,
+} from '@/generated/graphql/graphql'
 
 interface RecentActivity {
   type: string
@@ -90,7 +23,7 @@ interface RecentActivity {
 }
 
 export default function ActivitiesPage() {
-  const { data, loading, error } = useQuery<GetAllActivitiesData>(GET_ALL_ACTIVITIES)
+  const { data, loading, error } = useQuery<GetAllActivitiesQuery>(GetAllActivitiesDocument)
 
   const allActivities = useMemo(() => {
     if (!data) return []
@@ -98,7 +31,7 @@ export default function ActivitiesPage() {
     const activities: RecentActivity[] = []
     
     // Recent members
-    data.members?.forEach((m: Member) => {
+    data.Members?.forEach((m) => {
       activities.push({
         type: 'member',
         message: `New member joined: ${m.name || 'Unknown'}`,
@@ -109,7 +42,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent projects
-    data.projects?.forEach((p: Project) => {
+    data.projects?.forEach((p) => {
       activities.push({
         type: 'project',
         message: `Project created: ${p.title || 'Unknown'}`,
@@ -120,7 +53,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent publications
-    data.publications?.forEach((p: Publication) => {
+    data.publications?.forEach((p) => {
       if (p.published) {
         activities.push({
           type: 'publication',
@@ -141,7 +74,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent protocols
-    data.protocols?.forEach((p: Protocol) => {
+    data.protocols?.forEach((p) => {
       activities.push({
         type: 'protocol',
         message: `Protocol created: ${p.title || 'Unknown'}`,
@@ -152,7 +85,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent equipment
-    data.equipments?.forEach((e: Equipment) => {
+    data.equipments?.forEach((e) => {
       activities.push({
         type: 'equipment',
         message: `Equipment added: ${e.name || 'Unknown'}`,
