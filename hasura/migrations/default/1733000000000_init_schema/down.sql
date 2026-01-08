@@ -85,3 +85,9 @@ DROP TYPE IF EXISTS "MemberStatus";
 DROP TYPE IF EXISTS "MemberRank";
 DROP TYPE IF EXISTS "EquipmentStatus";
 
+
+
+
+
+
+

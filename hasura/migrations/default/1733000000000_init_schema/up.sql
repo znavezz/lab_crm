@@ -476,3 +476,9 @@ ALTER TABLE "_MemberToPublication" ADD CONSTRAINT "_MemberToPublication_B_fkey" 
 ALTER TABLE "_ProjectToPublication" ADD CONSTRAINT "_ProjectToPublication_A_fkey" FOREIGN KEY ("A") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "_ProjectToPublication" ADD CONSTRAINT "_ProjectToPublication_B_fkey" FOREIGN KEY ("B") REFERENCES "Publication"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+
+
+
+
+
+

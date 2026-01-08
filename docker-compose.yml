@@ -62,7 +62,8 @@ services:
       # Admin secret for console access
       HASURA_GRAPHQL_ADMIN_SECRET: hasura_admin_secret_change_in_production
       # JWT configuration for NextAuth.js integration
-      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
+      # Note: Comment out if HASURA_GRAPHQL_JWT_SECRET is not set in .env.local
+      # HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
       # Allow unauthenticated requests (they'll have role 'anonymous')
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
       # Enable remote schema permissions
