@@ -147,9 +147,9 @@ export default function ProjectsPage() {
   })
 
   // Transform Hasura response to match expected format
-  const projects = (data?.projects || []).map((project: any) => ({
+  const projects = (data?.projects || []).map((project: GetProjectsQuery['projects'][number]) => ({
     ...project,
-    members: project.ProjectMembers?.map((pm: any) => pm.Member) || [],
+    members: project.ProjectMembers?.map((pm) => pm.Member) || [],
   }))
   const grants = grantsData?.grants || []
 

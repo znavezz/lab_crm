@@ -13,19 +13,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeftIcon, BeakerIcon, HashIcon, UserIcon, CalendarIcon, AlertTriangleIcon } from 'lucide-react'
+import { ArrowLeftIcon, BeakerIcon, HashIcon, UserIcon, AlertTriangleIcon } from 'lucide-react'
 import {
   GetEquipmentDocument,
   GetBookingDataDocument,
   CreateBookingDocument,
-  UpdateEquipmentDocument,
   GetEquipmentQuery,
   GetEquipmentQueryVariables,
   GetBookingDataQuery,
   CreateBookingMutation,
-  UpdateEquipmentMutation,
   Booking_Insert_Input,
-  Equipment_Set_Input,
 } from '@/generated/graphql/graphql'
 
 const statusColors: Record<string, string> = {
@@ -51,7 +48,6 @@ export default function EquipmentDetailPage({ params }: { params: Promise<{ id: 
 
   const { data: bookingData } = useQuery<GetBookingDataQuery>(GetBookingDataDocument)
   const [createBooking] = useMutation<CreateBookingMutation>(CreateBookingDocument)
-  const [updateEquipment] = useMutation<UpdateEquipmentMutation>(UpdateEquipmentDocument)
 
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false)
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)

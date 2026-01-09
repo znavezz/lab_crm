@@ -189,7 +189,7 @@ export default function AnalyticsPage() {
   // Publications per member (sorted by count)
   const publicationsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
-    pub.PublicationMembers.forEach((pm) => {
+    pub.PublicationMembers.forEach((pm: AnalyticsPublication['PublicationMembers'][number]) => {
       if (!publicationsPerMemberMap[pm.Member.id]) {
         publicationsPerMemberMap[pm.Member.id] = { id: pm.Member.id, name: pm.Member.name, count: 0 }
       }
@@ -203,7 +203,7 @@ export default function AnalyticsPage() {
   // Publications per project (sorted by count)
   const publicationsPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
-    pub.PublicationProjects.forEach((pp) => {
+    pub.PublicationProjects.forEach((pp: AnalyticsPublication['PublicationProjects'][number]) => {
       if (!publicationsPerProjectMap[pp.Project.id]) {
         publicationsPerProjectMap[pp.Project.id] = { id: pp.Project.id, title: pp.Project.title, count: 0 }
       }
@@ -217,7 +217,7 @@ export default function AnalyticsPage() {
   // Projects per member (sorted by count)
   const projectsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   projects.forEach((project: AnalyticsProject) => {
-    project.ProjectMembers.forEach((pm) => {
+    project.ProjectMembers.forEach((pm: AnalyticsProject['ProjectMembers'][number]) => {
       if (!projectsPerMemberMap[pm.Member.id]) {
         projectsPerMemberMap[pm.Member.id] = { id: pm.Member.id, name: pm.Member.name, count: 0 }
       }
@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
     name: grant.name,
     budget: grant.budget || 0,
     projectCount: grant.GrantProjects.length,
-    projects: grant.GrantProjects.map((gp) => ({
+    projects: grant.GrantProjects.map((gp: AnalyticsGrant['GrantProjects'][number]) => ({
       id: gp.project.id,
       title: gp.project.title,
       // Each project gets equal share of the grant budget
@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
   const projectsFundingMap: Record<string, { title: string; grantCount: number; totalFunding: number; grants: string[] }> = {}
   grants.forEach((grant: AnalyticsGrant) => {
     const fundingPerProject = grant.GrantProjects.length > 0 ? (grant.budget || 0) / grant.GrantProjects.length : 0
-    grant.GrantProjects.forEach((gp) => {
+    grant.GrantProjects.forEach((gp: AnalyticsGrant['GrantProjects'][number]) => {
       if (!projectsFundingMap[gp.project.id]) {
         projectsFundingMap[gp.project.id] = {
           title: gp.project.title,
@@ -481,13 +481,13 @@ export default function AnalyticsPage() {
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">With DOI</p>
                     <p className="text-3xl font-bold">
-                      {publications.filter((p) => p.doi).length}
+                      {publications.filter((p: AnalyticsPublication) => p.doi).length}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">This Year</p>
                     <p className="text-3xl font-bold">
-                      {publications.filter((p) => {
+                      {publications.filter((p: AnalyticsPublication) => {
                         const year = p.published ? new Date(p.published).getFullYear() : new Date(p.createdAt).getFullYear()
                         return year === new Date().getFullYear()
                       }).length}
@@ -496,7 +496,7 @@ export default function AnalyticsPage() {
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">Published</p>
                     <p className="text-3xl font-bold">
-                      {publications.filter((p) => p.published).length}
+                      {publications.filter((p: AnalyticsPublication) => p.published).length}
                     </p>
                   </div>
                 </div>
@@ -537,7 +537,7 @@ export default function AnalyticsPage() {
                           outerRadius={80}
                           dataKey="value"
                         >
-                          {projectsByStatus.map((entry, index) => (
+                          {projectsByStatus.map((entry: { name: string; value: number; color: string }, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -929,12 +929,12 @@ export default function AnalyticsPage() {
                             labelLine={false}
                             label={(entry) => `${entry.name}: ${entry.value}`}
                             outerRadius={80}
-                            dataKey="value"
-                          >
-                            {equipmentStatus.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
+                          dataKey="value"
+                        >
+                          {equipmentStatus.map((entry: { name: string; value: number; color: string }, index: number) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Legend />
                         </PieChart>

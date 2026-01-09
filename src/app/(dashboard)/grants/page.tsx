@@ -22,15 +22,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { SearchIcon, PlusIcon, DollarSignIcon, CalendarIcon } from 'lucide-react'
+import { SearchIcon, PlusIcon, CalendarIcon } from 'lucide-react'
 import {
   GetGrantsDocument,
   CreateGrantDocument,
@@ -356,9 +348,9 @@ export default function GrantsPage() {
   }
 
   // Transform Hasura response to match expected format
-  const grants = (data?.grants || []).map((grant: any) => ({
+  const grants = (data?.grants || []).map((grant: GetGrantsQuery['grants'][number]) => ({
     ...grant,
-    projects: grant.GrantProjects?.map((gp: any) => gp.project) || [],
+    projects: grant.GrantProjects?.map((gp) => gp.project) || [],
   }))
 
   const filteredGrants = grants.filter((grant: Grant) => {

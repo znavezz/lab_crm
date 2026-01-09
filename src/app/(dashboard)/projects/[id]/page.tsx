@@ -16,36 +16,17 @@ import {
   GetProjectQueryVariables,
 } from '@/generated/graphql/graphql'
 
-type ProjectMember = {
-  id: string
-  name: string
-  role?: string | null
+// Type aliases from generated types
+type ProjectFromQuery = NonNullable<GetProjectQuery['project']>
+type ProjectMember = ProjectFromQuery['ProjectMembers'][number]['Member']
+type GrantToProject = ProjectFromQuery['_GrantToProjects'][number]
+type ProjectExpense = GrantToProject['Grant']['Expense'][number]
+type ProjectGrant = GrantToProject['Grant'] & {
+  expenses: ProjectExpense[]
 }
-
-type ProjectExpense = {
-  id: string
-  amount: number
-  projectId?: string | null
-}
-
-type ProjectGrant = {
-  id: string
-  name: string
-  budget: number
-  remainingBudget: number
-  expenses?: ProjectExpense[] | null
-}
-
-type ProjectData = {
-  id: string
-  title: string
-  description?: string | null
-  startDate?: string | null
-  endDate?: string | null
-  members?: ProjectMember[] | null
-  grants?: ProjectGrant[] | null
-  totalInvestment?: number | null
-  createdAt: string
+type ProjectData = ProjectFromQuery & {
+  members: ProjectMember[]
+  grants: ProjectGrant[]
 }
 
 const statusColors: Record<string, string> = {
@@ -156,8 +137,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   // Transform Hasura response to match expected format
   const project: ProjectData = {
     ...projectData,
-    members: projectData?.ProjectMembers?.map((pm: any) => pm.Member) || [],
-    grants: projectData?._GrantToProjects?.map((gp: any) => ({
+    members: projectData?.ProjectMembers?.map((pm) => pm.Member) || [],
+    grants: projectData?._GrantToProjects?.map((gp) => ({
       ...gp.Grant,
       expenses: gp.Grant?.Expense || [],
     })) || [],

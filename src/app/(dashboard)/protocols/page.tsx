@@ -350,7 +350,7 @@ export default function ProtocolsPage() {
   }
 
   // Transform Hasura response to match expected format
-  const protocols = (data?.protocols || []).map((protocol: any) => ({
+  const protocols = (data?.protocols || []).map((protocol: GetProtocolsQuery['protocols'][number]) => ({
     ...protocol,
     author: protocol.Member || null,
     project: protocol.Project || null,

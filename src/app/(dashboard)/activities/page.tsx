@@ -14,6 +14,13 @@ import {
   GetAllActivitiesQuery,
 } from '@/generated/graphql/graphql'
 
+// Type aliases from generated types
+type ActivityMember = GetAllActivitiesQuery['Members'][number]
+type ActivityProject = GetAllActivitiesQuery['projects'][number]
+type ActivityPublication = GetAllActivitiesQuery['publications'][number]
+type ActivityProtocol = GetAllActivitiesQuery['protocols'][number]
+type ActivityEquipment = GetAllActivitiesQuery['equipments'][number]
+
 interface RecentActivity {
   type: string
   message: string
@@ -31,7 +38,7 @@ export default function ActivitiesPage() {
     const activities: RecentActivity[] = []
     
     // Recent members
-    data.Members?.forEach((m) => {
+    data.Members?.forEach((m: ActivityMember) => {
       activities.push({
         type: 'member',
         message: `New member joined: ${m.name || 'Unknown'}`,
@@ -42,7 +49,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent projects
-    data.projects?.forEach((p) => {
+    data.projects?.forEach((p: ActivityProject) => {
       activities.push({
         type: 'project',
         message: `Project created: ${p.title || 'Unknown'}`,
@@ -53,7 +60,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent publications
-    data.publications?.forEach((p) => {
+    data.publications?.forEach((p: ActivityPublication) => {
       if (p.published) {
         activities.push({
           type: 'publication',
@@ -74,7 +81,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent protocols
-    data.protocols?.forEach((p) => {
+    data.protocols?.forEach((p: ActivityProtocol) => {
       activities.push({
         type: 'protocol',
         message: `Protocol created: ${p.title || 'Unknown'}`,
@@ -85,7 +92,7 @@ export default function ActivitiesPage() {
     })
     
     // Recent equipment
-    data.equipments?.forEach((e) => {
+    data.equipments?.forEach((e: ActivityEquipment) => {
       activities.push({
         type: 'equipment',
         message: `Equipment added: ${e.name || 'Unknown'}`,

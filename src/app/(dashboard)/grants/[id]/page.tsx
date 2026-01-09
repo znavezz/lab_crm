@@ -3,9 +3,8 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
@@ -102,7 +101,7 @@ export default function GrantDetailPage({ params }: { params: Promise<{ id: stri
   // Transform Hasura response to match expected format
   const grant = {
     ...grantData,
-    projects: grantData?.GrantProjects?.map((gp: any) => gp.project) || [],
+    projects: grantData?.GrantProjects?.map((gp) => gp.project) || [],
   }
   // Calculate progress as percentage of budget spent
   const budgetSpent = grant.totalSpent || 0

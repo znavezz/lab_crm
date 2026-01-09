@@ -29,10 +29,10 @@ export default function EventsPage() {
   const [showGoogleCalendar, setShowGoogleCalendar] = useState(false)
 
   // Transform Hasura response to match expected format
-  const events = (data?.events || []).map((event: any) => ({
+  const events: Event[] = (data?.events || []).map((event: GetEventsQuery['events'][number]) => ({
     ...event,
-    attendees: event.EventMembers?.map((em: any) => em.Member) || [],
-    projects: event.EventProjects?.map((ep: any) => ep.Project) || [],
+    attendees: event.EventMembers?.map((em) => em.Member) || [],
+    projects: event.EventProjects?.map((ep) => ep.Project) || [],
   }))
   const upcomingEvents = events
     .filter((e) => new Date(e.date) >= new Date())

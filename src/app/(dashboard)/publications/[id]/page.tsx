@@ -3,7 +3,7 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -16,17 +16,9 @@ import {
   GetPublicationQueryVariables,
 } from '@/generated/graphql/graphql'
 
-interface PublicationMember {
-  id: string
-  name: string
-  photoUrl: string | null
-  role: string | null
-}
-
-interface PublicationProject {
-  id: string
-  title: string
-}
+// Type aliases from generated types
+type PublicationMember = NonNullable<GetPublicationQuery['publication']>['PublicationMembers'][number]['Member']
+type PublicationProject = NonNullable<GetPublicationQuery['publication']>['PublicationProjects'][number]['Project']
 
 export default function PublicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -104,8 +96,8 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
   // Transform Hasura response to match expected format
   const pub = {
     ...pubData,
-    members: pubData?.PublicationMembers?.map((pm: any) => pm.Member) || [],
-    projects: pubData?.PublicationProjects?.map((pp: any) => pp.Project) || [],
+    members: pubData?.PublicationMembers?.map((pm) => pm.Member) || [],
+    projects: pubData?.PublicationProjects?.map((pp) => pp.Project) || [],
   }
 
   return (
@@ -216,7 +208,7 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
             <Badge variant="secondary" className="ml-2">{pub.members.length}</Badge>
           </div>
           <div className="flex flex-wrap justify-center gap-6 sm:gap-8 py-6">
-            {pub.members.map((member: PublicationMember, index: number) => {
+            {pub.members.map((member: PublicationMember) => {
               const initials = member.name
                 ?.split(' ')
                 .map((n: string) => n[0])

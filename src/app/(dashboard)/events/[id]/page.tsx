@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
-import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, FileTextIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
+import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
 import {
   GetEventDocument,
   GetEventQuery,
@@ -96,11 +96,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   // Transform Hasura response to match expected format
   const transformedEvent = {
     ...eventData,
-    attendees: eventData?.EventMembers?.map((em: any) => em.Member) || [],
-    projects: eventData?.EventProjects?.map((ep: any) => ep.Project) || [],
+    attendees: eventData?.EventMembers?.map((em) => em.Member) || [],
+    projects: eventData?.EventProjects?.map((ep) => ep.Project) || [],
     tasks: eventData?.NoteTasks || [],
     expenses: eventData?.Expense || [],
-    equipments: eventData?.EventEquipments?.map((ee: any) => ee.Equipment) || [],
+    equipments: eventData?.EventEquipments?.map((ee) => ee.Equipment) || [],
   }
   const eventDate = new Date(transformedEvent.date)
   const isPast = eventDate < new Date()

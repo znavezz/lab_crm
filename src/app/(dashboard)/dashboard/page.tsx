@@ -8,16 +8,12 @@ import { Button } from '@/components/ui/button'
 import { UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BeakerIcon, TrendingUpIcon, AlertCircleIcon, CalendarIcon, ArrowRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatsCardSkeleton, ChartSkeleton, ListItemSkeleton } from '@/components/skeletons'
-import { cn } from '@/lib/utils'
 import { GetDashboardStatsDocument, GetDashboardStatsQuery } from '@/generated/graphql/graphql'
 
 // Type aliases from generated types
 type Member = GetDashboardStatsQuery['Members'][number]
 type Project = GetDashboardStatsQuery['projects'][number]
 type Publication = GetDashboardStatsQuery['publications'][number]
-type Grant = GetDashboardStatsQuery['grants'][number]
-type EventType = GetDashboardStatsQuery['events'][number]
 type Protocol = GetDashboardStatsQuery['protocols'][number]
 type Equipment = GetDashboardStatsQuery['equipments'][number]
 
@@ -47,7 +43,7 @@ export default function DashboardPage() {
     const activities: RecentActivity[] = []
     
     // Recent members
-    members.forEach((m) => {
+    members.forEach((m: Member) => {
       activities.push({
         type: 'member',
         message: `New member joined: ${m.name || 'Unknown'}`,
@@ -59,7 +55,7 @@ export default function DashboardPage() {
     })
     
     // Recent projects
-    projects.forEach((p) => {
+    projects.forEach((p: Project) => {
       activities.push({
         type: 'project',
         message: `Project created: ${p.title || 'Unknown'}`,
@@ -71,7 +67,7 @@ export default function DashboardPage() {
     })
     
     // Recent publications
-    publications.forEach((p) => {
+    publications.forEach((p: Publication) => {
       if (p.published) {
         activities.push({
           type: 'publication',
@@ -94,7 +90,7 @@ export default function DashboardPage() {
     })
     
     // Recent protocols
-    protocols.forEach((p) => {
+    protocols.forEach((p: Protocol) => {
       activities.push({
         type: 'protocol',
         message: `Protocol created: ${p.title || 'Unknown'}`,
@@ -106,7 +102,7 @@ export default function DashboardPage() {
     })
     
     // Recent equipment
-    equipments.forEach((e) => {
+    equipments.forEach((e: Equipment) => {
       activities.push({
         type: 'equipment',
         message: `Equipment added: ${e.name || 'Unknown'}`,
@@ -126,7 +122,7 @@ export default function DashboardPage() {
     return allRecentActivities
       .sort((a, b) => b.time.getTime() - a.time.getTime())
       .slice(0, 6)
-      .map((activity) => {
+      .map((activity: RecentActivity) => {
         const timeDiff = now - activity.time.getTime()
         const minutes = Math.floor(timeDiff / 60000)
         const hours = Math.floor(timeDiff / 3600000)

@@ -36,26 +36,13 @@ import {
   Publication_Insert_Input,
 } from '@/generated/graphql/graphql'
 
-interface PublicationMember {
-  id: string
-  name: string
+// Type aliases from generated types
+type PublicationFromQuery = GetPublicationsQuery['publications'][number]
+type Publication = PublicationFromQuery & {
+  members: Array<PublicationFromQuery['PublicationMembers'][number]['Member']>
+  projects: Array<PublicationFromQuery['PublicationProjects'][number]['Project']>
 }
-
-interface PublicationProject {
-  id: string
-  title: string
-}
-
-interface Publication {
-  id: string
-  title: string
-  published: string | null
-  doi: string | null
-  url: string | null
-  members: PublicationMember[]
-  projects: PublicationProject[]
-  createdAt: string
-}
+type PublicationMember = Publication['members'][number]
 
 export default function PublicationsPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -372,10 +359,10 @@ export default function PublicationsPage() {
   }
 
   // Transform Hasura response to match expected format
-  const publications = (data?.publications || []).map((pub: any) => ({
+  const publications = (data?.publications || []).map((pub: GetPublicationsQuery['publications'][number]) => ({
     ...pub,
-    members: pub.PublicationMembers?.map((pm: any) => pm.Member) || [],
-    projects: pub.PublicationProjects?.map((pp: any) => pp.Project) || [],
+    members: pub.PublicationMembers?.map((pm) => pm.Member) || [],
+    projects: pub.PublicationProjects?.map((pp) => pp.Project) || [],
   }))
 
   const filteredPublications = publications.filter((pub: Publication) => {

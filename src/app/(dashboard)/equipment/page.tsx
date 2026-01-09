@@ -427,7 +427,7 @@ export default function EquipmentPage() {
   }
 
   // Transform Hasura response to match expected format
-  const equipments = (data?.equipments || []).map((equipment: any) => ({
+  const equipments = (data?.equipments || []).map((equipment: GetEquipmentsQuery['equipments'][number]) => ({
     ...equipment,
     project: equipment.Project || null,
     member: equipment.Member || null,
