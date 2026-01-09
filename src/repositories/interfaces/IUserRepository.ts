@@ -15,6 +15,7 @@ export interface User {
   phoneVerified: Date | null;
   password: string | null;
   memberId: string | null;
+  role: 'admin' | 'user';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +26,7 @@ export interface CreateUserData {
   password?: string;
   phone?: string;
   memberId?: string;
+  role?: 'admin' | 'user';
 }
 
 export interface UpdateUserData {
@@ -34,6 +36,7 @@ export interface UpdateUserData {
   phone?: string;
   phoneVerified?: Date | null;
   image?: string | null;
+  role?: 'admin' | 'user';
 }
 
 /**

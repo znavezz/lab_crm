@@ -12,11 +12,13 @@ declare module 'next-auth' {
     user: {
       id: string;
       memberId: string | null;
+      role: 'admin' | 'user';
     } & DefaultSession['user'];
   }
 
   interface User {
     memberId?: string | null;
+    role?: 'admin' | 'user';
   }
 }
 
@@ -25,6 +27,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     memberId: string | null;
+    role: 'admin' | 'user';
   }
 }
 
@@ -88,6 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.image,
           memberId: user.memberId,
+          role: user.role || 'user',
         };
       },
     }),
@@ -141,6 +145,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           image: user.image,
           memberId: user.memberId,
+          role: user.role || 'user',
         };
       },
     }),
@@ -151,13 +156,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.memberId = user.memberId || null;
+        token.role = user.role || 'user';
       }
       
       // Add Hasura-specific JWT claims
       // These claims are used by Hasura to determine user identity and roles
+      const userRole = token.role || 'user';
       token['https://hasura.io/jwt/claims'] = {
-        'x-hasura-allowed-roles': ['user', 'anonymous'],
-        'x-hasura-default-role': 'user',
+        'x-hasura-allowed-roles': userRole === 'admin' ? ['admin', 'user', 'anonymous'] : ['user', 'anonymous'],
+        'x-hasura-default-role': userRole,
         'x-hasura-user-id': token.id,
         'x-hasura-member-id': token.memberId || '',
       };
@@ -169,6 +176,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user && token) {
         session.user.id = token.id as string;
         session.user.memberId = token.memberId as string | null;
+        session.user.role = (token.role as 'admin' | 'user') || 'user';
       }
       return session;
     },

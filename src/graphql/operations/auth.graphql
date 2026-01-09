@@ -14,6 +14,7 @@ query AuthGetUserById($id: String!) {
     phoneVerified
     password
     memberId
+    role
     createdAt
     updatedAt
   }
@@ -30,6 +31,7 @@ query AuthGetUserByEmail($email: String!) {
     phoneVerified
     password
     memberId
+    role
     createdAt
     updatedAt
   }
@@ -46,6 +48,7 @@ query GetUserByPhone($phone: String!) {
     phoneVerified
     password
     memberId
+    role
     createdAt
     updatedAt
   }
@@ -78,6 +81,7 @@ mutation AuthCreateUser($object: User_insert_input!) {
     phoneVerified
     password
     memberId
+    role
     createdAt
     updatedAt
   }
@@ -94,6 +98,7 @@ mutation AuthUpdateUser($id: String!, $set: User_set_input!) {
     phoneVerified
     password
     memberId
+    role
     createdAt
     updatedAt
   }

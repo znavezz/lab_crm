@@ -42,6 +42,7 @@ query GetUserByEmail($email: String!) {
     emailVerified
     image
     memberId
+    role
   }
 }
 

@@ -19,7 +19,7 @@ export class HasuraUserRepository implements IUserRepository {
     const data = await hasuraQuery<{ User: User | null }>(
       `query GetUserById($id: String!) {
         User(id: $id) {
-          id name email emailVerified image phone phoneVerified password memberId createdAt updatedAt
+          id name email emailVerified image phone phoneVerified password memberId role createdAt updatedAt
         }
       }`,
       { id }
@@ -32,7 +32,7 @@ export class HasuraUserRepository implements IUserRepository {
     const data = await hasuraQuery<{ User: User[] }>(
       `query GetUserByEmail($email: String!) {
         User(where: { email: { _eq: $email } }, limit: 1) {
-          id name email emailVerified image phone phoneVerified password memberId createdAt updatedAt
+          id name email emailVerified image phone phoneVerified password memberId role createdAt updatedAt
         }
       }`,
       { email: normalizedEmail }
@@ -44,7 +44,7 @@ export class HasuraUserRepository implements IUserRepository {
     const data = await hasuraQuery<{ User: User[] }>(
       `query GetUserByPhone($phone: String!) {
         User(where: { phone: { _eq: $phone } }, limit: 1) {
-          id name email emailVerified image phone phoneVerified password memberId createdAt updatedAt
+          id name email emailVerified image phone phoneVerified password memberId role createdAt updatedAt
         }
       }`,
       { phone }
@@ -83,7 +83,7 @@ export class HasuraUserRepository implements IUserRepository {
     const result = await hasuraQuery<{ insert_User_one: User }>(
       `mutation CreateUser($object: User_insert_input!) {
         insert_User_one(object: $object) {
-          id name email emailVerified image phone phoneVerified password memberId createdAt updatedAt
+          id name email emailVerified image phone phoneVerified password memberId role createdAt updatedAt
         }
       }`,
       {
@@ -100,7 +100,7 @@ export class HasuraUserRepository implements IUserRepository {
     const result = await hasuraQuery<{ update_User_by_pk: User }>(
       `mutation UpdateUser($id: String!, $set: User_set_input!) {
         update_User_by_pk(pk_columns: { id: $id }, _set: $set) {
-          id name email emailVerified image phone phoneVerified password memberId createdAt updatedAt
+          id name email emailVerified image phone phoneVerified password memberId role createdAt updatedAt
         }
       }`,
       { id, set: data }
