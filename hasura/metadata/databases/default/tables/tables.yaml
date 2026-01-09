@@ -14,6 +14,24 @@
       permission:
         columns: '*'
         filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Account
@@ -29,6 +47,24 @@
         filter:
           userId:
             _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Authenticator
@@ -44,6 +80,24 @@
         filter:
           userId:
             _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Booking
@@ -102,6 +156,9 @@
         filter:
           memberId:
             _eq: X-Hasura-Member-Id
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Collaborator
@@ -130,6 +187,24 @@
       permission:
         columns: '*'
         filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Document
@@ -157,6 +232,24 @@
     - role: anonymous
       permission:
         columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
         filter: {}
 
 - table:
@@ -199,6 +292,24 @@
     - role: anonymous
       permission:
         columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
         filter: {}
 
 - table:
@@ -256,6 +367,24 @@
       permission:
         columns: '*'
         filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Expense
@@ -286,6 +415,24 @@
     - role: anonymous
       permission:
         columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
         filter: {}
 
 - table:
@@ -339,6 +486,27 @@
         computed_fields:
           - remainingBudget
           - totalSpent
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - remainingBudget
+          - totalSpent
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Member
@@ -439,6 +607,19 @@
         filter:
           id:
             _eq: X-Hasura-Member-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: NoteTask
@@ -495,6 +676,9 @@
         filter: {}
   delete_permissions:
     - role: user
+      permission:
+        filter: {}
+    - role: admin
       permission:
         filter: {}
 
@@ -598,6 +782,26 @@
         filter: {}
         computed_fields:
           - totalInvestment
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - totalInvestment
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Protocol
@@ -628,6 +832,24 @@
     - role: anonymous
       permission:
         columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
         filter: {}
 
 - table:
@@ -664,6 +886,24 @@
       permission:
         columns: '*'
         filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: Session
@@ -679,6 +919,24 @@
         filter:
           userId:
             _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: SmsVerificationCode
@@ -694,6 +952,24 @@
         filter:
           userId:
             _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: User
@@ -753,6 +1029,24 @@
         filter:
           id:
             _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: VerificationToken
@@ -761,6 +1055,24 @@
     - role: user
       permission:
         columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
         filter: {}
 
 - table:
@@ -777,35 +1089,205 @@
         filter:
           userId:
             _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _CollaboratorToProject
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _EquipmentToEvent
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _EventToMember
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _EventToProject
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _GrantToProject
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _MemberToPublication
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _ProjectMembers
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
 
 - table:
     name: _ProjectToPublication
     schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
