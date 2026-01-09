@@ -23,10 +23,6 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Copy Prisma schema
-COPY prisma ./prisma
-RUN npx prisma generate
-
 # Copy all source files
 COPY . .
 
