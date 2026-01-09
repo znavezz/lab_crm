@@ -1,0 +1,100 @@
+# Booking Queries and Mutations
+
+query GetBookings {
+  bookings {
+    id
+    startTime
+    endTime
+    purpose
+    equipmentId
+    Equipment {
+      id
+      name
+    }
+    memberId
+    Member {
+      id
+      name
+    }
+    projectId
+    Project {
+      id
+      title
+    }
+    eventId
+    Event {
+      id
+      title
+    }
+    createdAt
+  }
+}
+
+query GetBookingData {
+  Members {
+    id
+    name
+  }
+  projects {
+    id
+    title
+  }
+  events {
+    id
+    title
+    date
+  }
+}
+
+query GetBooking($id: String!) {
+  booking(id: $id) {
+    id
+    startTime
+    endTime
+    purpose
+    equipmentId
+    Equipment {
+      id
+      name
+    }
+    memberId
+    Member {
+      id
+      name
+    }
+    projectId
+    Project {
+      id
+      title
+    }
+    eventId
+    Event {
+      id
+      title
+    }
+    createdAt
+  }
+}
+
+mutation CreateBooking($object: Booking_insert_input!) {
+  insert_Booking_one(object: $object) {
+    id
+    startTime
+    endTime
+  }
+}
+
+mutation UpdateBooking($id: String!, $set: Booking_set_input!) {
+  update_Booking_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    startTime
+    endTime
+    purpose
+  }
+}
+
+mutation DeleteBooking($id: String!) {
+  delete_Booking_by_pk(id: $id) {
+    id
+  }
+}

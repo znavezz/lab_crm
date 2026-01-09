@@ -1,0 +1,90 @@
+# Event Queries and Mutations
+
+query GetEvents {
+  events {
+    id
+    title
+    description
+    date
+    location
+    EventMembers {
+      Member {
+        id
+        name
+      }
+    }
+    EventProjects {
+      Project {
+        id
+        title
+      }
+    }
+  }
+}
+
+query GetEvent($id: String!) {
+  event(id: $id) {
+    id
+    title
+    description
+    date
+    location
+    EventMembers {
+      Member {
+        id
+        name
+        photoUrl
+        role
+      }
+    }
+    EventProjects {
+      Project {
+        id
+        title
+      }
+    }
+    NoteTasks {
+      id
+      title
+      completed
+      dueDate
+    }
+    Expense {
+      id
+      description
+      amount
+      date
+    }
+    EventEquipments {
+      Equipment {
+        id
+        name
+        status
+      }
+    }
+    createdAt
+  }
+}
+
+mutation CreateEvent($object: Event_insert_input!) {
+  insert_Event_one(object: $object) {
+    id
+    title
+  }
+}
+
+mutation UpdateEvent($id: String!, $set: Event_set_input!) {
+  update_Event_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    title
+    description
+    date
+    location
+  }
+}
+
+mutation DeleteEvent($id: String!) {
+  delete_Event_by_pk(id: $id) {
+    id
+  }
+}

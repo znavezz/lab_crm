@@ -3,106 +3,19 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { UsersIcon, FolderIcon, FileTextIcon, BanknoteIcon, BeakerIcon, TrendingUpIcon, AlertCircleIcon, CalendarIcon, ArrowRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { GetDashboardStatsDocument, GetDashboardStatsQuery } from '@/generated/graphql/graphql'
 
-const GET_DASHBOARD_STATS = gql`
-  query GetDashboardStats {
-    members {
-      id
-      name
-      status
-      createdAt
-    }
-    projects {
-      id
-      title
-      startDate
-      endDate
-      createdAt
-    }
-    publications {
-      id
-      title
-      published
-      createdAt
-    }
-    grants {
-      id
-      name
-      startDate
-      endDate
-      createdAt
-    }
-    events {
-      id
-      date
-      title
-    }
-    protocols {
-      id
-      title
-      createdAt
-      updatedAt
-    }
-    equipments {
-      id
-      name
-      createdAt
-    }
-  }
-`
-
-// Type definitions
-interface Member {
-  id: string
-  status?: string
-  name?: string
-  createdAt: string
-}
-
-interface Project {
-  id: string
-  endDate?: string | null
-  title?: string
-  createdAt: string
-}
-
-interface Publication {
-  id: string
-  published?: string | null
-  title?: string
-  createdAt: string
-}
-
-interface Grant {
-  id: string
-  startDate: string
-  endDate: string
-  name?: string
-}
-
-interface Protocol {
-  id: string
-  title?: string
-  createdAt: string
-}
-
-interface Equipment {
-  id: string
-  name?: string
-  createdAt: string
-}
-
-interface Event {
-  id: string
-  date: string
-  title?: string
-}
+// Type aliases from generated types
+type Member = GetDashboardStatsQuery['Members'][number]
+type Project = GetDashboardStatsQuery['projects'][number]
+type Publication = GetDashboardStatsQuery['publications'][number]
+type Protocol = GetDashboardStatsQuery['protocols'][number]
+type Equipment = GetDashboardStatsQuery['equipments'][number]
 
 interface RecentActivity {
   type: string
@@ -113,34 +26,24 @@ interface RecentActivity {
   href: string
 }
 
-interface DashboardData {
-  members?: Member[]
-  projects?: Project[]
-  publications?: Publication[]
-  grants?: Grant[]
-  events?: Event[]
-  protocols?: Protocol[]
-  equipments?: Equipment[]
-}
-
 export default function DashboardPage() {
-  const { data, loading, error } = useQuery<DashboardData>(GET_DASHBOARD_STATS)
+  const { data, loading, error } = useQuery<GetDashboardStatsQuery>(GetDashboardStatsDocument)
 
   // Extract data with proper typing - use useMemo to prevent unnecessary re-renders
-  const members = useMemo(() => (data?.members || []) as Member[], [data?.members])
-  const projects = useMemo(() => (data?.projects || []) as Project[], [data?.projects])
-  const publications = useMemo(() => (data?.publications || []) as Publication[], [data?.publications])
-  const grants = useMemo(() => (data?.grants || []) as Grant[], [data?.grants])
-  const events = useMemo(() => (data?.events || []) as Event[], [data?.events])
-  const protocols = useMemo(() => (data?.protocols || []) as Protocol[], [data?.protocols])
-  const equipments = useMemo(() => (data?.equipments || []) as Equipment[], [data?.equipments])
+  const members = useMemo(() => data?.Members || [], [data?.Members])
+  const projects = useMemo(() => data?.projects || [], [data?.projects])
+  const publications = useMemo(() => data?.publications || [], [data?.publications])
+  const grants = useMemo(() => data?.grants || [], [data?.grants])
+  const events = useMemo(() => data?.events || [], [data?.events])
+  const protocols = useMemo(() => data?.protocols || [], [data?.protocols])
+  const equipments = useMemo(() => data?.equipments || [], [data?.equipments])
 
   // Get recent items - combine all recent activities
   const allRecentActivities = useMemo(() => {
     const activities: RecentActivity[] = []
     
     // Recent members
-    members.forEach((m) => {
+    members.forEach((m: Member) => {
       activities.push({
         type: 'member',
         message: `New member joined: ${m.name || 'Unknown'}`,
@@ -152,7 +55,7 @@ export default function DashboardPage() {
     })
     
     // Recent projects
-    projects.forEach((p) => {
+    projects.forEach((p: Project) => {
       activities.push({
         type: 'project',
         message: `Project created: ${p.title || 'Unknown'}`,
@@ -164,7 +67,7 @@ export default function DashboardPage() {
     })
     
     // Recent publications
-    publications.forEach((p) => {
+    publications.forEach((p: Publication) => {
       if (p.published) {
         activities.push({
           type: 'publication',
@@ -187,7 +90,7 @@ export default function DashboardPage() {
     })
     
     // Recent protocols
-    protocols.forEach((p) => {
+    protocols.forEach((p: Protocol) => {
       activities.push({
         type: 'protocol',
         message: `Protocol created: ${p.title || 'Unknown'}`,
@@ -199,7 +102,7 @@ export default function DashboardPage() {
     })
     
     // Recent equipment
-    equipments.forEach((e) => {
+    equipments.forEach((e: Equipment) => {
       activities.push({
         type: 'equipment',
         message: `Equipment added: ${e.name || 'Unknown'}`,
@@ -219,7 +122,7 @@ export default function DashboardPage() {
     return allRecentActivities
       .sort((a, b) => b.time.getTime() - a.time.getTime())
       .slice(0, 6)
-      .map((activity) => {
+      .map((activity: RecentActivity) => {
         const timeDiff = now - activity.time.getTime()
         const minutes = Math.floor(timeDiff / 60000)
         const hours = Math.floor(timeDiff / 3600000)

@@ -1,0 +1,1293 @@
+- table:
+    name: AcademicInfo
+    schema: public
+  object_relationships:
+    - name: member
+      using:
+        foreign_key_constraint_on: memberId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Account
+    schema: public
+  object_relationships:
+    - name: user
+      using:
+        foreign_key_constraint_on: userId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter:
+          userId:
+            _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Authenticator
+    schema: public
+  object_relationships:
+    - name: user
+      using:
+        foreign_key_constraint_on: userId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter:
+          userId:
+            _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Booking
+    schema: public
+  object_relationships:
+    - name: equipment
+      using:
+        foreign_key_constraint_on: equipmentId
+    - name: event
+      using:
+        foreign_key_constraint_on: eventId
+    - name: member
+      using:
+        foreign_key_constraint_on: memberId
+    - name: project
+      using:
+        foreign_key_constraint_on: projectId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: user
+      permission:
+        columns:
+          - endTime
+          - equipmentId
+          - eventId
+          - memberId
+          - projectId
+          - purpose
+          - startTime
+        check: {}
+  update_permissions:
+    - role: user
+      permission:
+        columns:
+          - endTime
+          - equipmentId
+          - eventId
+          - memberId
+          - projectId
+          - purpose
+          - startTime
+        filter:
+          memberId:
+            _eq: X-Hasura-Member-Id
+  delete_permissions:
+    - role: user
+      permission:
+        filter:
+          memberId:
+            _eq: X-Hasura-Member-Id
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Collaborator
+    schema: public
+  array_relationships:
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: collaboratorId
+          table:
+            name: NoteTask
+            schema: public
+    - name: projects
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _CollaboratorToProject
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Document
+    schema: public
+  object_relationships:
+    - name: member
+      using:
+        foreign_key_constraint_on: memberId
+    - name: project
+      using:
+        foreign_key_constraint_on: projectId
+  array_relationships:
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: documentId
+          table:
+            name: NoteTask
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Equipment
+    schema: public
+  object_relationships:
+    - name: member
+      using:
+        foreign_key_constraint_on: memberId
+    - name: project
+      using:
+        foreign_key_constraint_on: projectId
+  array_relationships:
+    - name: bookings
+      using:
+        foreign_key_constraint_on:
+          column: equipmentId
+          table:
+            name: Booking
+            schema: public
+    - name: events
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _EquipmentToEvent
+            schema: public
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: equipmentId
+          table:
+            name: NoteTask
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Event
+    schema: public
+  array_relationships:
+    - name: attendees
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _EventToMember
+            schema: public
+    - name: bookings
+      using:
+        foreign_key_constraint_on:
+          column: eventId
+          table:
+            name: Booking
+            schema: public
+    - name: equipments
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _EquipmentToEvent
+            schema: public
+    - name: expenses
+      using:
+        foreign_key_constraint_on:
+          column: eventId
+          table:
+            name: Expense
+            schema: public
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: eventId
+          table:
+            name: NoteTask
+            schema: public
+    - name: projects
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _EventToProject
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Expense
+    schema: public
+  object_relationships:
+    - name: event
+      using:
+        foreign_key_constraint_on: eventId
+    - name: grant
+      using:
+        foreign_key_constraint_on: grantId
+    - name: project
+      using:
+        foreign_key_constraint_on: projectId
+  array_relationships:
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: expenseId
+          table:
+            name: NoteTask
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Grant
+    schema: public
+  array_relationships:
+    - name: expenses
+      using:
+        foreign_key_constraint_on:
+          column: grantId
+          table:
+            name: Expense
+            schema: public
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: grantId
+          table:
+            name: NoteTask
+            schema: public
+    - name: projects
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _GrantToProject
+            schema: public
+  computed_fields:
+    - name: remainingBudget
+      definition:
+        function:
+          name: grant_remaining_budget
+          schema: public
+    - name: totalSpent
+      definition:
+        function:
+          name: grant_total_spent
+          schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - remainingBudget
+          - totalSpent
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - remainingBudget
+          - totalSpent
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - remainingBudget
+          - totalSpent
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Member
+    schema: public
+  object_relationships:
+    - name: user
+      using:
+        manual_configuration:
+          remote_table:
+            name: User
+            schema: public
+          column_mapping:
+            id: memberId
+  array_relationships:
+    - name: academicInfo
+      using:
+        foreign_key_constraint_on:
+          column: memberId
+          table:
+            name: AcademicInfo
+            schema: public
+    - name: bookings
+      using:
+        foreign_key_constraint_on:
+          column: memberId
+          table:
+            name: Booking
+            schema: public
+    - name: documents
+      using:
+        foreign_key_constraint_on:
+          column: memberId
+          table:
+            name: Document
+            schema: public
+    - name: equipments
+      using:
+        foreign_key_constraint_on:
+          column: memberId
+          table:
+            name: Equipment
+            schema: public
+    - name: events
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _EventToMember
+            schema: public
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: memberId
+          table:
+            name: NoteTask
+            schema: public
+    - name: projects
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _ProjectMembers
+            schema: public
+    - name: protocols
+      using:
+        foreign_key_constraint_on:
+          column: authorId
+          table:
+            name: Protocol
+            schema: public
+    - name: publications
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _MemberToPublication
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+  update_permissions:
+    - role: user
+      permission:
+        columns:
+          - joinedDate
+          - name
+          - photoUrl
+          - rank
+          - role
+          - scholarship
+          - status
+        filter:
+          id:
+            _eq: X-Hasura-Member-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: NoteTask
+    schema: public
+  object_relationships:
+    - name: collaborator
+      using:
+        foreign_key_constraint_on: collaboratorId
+    - name: document
+      using:
+        foreign_key_constraint_on: documentId
+    - name: equipment
+      using:
+        foreign_key_constraint_on: equipmentId
+    - name: event
+      using:
+        foreign_key_constraint_on: eventId
+    - name: expense
+      using:
+        foreign_key_constraint_on: expenseId
+    - name: grant
+      using:
+        foreign_key_constraint_on: grantId
+    - name: member
+      using:
+        foreign_key_constraint_on: memberId
+    - name: project
+      using:
+        foreign_key_constraint_on: projectId
+    - name: protocol
+      using:
+        foreign_key_constraint_on: protocolId
+    - name: publication
+      using:
+        foreign_key_constraint_on: publicationId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: user
+      permission:
+        filter: {}
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Project
+    schema: public
+  array_relationships:
+    - name: bookings
+      using:
+        foreign_key_constraint_on:
+          column: projectId
+          table:
+            name: Booking
+            schema: public
+    - name: collaborators
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _CollaboratorToProject
+            schema: public
+    - name: documents
+      using:
+        foreign_key_constraint_on:
+          column: projectId
+          table:
+            name: Document
+            schema: public
+    - name: equipments
+      using:
+        foreign_key_constraint_on:
+          column: projectId
+          table:
+            name: Equipment
+            schema: public
+    - name: events
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _EventToProject
+            schema: public
+    - name: expenses
+      using:
+        foreign_key_constraint_on:
+          column: projectId
+          table:
+            name: Expense
+            schema: public
+    - name: grants
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _GrantToProject
+            schema: public
+    - name: members
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _ProjectMembers
+            schema: public
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: projectId
+          table:
+            name: NoteTask
+            schema: public
+    - name: protocols
+      using:
+        foreign_key_constraint_on:
+          column: projectId
+          table:
+            name: Protocol
+            schema: public
+    - name: publications
+      using:
+        foreign_key_constraint_on:
+          column: A
+          table:
+            name: _ProjectToPublication
+            schema: public
+  computed_fields:
+    - name: totalInvestment
+      definition:
+        function:
+          name: project_total_investment
+          schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - totalInvestment
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - totalInvestment
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+        computed_fields:
+          - totalInvestment
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Protocol
+    schema: public
+  object_relationships:
+    - name: author
+      using:
+        foreign_key_constraint_on: authorId
+    - name: document
+      using:
+        foreign_key_constraint_on: documentId
+    - name: project
+      using:
+        foreign_key_constraint_on: projectId
+  array_relationships:
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: protocolId
+          table:
+            name: NoteTask
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Publication
+    schema: public
+  array_relationships:
+    - name: members
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _MemberToPublication
+            schema: public
+    - name: noteTasks
+      using:
+        foreign_key_constraint_on:
+          column: publicationId
+          table:
+            name: NoteTask
+            schema: public
+    - name: projects
+      using:
+        foreign_key_constraint_on:
+          column: B
+          table:
+            name: _ProjectToPublication
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: anonymous
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: Session
+    schema: public
+  object_relationships:
+    - name: user
+      using:
+        foreign_key_constraint_on: userId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter:
+          userId:
+            _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: SmsVerificationCode
+    schema: public
+  object_relationships:
+    - name: user
+      using:
+        foreign_key_constraint_on: userId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter:
+          userId:
+            _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: User
+    schema: public
+  object_relationships:
+    - name: member
+      using:
+        foreign_key_constraint_on: memberId
+  array_relationships:
+    - name: accounts
+      using:
+        foreign_key_constraint_on:
+          column: userId
+          table:
+            name: Account
+            schema: public
+    - name: authenticators
+      using:
+        foreign_key_constraint_on:
+          column: userId
+          table:
+            name: Authenticator
+            schema: public
+    - name: sessions
+      using:
+        foreign_key_constraint_on:
+          column: userId
+          table:
+            name: Session
+            schema: public
+    - name: smsVerificationCodes
+      using:
+        foreign_key_constraint_on:
+          column: userId
+          table:
+            name: SmsVerificationCode
+            schema: public
+    - name: webAuthnChallenges
+      using:
+        foreign_key_constraint_on:
+          column: userId
+          table:
+            name: WebAuthnChallenge
+            schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns:
+          - id
+          - name
+          - email
+          - emailVerified
+          - image
+          - memberId
+          - createdAt
+          - updatedAt
+        filter:
+          id:
+            _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: VerificationToken
+    schema: public
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter: {}
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: WebAuthnChallenge
+    schema: public
+  object_relationships:
+    - name: user
+      using:
+        foreign_key_constraint_on: userId
+  select_permissions:
+    - role: user
+      permission:
+        columns: '*'
+        filter:
+          userId:
+            _eq: X-Hasura-User-Id
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _CollaboratorToProject
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _EquipmentToEvent
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _EventToMember
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _EventToProject
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _GrantToProject
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _MemberToPublication
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _ProjectMembers
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}
+
+- table:
+    name: _ProjectToPublication
+    schema: public
+  select_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  insert_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        check: {}
+  update_permissions:
+    - role: admin
+      permission:
+        columns: '*'
+        filter: {}
+  delete_permissions:
+    - role: admin
+      permission:
+        filter: {}

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { useTheme } from 'next-themes'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,49 +12,28 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { GetEventsDocument, GetEventsQuery } from '@/generated/graphql/graphql'
 
-const GET_EVENTS = gql`
-  query GetEvents {
-    events {
-      id
-      title
-      description
-      date
-      location
-      attendees {
-        id
-        name
-      }
-      projects {
-        id
-        title
-      }
-    }
-  }
-`
-
-interface Event {
-  id: string
-  title: string
-  description: string | null
-  date: string
-  location: string | null
+// Type alias from generated types
+type EventFromQuery = NonNullable<GetEventsQuery['events']>[number]
+type Event = EventFromQuery & {
   attendees: Array<{ id: string; name: string }>
   projects: Array<{ id: string; title: string }>
 }
 
-interface GetEventsData {
-  events: Event[]
-}
-
 export default function EventsPage() {
-  const { data, loading, error } = useQuery<GetEventsData>(GET_EVENTS)
+  const { data, loading, error } = useQuery<GetEventsQuery>(GetEventsDocument)
   const { theme, resolvedTheme } = useTheme()
   const [googleCalendarInput, setGoogleCalendarInput] = useState('')
   const [googleCalendarId, setGoogleCalendarId] = useState('')
   const [showGoogleCalendar, setShowGoogleCalendar] = useState(false)
 
-  const events = data?.events || []
+  // Transform Hasura response to match expected format
+  const events: Event[] = (data?.events || []).map((event: GetEventsQuery['events'][number]) => ({
+    ...event,
+    attendees: event.EventMembers?.map((em) => em.Member) || [],
+    projects: event.EventProjects?.map((ep) => ep.Project) || [],
+  }))
   const upcomingEvents = events
     .filter((e) => new Date(e.date) >= new Date())
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())

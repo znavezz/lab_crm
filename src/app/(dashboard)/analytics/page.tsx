@@ -3,188 +3,37 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartSkeleton } from '@/components/skeletons'
 import { Badge } from '@/components/ui/badge'
-import { Bar, BarChart, Line, LineChart, Pie, PieChart, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { Bar, BarChart, Pie, PieChart, Cell, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import {
+  GetAnalyticsDataDocument,
+  GetAnalyticsDataQuery,
+} from '@/generated/graphql/graphql'
 
-const GET_ANALYTICS_DATA = gql`
-  query GetAnalyticsData {
-    publications {
-      id
-      published
-      doi
-      createdAt
-      members {
-        id
-        name
-      }
-      projects {
-        id
-        title
-      }
-    }
-    projects {
-      id
-      title
-      startDate
-      endDate
-      createdAt
-      members {
-        id
-        name
-      }
-    }
-    grants {
-      id
-      name
-      budget
-      startDate
-      endDate
-      createdAt
-      totalSpent
-      remainingBudget
-      expenses {
-        id
-        amount
-      }
-      projects {
-        id
-        title
-        members {
-          id
-          name
-        }
-      }
-    }
-    equipments {
-      id
-      name
-      status
-      member {
-        id
-        name
-      }
-      project {
-        id
-        title
-      }
-    }
-    members {
-      id
-      name
-      role
-      status
-    }
-    protocols {
-      id
-      category
-    }
-  }
-`
+// Type aliases derived from generated query types
+type AnalyticsPublication = GetAnalyticsDataQuery['publications'][number]
+type AnalyticsProject = GetAnalyticsDataQuery['projects'][number]
+type AnalyticsGrant = GetAnalyticsDataQuery['grants'][number]
+type AnalyticsEquipment = GetAnalyticsDataQuery['equipments'][number]
+type AnalyticsMember = GetAnalyticsDataQuery['Members'][number]
+type AnalyticsProtocol = GetAnalyticsDataQuery['protocols'][number]
 
-interface PublicationMember {
+// Derived type for grants with computed project data
+type GrantWithProjects = {
   id: string
   name: string
-}
-
-interface PublicationProject {
-  id: string
-  title: string
-}
-
-interface AnalyticsPublication {
-  id: string
-  published: string | null
-  doi?: string | null
-  createdAt: string
-  members: PublicationMember[]
-  projects: PublicationProject[]
-}
-
-interface ProjectMember {
-  id: string
-  name: string
-}
-
-interface AnalyticsProject {
-  id: string
-  title: string
-  startDate: string | null
-  endDate: string | null
-  createdAt: string
-  members: ProjectMember[]
-}
-
-interface GrantProject {
-  id: string
-  title: string
-  members: Array<{ id: string; name: string }>
-}
-
-interface GrantExpense {
-  id: string
-  amount: number
-}
-
-interface AnalyticsGrant {
-  id: string
-  name: string
-  budget: number | null
-  startDate: string | null
-  endDate: string | null
-  createdAt: string
-  totalSpent?: number
-  remainingBudget?: number
-  expenses?: GrantExpense[]
-  projects: GrantProject[]
-}
-
-interface EquipmentMember {
-  id: string
-  name: string
-}
-
-interface EquipmentProject {
-  id: string
-  title: string
-}
-
-interface AnalyticsEquipment {
-  id: string
-  name: string
-  status: string
-  member: EquipmentMember | null
-  project: EquipmentProject | null
-}
-
-interface AnalyticsMember {
-  id: string
-  name: string
-  role: string | null
-  status: string | null
-}
-
-interface AnalyticsProtocol {
-  id: string
-  category: string | null
-}
-
-interface GetAnalyticsData {
-  publications: AnalyticsPublication[]
-  projects: AnalyticsProject[]
-  grants: AnalyticsGrant[]
-  equipments: AnalyticsEquipment[]
-  members: AnalyticsMember[]
-  protocols: AnalyticsProtocol[]
+  budget: number
+  projectCount: number
+  projects: { id: string; title: string; funding: number }[]
 }
 
 export default function AnalyticsPage() {
   const router = useRouter()
-  const { data, loading, error } = useQuery<GetAnalyticsData>(GET_ANALYTICS_DATA)
+  const { data, loading, error } = useQuery<GetAnalyticsDataQuery>(GetAnalyticsDataDocument)
 
   if (loading) {
     return (
@@ -244,11 +93,16 @@ export default function AnalyticsPage() {
     )
   }
 
+  // Transform Hasura response to match expected format
   const publications = data?.publications || []
   const projects = data?.projects || []
   const grants = data?.grants || []
-  const equipments = data?.equipments || []
-  const members = data?.members || []
+  const equipments = (data?.equipments || []).map((equipment: AnalyticsEquipment) => ({
+    ...equipment,
+    member: equipment.Member || null,
+    project: equipment.Project || null,
+  }))
+  const members = data?.Members || []
   const protocols = data?.protocols || []
 
   // Calculate publications per year
@@ -285,14 +139,14 @@ export default function AnalyticsPage() {
     const endDatePassed = grant.endDate ? new Date(grant.endDate) < now : false
     const budgetSpent = grant.totalSpent !== undefined
       ? grant.totalSpent >= (grant.budget || 0)
-      : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0) >= (grant.budget || 0)
+      : (grant.Expense?.reduce((sum: number, exp) => sum + exp.amount, 0) || 0) >= (grant.budget || 0)
     return !endDatePassed && !budgetSpent
   })
   const completedGrants = grants.filter((grant: AnalyticsGrant) => {
     const endDatePassed = grant.endDate ? new Date(grant.endDate) < now : false
     const totalSpent = grant.totalSpent !== undefined
       ? grant.totalSpent
-      : (grant.expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0)
+      : (grant.Expense?.reduce((sum: number, exp) => sum + exp.amount, 0) || 0)
     const budgetSpent = totalSpent >= (grant.budget || 0)
     return endDatePassed || budgetSpent
   })
@@ -327,19 +181,19 @@ export default function AnalyticsPage() {
     const category = p.category || 'GENERAL'
     protocolsByCategoryMap[category] = (protocolsByCategoryMap[category] || 0) + 1
   })
-  const protocolsByCategory = Object.keys(protocolsByCategoryMap).map(category => ({
-    category: category.replace('_', ' '),
-    count: protocolsByCategoryMap[category],
-  }))
+  // const protocolsByCategory = Object.keys(protocolsByCategoryMap).map(category => ({
+  //   category: category.replace('_', ' '),
+  //   count: protocolsByCategoryMap[category],
+  // }))
 
   // Publications per member (sorted by count)
   const publicationsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
-    pub.members.forEach((member) => {
-      if (!publicationsPerMemberMap[member.id]) {
-        publicationsPerMemberMap[member.id] = { id: member.id, name: member.name, count: 0 }
+    pub.PublicationMembers.forEach((pm: AnalyticsPublication['PublicationMembers'][number]) => {
+      if (!publicationsPerMemberMap[pm.Member.id]) {
+        publicationsPerMemberMap[pm.Member.id] = { id: pm.Member.id, name: pm.Member.name, count: 0 }
       }
-      publicationsPerMemberMap[member.id].count++
+      publicationsPerMemberMap[pm.Member.id].count++
     })
   })
   const publicationsPerMember = Object.values(publicationsPerMemberMap)
@@ -349,11 +203,11 @@ export default function AnalyticsPage() {
   // Publications per project (sorted by count)
   const publicationsPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   publications.forEach((pub: AnalyticsPublication) => {
-    pub.projects.forEach((project) => {
-      if (!publicationsPerProjectMap[project.id]) {
-        publicationsPerProjectMap[project.id] = { id: project.id, title: project.title, count: 0 }
+    pub.PublicationProjects.forEach((pp: AnalyticsPublication['PublicationProjects'][number]) => {
+      if (!publicationsPerProjectMap[pp.Project.id]) {
+        publicationsPerProjectMap[pp.Project.id] = { id: pp.Project.id, title: pp.Project.title, count: 0 }
       }
-      publicationsPerProjectMap[project.id].count++
+      publicationsPerProjectMap[pp.Project.id].count++
     })
   })
   const publicationsPerProject = Object.values(publicationsPerProjectMap)
@@ -363,11 +217,11 @@ export default function AnalyticsPage() {
   // Projects per member (sorted by count)
   const projectsPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   projects.forEach((project: AnalyticsProject) => {
-    project.members.forEach((member) => {
-      if (!projectsPerMemberMap[member.id]) {
-        projectsPerMemberMap[member.id] = { id: member.id, name: member.name, count: 0 }
+    project.ProjectMembers.forEach((pm: AnalyticsProject['ProjectMembers'][number]) => {
+      if (!projectsPerMemberMap[pm.Member.id]) {
+        projectsPerMemberMap[pm.Member.id] = { id: pm.Member.id, name: pm.Member.name, count: 0 }
       }
-      projectsPerMemberMap[member.id].count++
+      projectsPerMemberMap[pm.Member.id].count++
     })
   })
   const projectsPerMember = Object.values(projectsPerMemberMap)
@@ -379,18 +233,18 @@ export default function AnalyticsPage() {
     id: grant.id,
     name: grant.name,
     budget: grant.budget || 0,
-    projectCount: grant.projects.length,
-    projects: grant.projects.map((project) => ({
-      id: project.id,
-      title: project.title,
+    projectCount: grant.GrantProjects.length,
+    projects: grant.GrantProjects.map((gp: AnalyticsGrant['GrantProjects'][number]) => ({
+      id: gp.project.id,
+      title: gp.project.title,
       // Each project gets equal share of the grant budget
-      funding: grant.projects.length > 0 ? (grant.budget || 0) / grant.projects.length : 0,
+      funding: grant.GrantProjects.length > 0 ? (grant.budget || 0) / grant.GrantProjects.length : 0,
     })),
   })).sort((a, b) => b.budget - a.budget)
 
   // Grants by number of projects funded (sorted)
   const grantsByProjectCount = grantsWithProjects
-    .map((grant) => ({
+    .map((grant: GrantWithProjects) => ({
       id: grant.id,
       name: grant.name,
       projectCount: grant.projectCount,
@@ -402,19 +256,19 @@ export default function AnalyticsPage() {
   // Projects with total funding from all grants
   const projectsFundingMap: Record<string, { title: string; grantCount: number; totalFunding: number; grants: string[] }> = {}
   grants.forEach((grant: AnalyticsGrant) => {
-    const fundingPerProject = grant.projects.length > 0 ? (grant.budget || 0) / grant.projects.length : 0
-    grant.projects.forEach((project) => {
-      if (!projectsFundingMap[project.id]) {
-        projectsFundingMap[project.id] = {
-          title: project.title,
+    const fundingPerProject = grant.GrantProjects.length > 0 ? (grant.budget || 0) / grant.GrantProjects.length : 0
+    grant.GrantProjects.forEach((gp: AnalyticsGrant['GrantProjects'][number]) => {
+      if (!projectsFundingMap[gp.project.id]) {
+        projectsFundingMap[gp.project.id] = {
+          title: gp.project.title,
           grantCount: 0,
           totalFunding: 0,
           grants: [],
         }
       }
-      projectsFundingMap[project.id].grantCount++
-      projectsFundingMap[project.id].totalFunding += fundingPerProject
-      projectsFundingMap[project.id].grants.push(grant.name)
+      projectsFundingMap[gp.project.id].grantCount++
+      projectsFundingMap[gp.project.id].totalFunding += fundingPerProject
+      projectsFundingMap[gp.project.id].grants.push(grant.name)
     })
   })
   const projectsByFunding = Object.keys(projectsFundingMap)
@@ -428,11 +282,11 @@ export default function AnalyticsPage() {
   // Equipment per member (sorted by count)
   const equipmentPerMemberMap: Record<string, { id: string; name: string; count: number }> = {}
   equipments.forEach((eq: AnalyticsEquipment) => {
-    if (eq.member) {
-      if (!equipmentPerMemberMap[eq.member.id]) {
-        equipmentPerMemberMap[eq.member.id] = { id: eq.member.id, name: eq.member.name, count: 0 }
+    if (eq.Member) {
+      if (!equipmentPerMemberMap[eq.Member.id]) {
+        equipmentPerMemberMap[eq.Member.id] = { id: eq.Member.id, name: eq.Member.name, count: 0 }
       }
-      equipmentPerMemberMap[eq.member.id].count++
+      equipmentPerMemberMap[eq.Member.id].count++
     }
   })
   const equipmentPerMember = Object.values(equipmentPerMemberMap)
@@ -442,11 +296,11 @@ export default function AnalyticsPage() {
   // Equipment per project (sorted by count)
   const equipmentPerProjectMap: Record<string, { id: string; title: string; count: number }> = {}
   equipments.forEach((eq: AnalyticsEquipment) => {
-    if (eq.project) {
-      if (!equipmentPerProjectMap[eq.project.id]) {
-        equipmentPerProjectMap[eq.project.id] = { id: eq.project.id, title: eq.project.title, count: 0 }
+    if (eq.Project) {
+      if (!equipmentPerProjectMap[eq.Project.id]) {
+        equipmentPerProjectMap[eq.Project.id] = { id: eq.Project.id, title: eq.Project.title, count: 0 }
       }
-      equipmentPerProjectMap[eq.project.id].count++
+      equipmentPerProjectMap[eq.Project.id].count++
     }
   })
   const equipmentPerProject = Object.values(equipmentPerProjectMap)
@@ -468,7 +322,7 @@ export default function AnalyticsPage() {
   }))
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg--app-background-gradient">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -683,7 +537,7 @@ export default function AnalyticsPage() {
                           outerRadius={80}
                           dataKey="value"
                         >
-                          {projectsByStatus.map((entry, index) => (
+                          {projectsByStatus.map((entry: { name: string; value: number; color: string }, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -950,7 +804,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {grantsWithProjects.slice(0, 10).map((grant) => (
+                  {grantsWithProjects.slice(0, 10).map((grant: GrantWithProjects) => (
                     <div key={grant.id} className="border rounded-lg p-4 space-y-2">
                       <div className="flex items-start justify-between">
                         <div>
@@ -1075,12 +929,12 @@ export default function AnalyticsPage() {
                             labelLine={false}
                             label={(entry) => `${entry.name}: ${entry.value}`}
                             outerRadius={80}
-                            dataKey="value"
-                          >
-                            {equipmentStatus.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
+                          dataKey="value"
+                        >
+                          {equipmentStatus.map((entry: { name: string; value: number; color: string }, index: number) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
                           <ChartTooltip content={<ChartTooltipContent />} />
                           <Legend />
                         </PieChart>

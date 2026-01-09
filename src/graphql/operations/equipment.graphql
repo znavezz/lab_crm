@@ -1,0 +1,93 @@
+# Equipment Queries and Mutations
+
+query GetEquipments {
+  equipments {
+    id
+    name
+    description
+    serialNumber
+    status
+    projectId
+    Project {
+      id
+      title
+    }
+    memberId
+    Member {
+      id
+      name
+    }
+    createdAt
+  }
+  bookings {
+    id
+    startTime
+    endTime
+    equipmentId
+    Member {
+      id
+      name
+    }
+  }
+}
+
+query GetEquipment($id: String!) {
+  equipment(id: $id) {
+    id
+    name
+    description
+    serialNumber
+    status
+    projectId
+    Project {
+      id
+      title
+    }
+    memberId
+    Member {
+      id
+      name
+    }
+    Bookings {
+      id
+      startTime
+      endTime
+      purpose
+      Member {
+        id
+        name
+      }
+      Project {
+        id
+        title
+      }
+    }
+    createdAt
+  }
+}
+
+mutation CreateEquipment($object: Equipment_insert_input!) {
+  insert_Equipment_one(object: $object) {
+    id
+    name
+    status
+  }
+}
+
+mutation UpdateEquipment($id: String!, $set: Equipment_set_input!) {
+  update_Equipment_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    name
+    description
+    serialNumber
+    status
+    projectId
+    memberId
+  }
+}
+
+mutation DeleteEquipment($id: String!) {
+  delete_Equipment_by_pk(id: $id) {
+    id
+  }
+}

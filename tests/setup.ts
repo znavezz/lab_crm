@@ -1,50 +1,27 @@
 // tests/setup.ts
-// Test database setup and teardown
+// Test database setup and teardown using Hasura GraphQL
 
-import { PrismaClient } from '@/generated/prisma';
-
-// Use a separate test database
-const getTestDatabaseUrl = () => {
-  const baseUrl = process.env.DATABASE_URL;
-  if (!baseUrl) {
-    throw new Error('DATABASE_URL environment variable is not set');
-  }
-  
-  // Replace database name with test database
-  // e.g., postgresql://user:pass@host:5432/dbname -> postgresql://user:pass@host:5432/test_dbname
-  const url = new URL(baseUrl);
-  const dbName = url.pathname.split('/').pop() || 'lab_crm';
-  url.pathname = `/test_${dbName}`;
-  return url.toString();
-};
-
-export const testPrisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.TEST_DATABASE_URL || getTestDatabaseUrl(),
-    },
-  },
-});
+import { hasuraQuery, checkHasuraConnection } from '../src/lib/hasura-client';
 
 /**
  * Setup test database before all tests
- * Creates database if it doesn't exist and runs migrations
+ * Verifies Hasura connection
  */
 export async function setupTestDatabase() {
   console.log('🔧 Setting up test database...');
   
   try {
-    await testPrisma.$connect();
-    console.log('✅ Test database connected');
-    
-    // Verify connection by running a simple query
-    await testPrisma.$queryRaw`SELECT 1`;
+    const connected = await checkHasuraConnection();
+    if (!connected) {
+      throw new Error('Could not connect to Hasura');
+    }
+    console.log('✅ Hasura connection established');
   } catch (error) {
-    console.error('❌ Failed to connect to test database');
+    console.error('❌ Failed to connect to Hasura');
     console.error('   Make sure:');
-    console.error('   1. TEST_DATABASE_URL is set in your .env file');
-    console.error('   2. Test database exists');
-    console.error('   3. Migrations have been run: DATABASE_URL="..." npx prisma migrate deploy');
+    console.error('   1. Hasura is running (docker-compose up -d)');
+    console.error('   2. HASURA_ENDPOINT is correct');
+    console.error('   3. HASURA_GRAPHQL_ADMIN_SECRET is correct');
     throw error;
   }
 }
@@ -54,8 +31,8 @@ export async function setupTestDatabase() {
  */
 export async function teardownTestDatabase() {
   console.log('🧹 Cleaning up test database...');
-  await testPrisma.$disconnect();
-  console.log('✅ Test database disconnected');
+  // No explicit disconnect needed for Hasura HTTP client
+  console.log('✅ Test database cleanup complete');
 }
 
 /**
@@ -64,76 +41,69 @@ export async function teardownTestDatabase() {
  */
 export async function cleanTestDatabase() {
   // Delete in correct order to respect foreign key constraints
-  // Start with NextAuth models (Session, Account depend on User)
-  await testPrisma.session.deleteMany();
-  await testPrisma.account.deleteMany();
-  await testPrisma.verificationToken.deleteMany();
-  
-  // Delete User first (before Member) since User.memberId references Member
-  // But we need to set memberId to null first to avoid FK constraint issues
-  await testPrisma.user.updateMany({
-    data: { memberId: null },
-  });
-  await testPrisma.user.deleteMany();
-  
-  await testPrisma.noteTask.deleteMany();
-  await testPrisma.booking.deleteMany();
-  await testPrisma.expense.deleteMany();
-  await testPrisma.document.deleteMany();
-  await testPrisma.publication.deleteMany();
-  await testPrisma.academicInfo.deleteMany();
-  
-  // Disconnect many-to-many relations (ignore errors if tables don't exist)
-  const junctionTables = [
-    '_EventToEquipment',
-    '_EventToMember',
-    '_EventToProject',
-    '_ProjectMembers',
-    '_ProjectToGrant',
-    '_ProjectToPublication',
-    '_ProjectToCollaborator',
-    '_MemberToPublication',
+  const deleteOperations = [
+    // Auth-related tables first
+    'delete_Session(where: {}) { affected_rows }',
+    'delete_Account(where: {}) { affected_rows }',
+    'delete_VerificationToken(where: {}) { affected_rows }',
+    'delete_SmsVerificationCode(where: {}) { affected_rows }',
+    'delete_WebAuthnChallenge(where: {}) { affected_rows }',
+    'delete_Authenticator(where: {}) { affected_rows }',
+    
+    // Main tables with dependencies
+    'delete_NoteTask(where: {}) { affected_rows }',
+    'delete_Booking(where: {}) { affected_rows }',
+    'delete_Expense(where: {}) { affected_rows }',
+    'delete_Document(where: {}) { affected_rows }',
+    'delete_Protocol(where: {}) { affected_rows }',
+    'delete_Publication(where: {}) { affected_rows }',
+    'delete_AcademicInfo(where: {}) { affected_rows }',
+    
+    // Junction tables (many-to-many)
+    'delete__EquipmentToEvent(where: {}) { affected_rows }',
+    'delete__EventToMember(where: {}) { affected_rows }',
+    'delete__EventToProject(where: {}) { affected_rows }',
+    'delete__ProjectMembers(where: {}) { affected_rows }',
+    'delete__GrantToProject(where: {}) { affected_rows }',
+    'delete__ProjectToPublication(where: {}) { affected_rows }',
+    'delete__CollaboratorToProject(where: {}) { affected_rows }',
+    'delete__MemberToPublication(where: {}) { affected_rows }',
+    
+    // Main tables
+    'delete_Event(where: {}) { affected_rows }',
+    'delete_Equipment(where: {}) { affected_rows }',
+    'delete_Collaborator(where: {}) { affected_rows }',
+    'delete_Grant(where: {}) { affected_rows }',
+    'delete_Project(where: {}) { affected_rows }',
+    'delete_User(where: {}) { affected_rows }',
+    'delete_Member(where: {}) { affected_rows }',
   ];
-  
-  for (const table of junctionTables) {
+
+  for (const operation of deleteOperations) {
     try {
-      await testPrisma.$executeRawUnsafe(`DELETE FROM "${table}"`);
-    } catch (error: unknown) {
-      // Ignore errors if table doesn't exist (e.g., no data has been created yet)
-      // Check both error code and message for "does not exist"
-      const err = error as { code?: string; message?: string };
-      const isTableNotFound = 
-        err?.code === '42P01' || 
-        err?.code === 'P2025' ||
-        (typeof err?.message === 'string' && err.message.includes('does not exist'));
-      
-      if (!isTableNotFound) {
-        // Re-throw if it's not a "relation does not exist" error
-        throw error;
-      }
+      await hasuraQuery(`mutation { ${operation} }`);
+    } catch {
+      // Ignore errors (table might not exist or be empty)
     }
   }
-  
-  await testPrisma.event.deleteMany();
-  await testPrisma.equipment.deleteMany();
-  await testPrisma.collaborator.deleteMany();
-  await testPrisma.grant.deleteMany();
-  await testPrisma.project.deleteMany();
-  await testPrisma.member.deleteMany();
 }
 
 /**
- * Wrap a test function in a transaction that gets rolled back
- * This ensures complete isolation between tests
+ * Execute a GraphQL query for tests
  */
-export async function withTransaction<T>(
-  fn: (tx: PrismaClient) => Promise<T>
+export async function testQuery<T = unknown>(
+  query: string,
+  variables?: Record<string, unknown>
 ): Promise<T> {
-  return await testPrisma.$transaction(async (tx) => {
-    return await fn(tx as PrismaClient);
-  }, {
-    maxWait: 5000,
-    timeout: 10000,
-  });
+  return hasuraQuery<T>(query, variables);
 }
 
+/**
+ * Helper to wrap test operations (no transaction support in Hasura HTTP API)
+ * Tests should use cleanTestDatabase() in beforeEach instead
+ */
+export async function withTestContext<T>(
+  fn: () => Promise<T>
+): Promise<T> {
+  return fn();
+}

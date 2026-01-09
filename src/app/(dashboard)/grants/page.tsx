@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,72 +22,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { SearchIcon, PlusIcon, CalendarIcon } from 'lucide-react'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { SearchIcon, PlusIcon, DollarSignIcon, CalendarIcon } from 'lucide-react'
+  GetGrantsDocument,
+  CreateGrantDocument,
+  GetGrantsQuery,
+  CreateGrantMutation,
+} from '@/generated/graphql/graphql'
 
-// Type definitions for GraphQL query responses
-interface Grant {
-  id: string
-  name: string
-  budget: number
-  startDate: string
-  endDate: string
-  totalSpent: number
-  remainingBudget: number
-  projects: Array<{
-    id: string
-    title: string
-  }>
-  createdAt: string
+// Type aliases from generated types
+type GrantFromQuery = NonNullable<GetGrantsQuery['grants']>[number]
+interface Grant extends Omit<GrantFromQuery, 'GrantProjects'> {
+  projects: Array<{ id: string; title: string }>
 }
-
-interface GrantsQueryData {
-  grants: Grant[]
-}
-
-interface CreateGrantMutationData {
-  createGrant: {
-    id: string
-    name: string
-    budget: number
-  }
-}
-
-const GET_GRANTS = gql`
-  query GetGrants {
-    grants {
-      id
-      name
-      budget
-      startDate
-      endDate
-      totalSpent
-      remainingBudget
-      projects {
-        id
-        title
-      }
-      createdAt
-    }
-  }
-`
-
-const CREATE_GRANT = gql`
-  mutation CreateGrant($input: CreateGrantInput!) {
-    createGrant(input: $input) {
-      id
-      name
-      budget
-    }
-  }
-`
 
 type GrantStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED'
 
@@ -139,8 +85,8 @@ export default function GrantsPage() {
     endDate: '',
   })
 
-  const { data, loading, error, refetch } = useQuery<GrantsQueryData>(GET_GRANTS)
-  const [createGrant, { loading: creating }] = useMutation<CreateGrantMutationData>(CREATE_GRANT, {
+  const { data, loading, error, refetch } = useQuery<GetGrantsQuery>(GetGrantsDocument)
+  const [createGrant, { loading: creating }] = useMutation<CreateGrantMutation>(CreateGrantDocument, {
     onCompleted: () => {
       toast.success('Grant created successfully')
       setIsDialogOpen(false)
@@ -218,7 +164,7 @@ export default function GrantsPage() {
     e.preventDefault()
     createGrant({
       variables: {
-        input: {
+        object: {
           name: formData.name,
           budget: parseFloat(formData.budget),
           startDate: new Date(formData.startDate).toISOString(),
@@ -401,7 +347,11 @@ export default function GrantsPage() {
     )
   }
 
-  const grants = data?.grants || []
+  // Transform Hasura response to match expected format
+  const grants = (data?.grants || []).map((grant: GetGrantsQuery['grants'][number]) => ({
+    ...grant,
+    projects: grant.GrantProjects?.map((gp) => gp.project) || [],
+  }))
 
   const filteredGrants = grants.filter((grant: Grant) => {
     const matchesSearch = grant.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false

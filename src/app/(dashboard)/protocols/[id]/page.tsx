@@ -3,95 +3,17 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, BookOpenIcon, DownloadIcon, ClockIcon, UserIcon, HistoryIcon, FileTextIcon } from 'lucide-react'
-
-const GET_PROTOCOL = gql`
-  query GetProtocol($id: ID!) {
-    protocol(id: $id) {
-      id
-      title
-      description
-      category
-      version
-      estimatedTime
-      difficulty
-      tags
-      downloads
-      author {
-        id
-        name
-      }
-      project {
-        id
-        title
-      }
-      document {
-        id
-        filename
-        url
-      }
-      materials
-      equipment
-      steps
-      safetyNotes
-      versionHistory
-      createdAt
-      updatedAt
-    }
-  }
-`
-
-interface ProtocolAuthor {
-  id: string
-  name: string
-}
-
-interface ProtocolProject {
-  id: string
-  title: string
-}
-
-interface ProtocolDocument {
-  id: string
-  filename: string
-  url: string
-}
-
-interface ProtocolDetail {
-  id: string
-  title: string
-  description: string | null
-  category: string
-  version: string
-  estimatedTime: string | null
-  difficulty: string
-  tags: string | null
-  downloads: number
-  author: ProtocolAuthor | null
-  project: ProtocolProject | null
-  document: ProtocolDocument | null
-  materials: string | null
-  equipment: string | null
-  steps: string | null
-  safetyNotes: string | null
-  versionHistory: string | null
-  createdAt: string
-  updatedAt: string | null
-}
-
-interface GetProtocolData {
-  protocol: ProtocolDetail
-}
-
-interface GetProtocolVariables {
-  id: string
-}
+import {
+  GetProtocolDocument,
+  GetProtocolQuery,
+  GetProtocolQueryVariables,
+} from '@/generated/graphql/graphql'
 
 const categoryColors: Record<string, string> = {
   WET_LAB: 'bg-primary text-primary-foreground',
@@ -108,7 +30,7 @@ const difficultyColors: Record<string, string> = {
 
 export default function ProtocolDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetProtocolData, GetProtocolVariables>(GET_PROTOCOL, {
+  const { data, loading, error } = useQuery<GetProtocolQuery, GetProtocolQueryVariables>(GetProtocolDocument, {
     variables: { id },
   })
 
@@ -182,7 +104,14 @@ export default function ProtocolDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
-  const protocol = data.protocol
+  const protocolData = data.protocol
+  // Transform Hasura response to match expected format
+  const protocol = {
+    ...protocolData,
+    author: protocolData?.Member || null,
+    document: protocolData?.Document || null,
+    project: protocolData?.Project || null,
+  }
   
   // Parse JSON fields
   const materials = protocol.materials ? (() => {

@@ -1,0 +1,85 @@
+# Analytics Queries (dashboard data)
+
+query GetAnalyticsData {
+  publications {
+    id
+    published
+    doi
+    createdAt
+    PublicationMembers {
+      Member {
+        id
+        name
+      }
+    }
+    PublicationProjects {
+      Project {
+        id
+        title
+      }
+    }
+  }
+  projects {
+    id
+    title
+    startDate
+    endDate
+    createdAt
+    ProjectMembers {
+      Member {
+        id
+        name
+      }
+    }
+  }
+  grants {
+    id
+    name
+    budget
+    startDate
+    endDate
+    createdAt
+    totalSpent
+    remainingBudget
+    Expense {
+      id
+      amount
+    }
+    GrantProjects {
+      project {
+        id
+        title
+        ProjectMembers {
+          Member {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+  equipments {
+    id
+    name
+    status
+    Member {
+      id
+      name
+    }
+    Project {
+      id
+      title
+    }
+  }
+  Members {
+    id
+    name
+    role
+    status
+  }
+  protocols {
+    id
+    category
+  }
+}
+

@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { hasuraQuery } from '@/lib/hasura-client';
+
+interface UserAuthMethods {
+  email: string;
+  emailVerified: string | null;
+  phone: string | null;
+  phoneVerified: string | null;
+  password: string | null;
+  authenticators: Array<{
+    credentialID: string;
+    credentialDeviceType: string;
+    transports: string | null;
+  }>;
+}
 
 /**
  * GET /api/auth/methods
@@ -17,23 +30,25 @@ export async function GET() {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        email: true,
-        emailVerified: true,
-        phone: true,
-        phoneVerified: true,
-        password: true,
-        authenticators: {
-          select: {
-            credentialID: true,
-            credentialDeviceType: true,
-            transports: true,
-          },
-        },
-      },
-    });
+    const data = await hasuraQuery<{ User: UserAuthMethods | null }>(
+      `query GetUserAuthMethods($id: String!) {
+        User(id: $id) {
+          email
+          emailVerified
+          phone
+          phoneVerified
+          password
+          authenticators {
+            credentialID
+            credentialDeviceType
+            transports
+          }
+        }
+      }`,
+      { id: session.user.id }
+    );
+
+    const user = data.User;
 
     if (!user) {
       return NextResponse.json(
@@ -90,4 +105,3 @@ function getDeviceName(deviceType: string, index: number): string {
   const baseName = names[deviceType] || 'Security Key';
   return index === 0 ? baseName : `${baseName} ${index + 1}`;
 }
-

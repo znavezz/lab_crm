@@ -3,72 +3,26 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeftIcon, ExternalLinkIcon, FileTextIcon, UsersIcon } from 'lucide-react'
+import {
+  GetPublicationDocument,
+  GetPublicationQuery,
+  GetPublicationQueryVariables,
+} from '@/generated/graphql/graphql'
 
-const GET_PUBLICATION = gql`
-  query GetPublication($id: ID!) {
-    publication(id: $id) {
-      id
-      title
-      published
-      doi
-      url
-      members {
-        id
-        name
-        photoUrl
-        role
-      }
-      projects {
-        id
-        title
-      }
-      createdAt
-    }
-  }
-`
-
-interface PublicationMember {
-  id: string
-  name: string
-  photoUrl: string | null
-  role: string | null
-}
-
-interface PublicationProject {
-  id: string
-  title: string
-}
-
-interface PublicationDetail {
-  id: string
-  title: string
-  published: string | null
-  doi: string | null
-  url: string | null
-  members: PublicationMember[]
-  projects: PublicationProject[]
-  createdAt: string
-}
-
-interface GetPublicationData {
-  publication: PublicationDetail
-}
-
-interface GetPublicationVariables {
-  id: string
-}
+// Type aliases from generated types
+type PublicationMember = NonNullable<GetPublicationQuery['publication']>['PublicationMembers'][number]['Member']
+type PublicationProject = NonNullable<GetPublicationQuery['publication']>['PublicationProjects'][number]['Project']
 
 export default function PublicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetPublicationData, GetPublicationVariables>(GET_PUBLICATION, {
+  const { data, loading, error } = useQuery<GetPublicationQuery, GetPublicationQueryVariables>(GetPublicationDocument, {
     variables: { id },
   })
 
@@ -138,7 +92,13 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
     )
   }
 
-  const pub = data.publication
+  const pubData = data.publication
+  // Transform Hasura response to match expected format
+  const pub = {
+    ...pubData,
+    members: pubData?.PublicationMembers?.map((pm) => pm.Member) || [],
+    projects: pubData?.PublicationProjects?.map((pp) => pp.Project) || [],
+  }
 
   return (
     <div className="space-y-6">
@@ -248,7 +208,7 @@ export default function PublicationDetailPage({ params }: { params: Promise<{ id
             <Badge variant="secondary" className="ml-2">{pub.members.length}</Badge>
           </div>
           <div className="flex flex-wrap justify-center gap-6 sm:gap-8 py-6">
-            {pub.members.map((member: PublicationMember, index: number) => {
+            {pub.members.map((member: PublicationMember) => {
               const initials = member.name
                 ?.split(' ')
                 .map((n: string) => n[0])

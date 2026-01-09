@@ -1,0 +1,61 @@
+# Collaborator Queries and Mutations
+
+query GetCollaborators {
+  Collaborator {
+    id
+    name
+    organization
+    _CollaboratorToProjects {
+      Project {
+        id
+        title
+      }
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetCollaborator($id: String!) {
+  Collaborator_by_pk(id: $id) {
+    id
+    name
+    organization
+    _CollaboratorToProjects {
+      Project {
+        id
+        title
+      }
+    }
+    NoteTasks {
+      id
+      title
+      content
+      completed
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateCollaborator($object: Collaborator_insert_input!) {
+  insert_Collaborator_one(object: $object) {
+    id
+    name
+    organization
+  }
+}
+
+mutation UpdateCollaborator($id: String!, $set: Collaborator_set_input!) {
+  update_Collaborator_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    name
+    organization
+  }
+}
+
+mutation DeleteCollaborator($id: String!) {
+  delete_Collaborator_by_pk(id: $id) {
+    id
+  }
+}

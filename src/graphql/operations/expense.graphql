@@ -1,0 +1,72 @@
+# Expense Queries and Mutations
+
+query GetExpenses {
+  Expense {
+    id
+    description
+    amount
+    date
+    projectId
+    Project {
+      id
+      title
+    }
+    grantId
+    Grant {
+      id
+      name
+    }
+    eventId
+    Event {
+      id
+      title
+    }
+  }
+}
+
+query GetExpense($id: String!) {
+  Expense_by_pk(id: $id) {
+    id
+    description
+    amount
+    date
+    projectId
+    Project {
+      id
+      title
+    }
+    grantId
+    Grant {
+      id
+      name
+    }
+    eventId
+    Event {
+      id
+      title
+    }
+  }
+}
+
+mutation CreateExpense($object: Expense_insert_input!) {
+  insert_Expense_one(object: $object) {
+    id
+    description
+    amount
+  }
+}
+
+mutation UpdateExpense($id: String!, $set: Expense_set_input!) {
+  update_Expense_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    description
+    amount
+    date
+  }
+}
+
+mutation DeleteExpense($id: String!) {
+  delete_Expense_by_pk(id: $id) {
+    id
+  }
+}

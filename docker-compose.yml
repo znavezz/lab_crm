@@ -21,10 +21,15 @@ services:
       - "3000:3000"
     depends_on:
       - db # Waits for the 'db' service to start first
+      - graphql-engine # Also wait for Hasura
     
     # This is the fix for your environment variables
     env_file:
       - .env.local # Tells Compose to load variables from your .env.local file
+    
+    environment:
+      # Override HASURA_ENDPOINT for Docker internal networking
+      HASURA_ENDPOINT: "http://graphql-engine:8080"
     
     # This is the fix for hot-reloading
     volumes:
@@ -39,7 +44,34 @@ services:
     # Note: Run migrations separately with: docker compose run --rm app npx prisma migrate dev
     command: npm run dev
 
-  # 3. Test Service (for running tests)
+  # 3. Hasura GraphQL Engine Service
+  graphql-engine:
+    image: hasura/graphql-engine:v2.40.0
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      # Database connection - use the same credentials as the db service
+      HASURA_GRAPHQL_DATABASE_URL: postgresql://myuser:mysecretpassword@db:5432/lab_crm
+      # Enable the console
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      # Enable development mode (more detailed errors)
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      # Admin secret for console access
+      HASURA_GRAPHQL_ADMIN_SECRET: hasura_admin_secret_change_in_production
+      # JWT configuration for NextAuth.js integration
+      # Note: Comment out if HASURA_GRAPHQL_JWT_SECRET is not set in .env.local
+      # HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
+      # Allow unauthenticated requests (they'll have role 'anonymous')
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
+      # Enable remote schema permissions
+      HASURA_GRAPHQL_ENABLE_REMOTE_SCHEMA_PERMISSIONS: "true"
+    volumes:
+      - ./hasura/metadata:/hasura-metadata
+
+  # 4. Test Service (for running tests)
   test:
     build:
       context: .

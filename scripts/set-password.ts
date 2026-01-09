@@ -1,11 +1,15 @@
 // scripts/set-password.ts
 // Set a password for a user
+// Uses Hasura GraphQL mutations instead of Prisma
 
 import 'dotenv/config';
-import { PrismaClient } from '@/generated/prisma';
+import { hasuraQuery } from '../src/lib/hasura-client';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+interface User {
+  id: string;
+  email: string;
+}
 
 async function main() {
   const email = process.argv[2] || 'admin@lab.com';
@@ -15,9 +19,16 @@ async function main() {
 
   try {
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const userData = await hasuraQuery<{ User: User[] }>(
+      `query GetUserByEmail($email: String!) {
+        User(where: { email: { _eq: $email } }, limit: 1) {
+          id email
+        }
+      }`,
+      { email }
+    );
+
+    const user = userData.User[0];
 
     if (!user) {
       console.error(`❌ User not found: ${email}`);
@@ -28,10 +39,14 @@ async function main() {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Update user
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword },
-    });
+    await hasuraQuery(
+      `mutation UpdateUserPassword($id: String!, $password: String!) {
+        update_User_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+          id email
+        }
+      }`,
+      { id: user.id, password: hashedPassword }
+    );
 
     console.log(`✅ Password set successfully!`);
     console.log(`   Email: ${email}`);
@@ -43,14 +58,10 @@ async function main() {
     console.log(`   3. Enter email: ${email}`);
     console.log(`   4. Enter password: ${password}`);
     console.log('   5. Click "Sign In"\n');
-
   } catch (error) {
     console.error('❌ Error setting password:', error);
     process.exit(1);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 main();
-

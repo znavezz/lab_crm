@@ -3,108 +3,22 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ListItemSkeleton } from '@/components/skeletons'
-import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, FileTextIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
-
-const GET_EVENT = gql`
-  query GetEvent($id: ID!) {
-    event(id: $id) {
-      id
-      title
-      description
-      date
-      location
-      attendees {
-        id
-        name
-        photoUrl
-        role
-      }
-      projects {
-        id
-        title
-      }
-      tasks {
-        id
-        title
-        completed
-        dueDate
-      }
-      expenses {
-        id
-        description
-        amount
-        date
-      }
-      equipments {
-        id
-        name
-        status
-      }
-      createdAt
-    }
-  }
-`
-
-interface EventAttendee {
-  id: string
-  name: string
-  photoUrl: string | null
-  role: string | null
-}
-
-interface EventProject {
-  id: string
-  title: string
-}
-
-interface EventTask {
-  id: string
-  title: string
-  completed: boolean
-  dueDate: string | null
-}
-
-interface EventExpense {
-  id: string
-  description: string
-  amount: number
-  date: string
-}
-
-interface EventEquipment {
-  id: string
-  name: string
-  status: string
-}
-
-interface EventDetail {
-  id: string
-  title: string
-  description: string | null
-  date: string
-  location: string | null
-  attendees: EventAttendee[]
-  projects: EventProject[]
-  tasks: EventTask[]
-  expenses: EventExpense[]
-  equipments: EventEquipment[]
-  createdAt: string
-}
-
-interface GetEventData {
-  event: EventDetail | null
-}
+import { ArrowLeftIcon, CalendarIcon, MapPinIcon, UsersIcon, FolderIcon, DollarSignIcon, BeakerIcon, CheckSquareIcon } from 'lucide-react'
+import {
+  GetEventDocument,
+  GetEventQuery,
+  GetEventQueryVariables,
+} from '@/generated/graphql/graphql'
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetEventData>(GET_EVENT, {
+  const { data, loading, error } = useQuery<GetEventQuery, GetEventQueryVariables>(GetEventDocument, {
     variables: { id },
   })
 
@@ -177,8 +91,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
 
-  const event = data.event
-  const eventDate = new Date(event.date)
+  const eventData = data.event
+
+  // Transform Hasura response to match expected format
+  const transformedEvent = {
+    ...eventData,
+    attendees: eventData?.EventMembers?.map((em) => em.Member) || [],
+    projects: eventData?.EventProjects?.map((ep) => ep.Project) || [],
+    tasks: eventData?.NoteTasks || [],
+    expenses: eventData?.Expense || [],
+    equipments: eventData?.EventEquipments?.map((ee) => ee.Equipment) || [],
+  }
+  const eventDate = new Date(transformedEvent.date)
   const isPast = eventDate < new Date()
   const formattedDate = eventDate.toLocaleDateString('en-GB', { 
     day: '2-digit', 
@@ -204,10 +128,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-3">
               <div>
-                <CardTitle className="text-3xl">{event.title}</CardTitle>
-                {event.description && (
+                <CardTitle className="text-3xl">{transformedEvent.title}</CardTitle>
+                {transformedEvent.description && (
                   <CardDescription className="text-base mt-2">
-                    {event.description}
+                    {transformedEvent.description}
                   </CardDescription>
                 )}
               </div>
@@ -229,22 +153,22 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <p className="text-sm text-muted-foreground">{formattedTime}</p>
               </div>
             </div>
-            {event.location && (
+            {transformedEvent.location && (
               <div className="flex items-start gap-3">
                 <MapPinIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Location</p>
-                  <p className="text-sm text-muted-foreground">{event.location}</p>
+                  <p className="text-sm text-muted-foreground">{transformedEvent.location}</p>
                 </div>
               </div>
             )}
-            {event.attendees.length > 0 && (
+            {transformedEvent.attendees.length > 0 && (
               <div className="flex items-start gap-3">
                 <UsersIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Attendees</p>
                   <p className="text-sm text-muted-foreground">
-                    {event.attendees.length} {event.attendees.length === 1 ? 'person' : 'people'}
+                    {transformedEvent.attendees.length} {transformedEvent.attendees.length === 1 ? 'person' : 'people'}
                   </p>
                 </div>
               </div>
@@ -254,17 +178,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       </Card>
 
       {/* Attendees Section */}
-      {event.attendees.length > 0 && (
+      {transformedEvent.attendees.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <UsersIcon className="h-5 w-5" />
-              Attendees ({event.attendees.length})
+              Attendees ({transformedEvent.attendees.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {event.attendees.map((attendee) => {
+              {transformedEvent.attendees.map((attendee) => {
                 const initials = attendee.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'A'
                 return (
                   <Link key={attendee.id} href={`/members/${attendee.id}`}>
@@ -291,17 +215,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       )}
 
       {/* Related Projects */}
-      {event.projects.length > 0 && (
+      {transformedEvent.projects.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FolderIcon className="h-5 w-5" />
-              Related Projects ({event.projects.length})
+              Related Projects ({transformedEvent.projects.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {event.projects.map((project) => (
+              {transformedEvent.projects.map((project) => (
                 <Link key={project.id} href={`/projects/${project.id}`}>
                   <div className="p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer">
                     <p className="font-medium">{project.title}</p>
@@ -314,17 +238,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       )}
 
       {/* Tasks */}
-      {event.tasks.length > 0 && (
+      {transformedEvent.tasks.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckSquareIcon className="h-5 w-5" />
-              Tasks ({event.tasks.length})
+              Tasks ({transformedEvent.tasks.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {event.tasks.map((task) => (
+              {transformedEvent.tasks.map((task) => (
                 <div key={task.id} className="flex items-center gap-3 p-3 rounded-lg border">
                   <div className={`h-5 w-5 rounded border-2 flex items-center justify-center ${
                     task.completed ? 'bg-chart-2 border-chart-2' : 'border-muted-foreground'
@@ -351,17 +275,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       )}
 
       {/* Expenses */}
-      {event.expenses.length > 0 && (
+      {transformedEvent.expenses.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSignIcon className="h-5 w-5" />
-              Expenses ({event.expenses.length})
+              Expenses ({transformedEvent.expenses.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {event.expenses.map((expense) => (
+              {transformedEvent.expenses.map((expense) => (
                 <div key={expense.id} className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
                     <p className="text-sm font-medium">{expense.description}</p>
@@ -376,7 +300,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Total</p>
                   <p className="text-lg font-bold">
-                    ${event.expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()}
+                    ${transformedEvent.expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -386,17 +310,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       )}
 
       {/* Equipment */}
-      {event.equipments.length > 0 && (
+      {transformedEvent.equipments.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BeakerIcon className="h-5 w-5" />
-              Equipment ({event.equipments.length})
+              Equipment ({transformedEvent.equipments.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {event.equipments.map((equipment) => (
+              {transformedEvent.equipments.map((equipment) => (
                 <Link key={equipment.id} href={`/equipment/${equipment.id}`}>
                   <div className="p-3 rounded-lg border hover:bg-accent/50 transition-colors cursor-pointer">
                     <p className="text-sm font-medium">{equipment.name}</p>

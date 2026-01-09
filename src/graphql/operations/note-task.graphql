@@ -1,0 +1,126 @@
+# NoteTask Queries and Mutations
+
+query GetNoteTasks {
+  NoteTask {
+    id
+    title
+    content
+    completed
+    dueDate
+    memberId
+    Member {
+      id
+      name
+    }
+    projectId
+    Project {
+      id
+      title
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetNoteTasksByMember($memberId: String!) {
+  NoteTask(where: { memberId: { _eq: $memberId } }, order_by: { createdAt: desc }) {
+    id
+    title
+    content
+    completed
+    dueDate
+    createdAt
+  }
+}
+
+query GetNoteTasksByProject($projectId: String!) {
+  NoteTask(where: { projectId: { _eq: $projectId } }, order_by: { createdAt: desc }) {
+    id
+    title
+    content
+    completed
+    dueDate
+    createdAt
+  }
+}
+
+query GetNoteTask($id: String!) {
+  NoteTask_by_pk(id: $id) {
+    id
+    title
+    content
+    completed
+    dueDate
+    memberId
+    Member {
+      id
+      name
+    }
+    projectId
+    Project {
+      id
+      title
+    }
+    equipmentId
+    Equipment {
+      id
+      name
+    }
+    eventId
+    Event {
+      id
+      title
+    }
+    grantId
+    Grant {
+      id
+      name
+    }
+    publicationId
+    Publication {
+      id
+      title
+    }
+    protocolId
+    Protocol {
+      id
+      title
+    }
+    documentId
+    Document {
+      id
+      filename
+    }
+    collaboratorId
+    Collaborator {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateNoteTask($object: NoteTask_insert_input!) {
+  insert_NoteTask_one(object: $object) {
+    id
+    title
+    completed
+  }
+}
+
+mutation UpdateNoteTask($id: String!, $set: NoteTask_set_input!) {
+  update_NoteTask_by_pk(pk_columns: { id: $id }, _set: $set) {
+    id
+    title
+    content
+    completed
+    dueDate
+  }
+}
+
+mutation DeleteNoteTask($id: String!) {
+  delete_NoteTask_by_pk(id: $id) {
+    id
+  }
+}

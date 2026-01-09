@@ -2,18 +2,14 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Popover,
   PopoverContent,
@@ -30,79 +26,23 @@ import {
 import { SearchIcon, PlusIcon, FileTextIcon, Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Carousel, CarouselCard } from '@/components/ui/carousel'
+import {
+  GetPublicationsDocument,
+  GetMembersBasicDocument,
+  CreatePublicationDocument,
+  GetPublicationsQuery,
+  GetMembersBasicQuery,
+  CreatePublicationMutation,
+  Publication_Insert_Input,
+} from '@/generated/graphql/graphql'
 
-const GET_PUBLICATIONS = gql`
-  query GetPublications {
-    publications {
-      id
-      title
-      published
-      doi
-      url
-      members {
-        id
-        name
-      }
-      projects {
-        id
-        title
-      }
-      createdAt
-    }
-  }
-`
-
-const GET_MEMBERS = gql`
-  query GetMembers {
-    members {
-      id
-      name
-    }
-  }
-`
-
-const CREATE_PUBLICATION = gql`
-  mutation CreatePublication($input: CreatePublicationInput!) {
-    createPublication(input: $input) {
-      id
-      title
-    }
-  }
-`
-
-interface PublicationMember {
-  id: string
-  name: string
+// Type aliases from generated types
+type PublicationFromQuery = GetPublicationsQuery['publications'][number]
+type Publication = PublicationFromQuery & {
+  members: Array<PublicationFromQuery['PublicationMembers'][number]['Member']>
+  projects: Array<PublicationFromQuery['PublicationProjects'][number]['Project']>
 }
-
-interface PublicationProject {
-  id: string
-  title: string
-}
-
-interface Publication {
-  id: string
-  title: string
-  published: string | null
-  doi: string | null
-  url: string | null
-  members: PublicationMember[]
-  projects: PublicationProject[]
-  createdAt: string
-}
-
-interface GetPublicationsData {
-  publications: Publication[]
-}
-
-interface Member {
-  id: string
-  name: string
-}
-
-interface GetMembersData {
-  members: Member[]
-}
+type PublicationMember = Publication['members'][number]
 
 export default function PublicationsPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -116,9 +56,9 @@ export default function PublicationsPage() {
     url: '',
   })
 
-  const { data, loading, error, refetch } = useQuery<GetPublicationsData>(GET_PUBLICATIONS)
-  const { data: membersData } = useQuery<GetMembersData>(GET_MEMBERS)
-  const [createPublication, { loading: creating }] = useMutation(CREATE_PUBLICATION, {
+  const { data, loading, error, refetch } = useQuery<GetPublicationsQuery>(GetPublicationsDocument)
+  const { data: membersData } = useQuery<GetMembersBasicQuery>(GetMembersBasicDocument)
+  const [createPublication, { loading: creating }] = useMutation<CreatePublicationMutation>(CreatePublicationDocument, {
     onCompleted: () => {
       toast.success('Publication created successfully')
       setIsDialogOpen(false)
@@ -131,18 +71,18 @@ export default function PublicationsPage() {
     },
   })
 
-  const members = membersData?.members || []
+  const members = membersData?.Members || []
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     createPublication({
       variables: {
-        input: {
+        object: {
           title: formData.title,
           published: formData.published ? new Date(formData.published).toISOString() : undefined,
           doi: formData.doi || undefined,
           url: formData.url || undefined,
-        },
+        } as Publication_Insert_Input,
       },
     })
   }
@@ -219,7 +159,7 @@ export default function PublicationsPage() {
                           <CommandList>
                             <CommandEmpty>No lab members found.</CommandEmpty>
                             <CommandGroup>
-                              {members.map((member: Member) => {
+                              {members.map((member) => {
                                 const isSelected = selectedMembers.includes(member.id)
                                 return (
                                   <CommandItem
@@ -247,7 +187,7 @@ export default function PublicationsPage() {
                     {selectedMembers.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {selectedMembers.map((memberId) => {
-                          const member = members.find((m: Member) => m.id === memberId)
+                          const member = members.find((m) => m.id === memberId)
                           if (!member) return null
                           return (
                             <Badge key={memberId} variant="secondary" className="gap-1">
@@ -418,7 +358,12 @@ export default function PublicationsPage() {
     )
   }
 
-  const publications = data?.publications || []
+  // Transform Hasura response to match expected format
+  const publications = (data?.publications || []).map((pub: GetPublicationsQuery['publications'][number]) => ({
+    ...pub,
+    members: pub.PublicationMembers?.map((pm) => pm.Member) || [],
+    projects: pub.PublicationProjects?.map((pp) => pp.Project) || [],
+  }))
 
   const filteredPublications = publications.filter((pub: Publication) => {
     const matchesSearch = pub.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -494,7 +439,7 @@ export default function PublicationsPage() {
                         <CommandList>
                           <CommandEmpty>No lab members found.</CommandEmpty>
                           <CommandGroup>
-                            {members.map((member: Member) => {
+                            {members.map((member) => {
                               const isSelected = selectedMembers.includes(member.id)
                               return (
                                 <CommandItem
@@ -522,7 +467,7 @@ export default function PublicationsPage() {
                   {selectedMembers.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {selectedMembers.map((memberId) => {
-                        const member = members.find((m: Member) => m.id === memberId)
+                        const member = members.find((m) => m.id === memberId)
                         if (!member) return null
                         return (
                           <Badge key={memberId} variant="secondary" className="gap-1">

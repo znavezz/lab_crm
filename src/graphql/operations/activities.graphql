@@ -1,0 +1,29 @@
+# All activities query (for activity feed)
+query GetAllActivities {
+  Members {
+    id
+    name
+    createdAt
+  }
+  projects {
+    id
+    title
+    createdAt
+  }
+  publications {
+    id
+    title
+    published
+    createdAt
+  }
+  protocols {
+    id
+    title
+    createdAt
+  }
+  equipments {
+    id
+    name
+    createdAt
+  }
+}

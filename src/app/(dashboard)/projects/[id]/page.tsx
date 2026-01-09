@@ -3,7 +3,6 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,71 +10,23 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatsCardSkeleton, ListItemSkeleton } from '@/components/skeletons'
 import { ArrowLeftIcon, CalendarIcon, UsersIcon, DollarSignIcon } from 'lucide-react'
+import {
+  GetProjectDocument,
+  GetProjectQuery,
+  GetProjectQueryVariables,
+} from '@/generated/graphql/graphql'
 
-const GET_PROJECT = gql`
-  query GetProject($id: ID!) {
-    project(id: $id) {
-      id
-      title
-      description
-      startDate
-      endDate
-      members {
-        id
-        name
-        role
-      }
-      grants {
-        id
-        name
-        budget
-        remainingBudget
-        expenses {
-          id
-          amount
-          projectId
-        }
-      }
-      totalInvestment
-      createdAt
-    }
-  }
-`
-
-type ProjectMember = {
-  id: string
-  name: string
-  role?: string | null
+// Type aliases from generated types
+type ProjectFromQuery = NonNullable<GetProjectQuery['project']>
+type ProjectMember = ProjectFromQuery['ProjectMembers'][number]['Member']
+type GrantToProject = ProjectFromQuery['_GrantToProjects'][number]
+type ProjectExpense = GrantToProject['Grant']['Expense'][number]
+type ProjectGrant = GrantToProject['Grant'] & {
+  expenses: ProjectExpense[]
 }
-
-type ProjectExpense = {
-  id: string
-  amount: number
-  projectId?: string | null
-}
-
-type ProjectGrant = {
-  id: string
-  name: string
-  budget: number
-  remainingBudget: number
-  expenses?: ProjectExpense[] | null
-}
-
-type ProjectData = {
-  id: string
-  title: string
-  description?: string | null
-  startDate?: string | null
-  endDate?: string | null
-  members?: ProjectMember[] | null
-  grants?: ProjectGrant[] | null
-  totalInvestment?: number | null
-  createdAt: string
-}
-
-type GetProjectQueryResult = {
-  project?: ProjectData | null
+type ProjectData = ProjectFromQuery & {
+  members: ProjectMember[]
+  grants: ProjectGrant[]
 }
 
 const statusColors: Record<string, string> = {
@@ -112,7 +63,7 @@ function getProjectProgress(project: { startDate?: string | null; endDate?: stri
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { data, loading, error } = useQuery<GetProjectQueryResult>(GET_PROJECT, {
+  const { data, loading, error } = useQuery<GetProjectQuery, GetProjectQueryVariables>(GetProjectDocument, {
     variables: { id },
   })
 
@@ -182,7 +133,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     )
   }
 
-  const project = data.project
+  const projectData = data.project
+  // Transform Hasura response to match expected format
+  const project: ProjectData = {
+    ...projectData,
+    members: projectData?.ProjectMembers?.map((pm) => pm.Member) || [],
+    grants: projectData?._GrantToProjects?.map((gp) => ({
+      ...gp.Grant,
+      expenses: gp.Grant?.Expense || [],
+    })) || [],
+  } as ProjectData
   const status = getProjectStatus(project)
   const progress = getProjectProgress(project)
 

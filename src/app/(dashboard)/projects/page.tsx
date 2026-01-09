@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client/react'
-import { gql } from '@apollo/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -47,63 +46,32 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { SearchIcon, PlusIcon, CalendarIcon, Check, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { 
-  Project, 
-  Grant, 
-  Member,
-  ProjectStatus,
-  StatusFilter,
-  ProjectsQueryData,
-  GrantsQueryData,
-  CreateProjectMutationData,
-  ProjectWithStatus
-} from '@/types/graphql-queries'
+import {
+  GetProjectsDocument,
+  GetGrantsDocument,
+  CreateProjectDocument,
+  GetProjectsQuery,
+  GetGrantsQuery,
+  CreateProjectMutation,
+} from '@/generated/graphql/graphql'
 
-const GET_PROJECTS = gql`
-  query GetProjects {
-    projects {
-      id
-      title
-      description
-      startDate
-      endDate
-      members {
-        id
-        name
-      }
-      grants {
-        id
-        name
-      }
-      totalInvestment
-      createdAt
-    }
-  }
-`
+// Type aliases from generated types
+type Project = NonNullable<GetProjectsQuery['projects']>[number]
+type ProjectMember = Project['ProjectMembers'][number]['Member']
+type Member = ProjectMember
+type Grant = NonNullable<GetGrantsQuery['grants']>[number]
+type ProjectStatus = 'PLANNING' | 'ACTIVE' | 'COMPLETED'
+type StatusFilter = 'ALL' | ProjectStatus
 
-const GET_GRANTS = gql`
-  query GetGrants {
-    grants {
-      id
-      name
-      budget
-      totalSpent
-      remainingBudget
-    }
-  }
-`
-
-const CREATE_PROJECT = gql`
-  mutation CreateProject($input: CreateProjectInput!) {
-    createProject(input: $input) {
-      id
-      title
-    }
-  }
-`
+interface ProjectWithStatus extends Project {
+  status: ProjectStatus
+  progress: number
+  members?: ProjectMember[]
+  grants?: Grant[]
+}
 
 // Helper function to calculate project status based on dates
-function getProjectStatus(project: Project): ProjectStatus {
+function getProjectStatus(project: { startDate?: string | null; endDate?: string | null }): ProjectStatus {
   const now = new Date()
   const startDate = project.startDate ? new Date(project.startDate) : null
   const endDate = project.endDate ? new Date(project.endDate) : null
@@ -115,7 +83,7 @@ function getProjectStatus(project: Project): ProjectStatus {
 }
 
 // Helper function to calculate progress based on dates
-function getProjectProgress(project: Project): number {
+function getProjectProgress(project: { startDate?: string | null; endDate?: string | null }): number {
   const startDate = project.startDate ? new Date(project.startDate) : null
   const endDate = project.endDate ? new Date(project.endDate) : null
   const now = new Date()
@@ -161,22 +129,28 @@ export default function ProjectsPage() {
     progress: '0',
   })
 
-  const { data, loading, error, refetch } = useQuery<ProjectsQueryData>(GET_PROJECTS)
-  const { data: grantsData } = useQuery<GrantsQueryData>(GET_GRANTS)
-  const [createProject, { loading: creating }] = useMutation<CreateProjectMutationData>(CREATE_PROJECT, {
+  const { data, loading, error, refetch } = useQuery<GetProjectsQuery>(GetProjectsDocument)
+  const { data: grantsData } = useQuery<GetGrantsQuery>(GetGrantsDocument)
+  const [createProject, { loading: creating }] = useMutation<CreateProjectMutation>(CreateProjectDocument, {
     onCompleted: (data) => {
       toast.success('Project created successfully')
       setIsDialogOpen(false)
       setFormData({ title: '', description: '', startDate: '', endDate: '', selectedGrants: [], status: 'ACTIVE', progress: '0' })
       refetch()
-      router.push(`/projects/${data.createProject.id}`)
+      if (data.insert_Project_one?.id) {
+        router.push(`/projects/${data.insert_Project_one.id}`)
+      }
     },
     onError: (error) => {
       toast.error(`Failed to create project: ${error.message}`)
     },
   })
 
-  const projects = data?.projects || []
+  // Transform Hasura response to match expected format
+  const projects = (data?.projects || []).map((project: GetProjectsQuery['projects'][number]) => ({
+    ...project,
+    members: project.ProjectMembers?.map((pm) => pm.Member) || [],
+  }))
   const grants = grantsData?.grants || []
 
   // Calculate project status and progress for each project
@@ -208,7 +182,7 @@ export default function ProjectsPage() {
     try {
       await createProject({
         variables: {
-          input: {
+          object: {
             title: formData.title,
             description: formData.description || undefined,
             startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
@@ -217,7 +191,6 @@ export default function ProjectsPage() {
         },
       })
       // Note: Grant associations would need to be done via a separate mutation
-      // since CreateProjectInput doesn't include grantIds
     } catch (error) {
       // Error handled by onError callback
     }

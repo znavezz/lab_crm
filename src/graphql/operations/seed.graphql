@@ -1,0 +1,382 @@
+# Seed Operations - Bulk insert/delete mutations for database seeding
+# Used by scripts/seed.ts and related seed utilities
+
+# ==================== BULK INSERTS ====================
+
+mutation InsertMembers($objects: [Member_insert_input!]!) {
+  insert_Member(objects: $objects) {
+    returning {
+      id
+      name
+      rank
+      status
+      role
+    }
+  }
+}
+
+mutation InsertProjects($objects: [Project_insert_input!]!) {
+  insert_Project(objects: $objects) {
+    returning {
+      id
+      title
+    }
+  }
+}
+
+mutation InsertGrants($objects: [Grant_insert_input!]!) {
+  insert_Grant(objects: $objects) {
+    returning {
+      id
+      name
+      budget
+    }
+  }
+}
+
+mutation InsertEquipment($objects: [Equipment_insert_input!]!) {
+  insert_Equipment(objects: $objects) {
+    returning {
+      id
+      name
+      status
+    }
+  }
+}
+
+mutation InsertEvents($objects: [Event_insert_input!]!) {
+  insert_Event(objects: $objects) {
+    returning {
+      id
+      title
+    }
+  }
+}
+
+mutation InsertPublications($objects: [Publication_insert_input!]!) {
+  insert_Publication(objects: $objects) {
+    returning {
+      id
+      title
+    }
+  }
+}
+
+mutation InsertProtocols($objects: [Protocol_insert_input!]!) {
+  insert_Protocol(objects: $objects) {
+    returning {
+      id
+      title
+    }
+  }
+}
+
+mutation InsertExpenses($objects: [Expense_insert_input!]!) {
+  insert_Expense(objects: $objects) {
+    returning {
+      id
+      description
+      amount
+    }
+  }
+}
+
+mutation InsertBookings($objects: [Booking_insert_input!]!) {
+  insert_Booking(objects: $objects) {
+    returning {
+      id
+      purpose
+    }
+  }
+}
+
+mutation InsertAcademicInfos($objects: [AcademicInfo_insert_input!]!) {
+  insert_AcademicInfo(objects: $objects) {
+    returning {
+      id
+      degree
+      field
+    }
+  }
+}
+
+mutation InsertDocuments($objects: [Document_insert_input!]!) {
+  insert_Document(objects: $objects) {
+    returning {
+      id
+      filename
+    }
+  }
+}
+
+mutation InsertCollaborators($objects: [Collaborator_insert_input!]!) {
+  insert_Collaborator(objects: $objects) {
+    returning {
+      id
+      name
+    }
+  }
+}
+
+mutation InsertNoteTasks($objects: [NoteTask_insert_input!]!) {
+  insert_NoteTask(objects: $objects) {
+    returning {
+      id
+      title
+    }
+  }
+}
+
+# ==================== SINGLE INSERTS ====================
+
+mutation InsertMember($object: Member_insert_input!) {
+  insert_Member_one(object: $object) {
+    id
+    name
+    rank
+    status
+    role
+    scholarship
+    photoUrl
+    joinedDate
+    createdAt
+  }
+}
+
+mutation InsertProject($object: Project_insert_input!) {
+  insert_Project_one(object: $object) {
+    id
+    title
+    description
+    startDate
+    endDate
+    createdAt
+  }
+}
+
+mutation InsertGrant($object: Grant_insert_input!) {
+  insert_Grant_one(object: $object) {
+    id
+    name
+    budget
+    startDate
+    endDate
+    createdAt
+  }
+}
+
+mutation InsertEquipmentOne($object: Equipment_insert_input!) {
+  insert_Equipment_one(object: $object) {
+    id
+    name
+    description
+    serialNumber
+    status
+    projectId
+    memberId
+    createdAt
+  }
+}
+
+mutation InsertEvent($object: Event_insert_input!) {
+  insert_Event_one(object: $object) {
+    id
+    title
+    description
+    date
+    location
+    createdAt
+  }
+}
+
+mutation InsertExpense($object: Expense_insert_input!) {
+  insert_Expense_one(object: $object) {
+    id
+    description
+    amount
+    date
+    projectId
+    grantId
+    eventId
+  }
+}
+
+mutation InsertBooking($object: Booking_insert_input!) {
+  insert_Booking_one(object: $object) {
+    id
+    startTime
+    endTime
+    purpose
+    equipmentId
+    memberId
+    projectId
+    eventId
+  }
+}
+
+mutation InsertUser($object: User_insert_input!) {
+  insert_User_one(object: $object) {
+    id
+    name
+    email
+    emailVerified
+    memberId
+    createdAt
+  }
+}
+
+mutation InsertAcademicInfo($object: AcademicInfo_insert_input!) {
+  insert_AcademicInfo_one(object: $object) {
+    id
+    degree
+    field
+    institution
+    graduationYear
+    memberId
+  }
+}
+
+mutation InsertPublication($object: Publication_insert_input!) {
+  insert_Publication_one(object: $object) {
+    id
+    title
+    published
+    doi
+    url
+  }
+}
+
+mutation InsertProtocol($object: Protocol_insert_input!) {
+  insert_Protocol_one(object: $object) {
+    id
+    title
+    description
+    category
+    version
+    authorId
+    projectId
+  }
+}
+
+# ==================== BULK DELETES (for reset) ====================
+
+mutation DeleteAllNoteTasks {
+  delete_NoteTask(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllBookings {
+  delete_Booking(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllExpenses {
+  delete_Expense(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllDocuments {
+  delete_Document(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllPublications {
+  delete_Publication(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllAcademicInfos {
+  delete_AcademicInfo(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllProtocols {
+  delete_Protocol(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllEvents {
+  delete_Event(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllEquipment {
+  delete_Equipment(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllGrants {
+  delete_Grant(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllCollaborators {
+  delete_Collaborator(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllProjects {
+  delete_Project(where: {}) {
+    affected_rows
+  }
+}
+
+mutation DeleteAllMembers {
+  delete_Member(where: {}) {
+    affected_rows
+  }
+}
+
+# ==================== COUNTS (for checking existing data) ====================
+
+query GetCounts {
+  Member_aggregate {
+    aggregate {
+      count
+    }
+  }
+  Project_aggregate {
+    aggregate {
+      count
+    }
+  }
+}
+
+# ==================== QUERIES FOR SEED SCRIPTS ====================
+
+query GetUserByEmailForSeed($email: String!) {
+  User(where: { email: { _eq: $email } }, limit: 1) {
+    id
+    name
+    email
+    memberId
+  }
+}
+
+query GetMemberByNameForSeed($name: String!) {
+  Members(where: { name: { _ilike: $name } }, limit: 1) {
+    id
+    name
+    role
+    status
+  }
+}
+
+mutation UpdateUserPassword($id: String!, $password: String!) {
+  update_User_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+    id
+    email
+  }
+}
+
