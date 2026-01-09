@@ -5,7 +5,10 @@
  * This replaces Prisma for auth operations.
  */
 
-const HASURA_ENDPOINT = process.env.HASURA_ENDPOINT || 'http://localhost:8080/v1/graphql';
+const HASURA_ENDPOINT_BASE = process.env.HASURA_ENDPOINT || 'http://localhost:8080';
+const HASURA_ENDPOINT = HASURA_ENDPOINT_BASE.endsWith('/v1/graphql') 
+  ? HASURA_ENDPOINT_BASE 
+  : `${HASURA_ENDPOINT_BASE}/v1/graphql`;
 const HASURA_ADMIN_SECRET = process.env.HASURA_GRAPHQL_ADMIN_SECRET || '';
 
 interface GraphQLResponse<T> {

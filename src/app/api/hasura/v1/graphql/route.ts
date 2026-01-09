@@ -28,7 +28,16 @@ export async function POST(request: NextRequest) {
       } else {
         // If no auth header but session exists, use admin secret for server-side operations
         headers['x-hasura-admin-secret'] = HASURA_ADMIN_SECRET;
-        headers['x-hasura-role'] = 'user';
+        
+        // Security: Log if role is missing (should never happen with proper session)
+        if (!session.user.role) {
+          console.error('SECURITY WARNING: Missing user role, defaulting to "user"', {
+            userId: session.user.id,
+            timestamp: new Date().toISOString(),
+          });
+        }
+        
+        headers['x-hasura-role'] = session.user.role || 'user';
         headers['x-hasura-user-id'] = session.user.id;
         if (session.user.memberId) {
           headers['x-hasura-member-id'] = session.user.memberId;
