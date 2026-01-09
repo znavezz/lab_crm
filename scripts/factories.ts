@@ -202,6 +202,7 @@ export class DataFactory {
     const object = {
       ...data,
       joinedDate: data.joinedDate?.toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const result = await hasuraQuery<{ insert_Member_one: Member }>(
@@ -272,6 +273,7 @@ export class DataFactory {
       ...data,
       startDate: data.startDate?.toISOString(),
       endDate: data.endDate?.toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const result = await hasuraQuery<{ insert_Project_one: Project }>(
@@ -334,7 +336,12 @@ export class DataFactory {
       status = overrides.status || defaults.status;
     }
 
-    const object = { ...defaults, ...overrides, status };
+    const object = { 
+      ...defaults, 
+      ...overrides, 
+      status,
+      updatedAt: new Date().toISOString(),
+    };
 
     const result = await hasuraQuery<{ insert_Equipment_one: Equipment }>(
       `mutation InsertEquipmentOne($object: Equipment_insert_input!) {
@@ -400,6 +407,7 @@ export class DataFactory {
       memberId: overrides.memberId,
       projectId: overrides.projectId,
       eventId: overrides.eventId,
+      updatedAt: new Date().toISOString(),
     };
 
     const result = await hasuraQuery<{ insert_Booking_one: Booking }>(
@@ -431,6 +439,7 @@ export class DataFactory {
     const object = {
       ...data,
       date: data.date?.toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const result = await hasuraQuery<{ insert_Event_one: Event }>(
@@ -462,6 +471,7 @@ export class DataFactory {
     const object = {
       ...data,
       published: data.published?.toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const result = await hasuraQuery<{ insert_Publication_one: Publication }>(
@@ -485,7 +495,11 @@ export class DataFactory {
       organization: 'Test Organization',
     };
 
-    const object = { ...defaults, ...overrides };
+    const object = { 
+      ...defaults, 
+      ...overrides,
+      updatedAt: new Date().toISOString(),
+    };
 
     const result = await hasuraQuery<{ insert_Collaborator_one: Collaborator }>(
       `mutation InsertCollaborator($object: Collaborator_insert_input!) {
@@ -510,7 +524,11 @@ export class DataFactory {
       url: `/documents/test-${Math.random().toString(36).substring(7)}.pdf`,
     };
 
-    const object = { ...defaults, ...overrides };
+    const object = { 
+      ...defaults, 
+      ...overrides,
+      updatedAt: new Date().toISOString(),
+    };
 
     const result = await hasuraQuery<{ insert_Document_one: Document }>(
       `mutation InsertDocument($object: Document_insert_input!) {
@@ -550,6 +568,7 @@ export class DataFactory {
     const object = {
       ...data,
       dueDate: data.dueDate?.toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const result = await hasuraQuery<{ insert_NoteTask_one: NoteTask }>(
@@ -578,7 +597,11 @@ export class DataFactory {
       graduationYear: 2020,
     };
 
-    const object = { ...defaults, ...overrides };
+    const object = { 
+      ...defaults, 
+      ...overrides,
+      updatedAt: new Date().toISOString(),
+    };
 
     const result = await hasuraQuery<{ insert_AcademicInfo_one: AcademicInfo }>(
       `mutation InsertAcademicInfo($object: AcademicInfo_insert_input!) {
@@ -616,7 +639,11 @@ export class DataFactory {
       version: '1.0',
     };
 
-    const object = { ...defaults, ...overrides };
+    const object = { 
+      ...defaults, 
+      ...overrides,
+      updatedAt: new Date().toISOString(),
+    };
 
     const result = await hasuraQuery<{ insert_Protocol_one: Protocol }>(
       `mutation InsertProtocol($object: Protocol_insert_input!) {

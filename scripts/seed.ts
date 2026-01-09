@@ -126,6 +126,10 @@ async function main() {
       console.log(`   • ${result.publications.length} Publications`);
       console.log(`   • ${result.protocols.length} Protocols`);
       console.log(`   • ${result.collaborators.length} Collaborators`);
+      console.log(`\n🔐 Admin User Created:`);
+      console.log(`   Email: admin@lab.com`);
+      console.log(`   Password: Admin123!`);
+      console.log(`   Role: admin`);
     }
 
     console.log('\n🎉 Database seeding complete!\n');

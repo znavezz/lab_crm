@@ -89,6 +89,10 @@ export class TestFixtures {
 
     const activeMembers = members.filter(m => m.status === 'ACTIVE');
 
+    // ========== CREATE ADMIN USER ==========
+    // Create admin user linked to PI
+    const adminUser = await this.createAdminUser(members[0].id); // Link to Prof. Sarah Cohen
+
     // ========== CREATE PROJECTS ==========
     const projectTitles = [
       'Genome Sequencing Analysis', 'Protein Structure Prediction', 'CRISPR Gene Editing',
@@ -252,7 +256,36 @@ export class TestFixtures {
       publications,
       protocols,
       collaborators,
+      adminUser,
     };
+  }
+
+  /**
+   * Creates an admin user with password authentication
+   */
+  async createAdminUser(memberId?: string) {
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('Admin123!', 12);
+    
+    const result = await hasuraQuery<{ insert_User_one: { id: string; name: string; email: string; role: string } }>(
+      `mutation CreateAdminUser($object: User_insert_input!) {
+        insert_User_one(object: $object) { id name email role }
+      }`,
+      {
+      object: {
+        name: 'Admin User',
+        email: 'admin@lab.com',
+        emailVerified: new Date().toISOString(),
+        password: hashedPassword,
+        role: 'admin',
+        memberId: memberId || null,
+        updatedAt: new Date().toISOString(),
+      }
+      }
+    );
+    
+    console.log(`✅ Admin user created: ${result.insert_User_one.email} (password: Admin123!)`);
+    return result.insert_User_one;
   }
 
   /**
